@@ -1,0 +1,32 @@
+# BNF of LANG
+
+<program> ::= { <statement> }
+
+<statement> ::= <expression>; | <if_statement> | <goto_statement>; |
+                <assignment>; | <label>: <statement>
+
+<assignment> ::= <lvalue> = <expression>
+
+<lvalue> ::= <identifier><tail>
+
+<tail> ::= <indexator><tail> | <args><tail> |
+
+<indexator> ::= \[ <expression> \]
+
+<args> ::= ( <end_of_args>
+
+<end_of_args> ::= ) | <expression> {, <expression> } )
+
+<expression> ::= [ <unar> ] <operand> { <binar><expression> }<tail>
+
+<operand> ::= ( <expression> ) | <literal> | $<deref>
+
+<deref> ::= <int> | <lvalue>
+
+<literal> ::= <string> | <int> | <float> | <code_block>
+
+<code_block> ::= \{ <program> \}
+
+<goto_statement> ::= goto <label>
+
+<if_statement> ::= if ( <expression> ) <code_block> [ else <code_block> ]

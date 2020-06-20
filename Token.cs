@@ -20,6 +20,8 @@ namespace Lang
             Integer,
             Float,
             Separator,
+            Label,
+            None,
         }
 
         public string Value { get; }

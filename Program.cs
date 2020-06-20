@@ -19,6 +19,9 @@ namespace Lang
             {
                 Console.WriteLine($"{token.Value, 20} {token.TokenType, 20} {token.Line}:{token.StartPosition}");
             }
+
+            var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
+            syntaxer.Analyse(tokens);
         }
 
         /// <summary>
