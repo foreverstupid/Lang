@@ -9,7 +9,7 @@ namespace Lang
     /// </summary>
     public sealed class LexicalParser
     {
-        private static readonly string Separators = ";,=+-*/%()[]${}";
+        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}";
         private readonly Dictionary<State, Func<char, Token>> stateHandlers;
 
         private readonly StringBuilder tokenValue = new StringBuilder();
