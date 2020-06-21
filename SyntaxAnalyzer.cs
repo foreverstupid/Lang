@@ -8,24 +8,14 @@ namespace Lang
     /// </summary>
     public class SyntaxAnalyzer
     {
-        private static readonly string[] UnarOperations = new[] { "-", "!", "+" };
-        private static readonly string[] BinarOperations =
-            new[] { "+", "-", "/", "*", "/", "&", "|", ">", "<", "~", "%", "^" };
-
         private readonly ILogger logger;
-
-        private IEnumerator<Token> tokens;
-        private Token previousToken;
-        private bool finished = false;
-
+        private TokenEnumerator tokens;
         private List<string> contexts = new List<string>();
 
         public SyntaxAnalyzer(ILogger logger)
         {
             this.logger = logger.ForContext("Syntax analysis");
         }
-
-        private Token Current { get; set; }
 
         /// <summary>
         /// Performs analysis, creating needed interpratation info.
@@ -34,35 +24,23 @@ namespace Lang
         /// <returns>Needed information for interpretation.</returns>
         public InterpretataionInfo Analyse(IEnumerable<Token> tokens)
         {
-            this.tokens = tokens.GetEnumerator();
+            this.tokens = new TokenEnumerator(tokens);
 
-            MoveNext();
-            Program();
-
-            if (!finished)
+            try
             {
-                SetError("Unknown statement");
+                Program();
+
+                if (!this.tokens.IsFinished)
+                {
+                    SetError("Unknown statement");
+                }
+            }
+            catch (SyntaxException se)
+            {
+                logger.Error(se.Message);
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Moves one step forward in a token collection. Performs additional RPN
-        /// and other structures creation.
-        /// </summary>
-        private void MoveNext()
-        {
-            previousToken = Current;
-            if (!tokens.MoveNext())
-            {
-                finished = true;
-                Current = new Token("", Token.Type.None, 0, 0);
-            }
-            else
-            {
-                Current = tokens.Current;
-            }
         }
 
         /// <summary>
@@ -71,7 +49,7 @@ namespace Lang
         /// <param name="msg">Error message.</param>
         private void SetError(string msg)
         {
-            var errorMessage = $"({Current.Line}:{Current.StartPosition}) {msg}";
+            var errorMessage = $"({tokens.CurrentOrLast.Line}:{tokens.CurrentOrLast.StartPosition}) {msg}";
             throw new SyntaxException(errorMessage);
         }
 
@@ -109,23 +87,12 @@ namespace Lang
         }
 
         /// <summary>
-        /// Checks whether the given token is an unary operation.
+        /// Moves to the next token.
         /// </summary>
-        private bool IsUnaryOperation(Token token)
+        private void MoveNext()
         {
-            return
-                token.TokenType == Token.Type.Separator &&
-                UnarOperations.Contains(token.Value);
-        }
-
-        /// <summary>
-        /// Checks whether the given token is a binary operation.
-        /// </summary>
-        private bool IsBinaryOperation(Token token)
-        {
-            return
-                token.TokenType == Token.Type.Separator &&
-                BinarOperations.Contains(token.Value);
+            logger.ForContext(contexts[^1]).Information(tokens.CurrentOrLast.Value);
+            tokens.MoveNext();
         }
 
         // Grammar nodes handlers
@@ -145,10 +112,10 @@ namespace Lang
         {
             Enter(nameof(Statement));
 
-            if (Current.TokenType == Token.Type.Label)
+            if (tokens.CurrentTokenTypeIs(Token.Type.Label))
             {
                 MoveNext();
-                if (Current.Value != ":")
+                if (!tokens.CurrentTokenValueIs(":"))
                 {
                     SetError("Colomn after label is expected");
                     return Leave(false);
@@ -163,7 +130,7 @@ namespace Lang
             }
             else if (Expression() || GotoStatement() || Assignment())
             {
-                if (Current.Value != ";")
+                if (!tokens.CurrentTokenValueIs(";"))
                 {
                     SetError("Semicolon after statement is expected");
                     return Leave(false);
@@ -185,7 +152,7 @@ namespace Lang
                 return Leave(false);
             }
 
-            if (Current.Value != "=")
+            if (!tokens.CurrentTokenValueIs("="))
             {
                 SetError("'=' in assignment after the left-value expression is expected");
                 return Leave(false);
@@ -199,7 +166,7 @@ namespace Lang
         {
             Enter(nameof(LeftValue));
 
-            if (Current.TokenType != Token.Type.Identifier)
+            if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
             {
                 return Leave(false);
             }
@@ -224,7 +191,7 @@ namespace Lang
         {
             Enter(nameof(Indexator));
 
-            if (Current.Value != "[")
+            if (!tokens.CurrentTokenValueIs("["))
             {
                 return false;
             }
@@ -236,7 +203,7 @@ namespace Lang
                 SetError("Expression in the indexator is expected");
             }
 
-            if (Current.Value != "]")
+            if (!tokens.CurrentTokenValueIs("]"))
             {
                 SetError("']' in the end of the indexator is expected");
             }
@@ -249,13 +216,13 @@ namespace Lang
         {
             Enter(nameof(Arguments));
 
-            if (Current.Value != "(")
+            if (!tokens.CurrentTokenValueIs("("))
             {
                 return Leave(false);
             }
 
             MoveNext();
-            if (Current.Value == ")")
+            if (tokens.CurrentTokenValueIs(")"))
             {
                 MoveNext();
                 return Leave(true);
@@ -269,9 +236,9 @@ namespace Lang
                 );
             }
 
-            while (Current.Value != ")")
+            while (!tokens.CurrentTokenValueIs(")"))
             {
-                if (Current.Value != ",")
+                if (!tokens.CurrentTokenValueIs(","))
                 {
                     SetError("Comma between arguments is expected");
                 }
@@ -291,7 +258,7 @@ namespace Lang
         {
             Enter(nameof(Expression));
 
-            if (IsUnaryOperation(Current))
+            if (tokens.CurrentTokenIsUnaryOperation())
             {
                 MoveNext();
             }
@@ -301,7 +268,7 @@ namespace Lang
                 return Leave(false);
             }
 
-            while (IsBinaryOperation(Current))
+            while (tokens.CurrentTokenIsBinaryOperation())
             {
                 MoveNext();
                 if (!Expression())
@@ -317,7 +284,7 @@ namespace Lang
         {
             Enter(nameof(Operand));
 
-            if (Current.Value == "(")
+            if (tokens.CurrentTokenValueIs("("))
             {
                 MoveNext();
                 if (!Expression())
@@ -325,7 +292,7 @@ namespace Lang
                     SetError("Expression after opening parathesis is expected");
                 }
 
-                if (Current.Value != ")")
+                if (!tokens.CurrentTokenValueIs(")"))
                 {
                     SetError("Closing paranthesis in the expression is expected");
                 }
@@ -346,13 +313,13 @@ namespace Lang
         {
             Enter(nameof(Dereference));
 
-            if (Current.Value != "$")
+            if (!tokens.CurrentTokenValueIs("$"))
             {
                 return false;
             }
 
             MoveNext();
-            if (Current.TokenType == Token.Type.Integer)
+            if (tokens.CurrentTokenTypeIs(Token.Type.Integer))
             {
                 MoveNext();
                 return Leave(true);
@@ -365,9 +332,9 @@ namespace Lang
         {
             Enter(nameof(Literal));
 
-            if (Current.TokenType == Token.Type.Integer ||
-                Current.TokenType == Token.Type.Float ||
-                Current.TokenType == Token.Type.String)
+            if (tokens.CurrentTokenTypeIs(Token.Type.Integer) ||
+                tokens.CurrentTokenTypeIs(Token.Type.Float) ||
+                tokens.CurrentTokenTypeIs(Token.Type.String))
             {
                 MoveNext();
                 return Leave(true);
@@ -380,7 +347,7 @@ namespace Lang
         {
             Enter(nameof(CodeBlock));
 
-            if (Current.Value != "{")
+            if (!tokens.CurrentTokenValueIs("{"))
             {
                 return Leave(false);
             }
@@ -391,7 +358,7 @@ namespace Lang
                 SetError("Invalid code block body");
             }
 
-            if (Current.Value != "}")
+            if (!tokens.CurrentTokenValueIs("}"))
             {
                 SetError("Closing curly bracket at the end of the code block is expected");
             }
@@ -404,13 +371,13 @@ namespace Lang
         {
             Enter(nameof(GotoStatement));
 
-            if (Current.Value != KeyWords.Goto)
+            if (!tokens.CurrentTokenValueIs(KeyWords.Goto))
             {
                 return Leave(false);
             }
 
             MoveNext();
-            if (Current.TokenType != Token.Type.Label)
+            if (!tokens.CurrentTokenTypeIs(Token.Type.Label))
             {
                 SetError("Label in the goto statement is expected");
             }
@@ -423,7 +390,7 @@ namespace Lang
         {
             Enter(nameof(IfStatement));
 
-            if (Current.Value != KeyWords.If)
+            if (!tokens.CurrentTokenValueIs(KeyWords.If))
             {
                 return Leave(false);
             }
@@ -439,7 +406,7 @@ namespace Lang
                 SetError("Code block in the if-part is expected");
             }
 
-            if (Current.Value == KeyWords.Else)
+            if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
                 MoveNext();
                 if (!CodeBlock())

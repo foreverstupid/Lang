@@ -14,14 +14,14 @@ namespace Lang
             return new ConsoleLogger(this.context + "/" + context);
         }
 
-        public void Error(string message, object[] args = null)
+        public void Error(string message, params object[] args)
         {
-            System.Console.WriteLine($"{context} - [ERROR]: {message}", args);
+            System.Console.WriteLine(context + " - [ERROR]: " + message);
         }
 
-        public void Information(string message, object[] args = null)
+        public void Information(string message, params object[] args)
         {
-            System.Console.WriteLine($"{context} - [Info]: {message}", args);
+            System.Console.WriteLine(context + " - [Info]: " + message);
         }
     }
 }
