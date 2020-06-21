@@ -5,6 +5,6 @@ namespace Lang.RpnItems
     /// </summary>
     public abstract class Rpn
     {
-
+        public Token Token { get; }
     }
 }

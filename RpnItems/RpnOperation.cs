@@ -1,6 +1,6 @@
 namespace Lang.RpnItems
 {
-    public class RpnAssign : RpnOperation
+    public abstract class RpnOperation : Rpn
     {
         
     }

@@ -1,6 +1,6 @@
 namespace Lang.RpnItems
 {
-    public class RpnAssign : RpnOperation
+    public class RpnFloat : RpnConst
     {
         
     }

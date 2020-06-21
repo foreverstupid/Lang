@@ -11,6 +11,7 @@ namespace Lang
         private readonly ILogger logger;
         private TokenEnumerator tokens;
         private List<string> contexts = new List<string>();
+        private ProgramCreator creator;
 
         public SyntaxAnalyzer(ILogger logger)
         {
@@ -22,9 +23,10 @@ namespace Lang
         /// </summary>
         /// <param name="tokens">The collection of the code tokens.</param>
         /// <returns>Needed information for interpretation.</returns>
-        public InterpretataionInfo Analyse(IEnumerable<Token> tokens)
+        public ProgramInfo Analyse(IEnumerable<Token> tokens)
         {
             this.tokens = new TokenEnumerator(tokens);
+            creator = new ProgramCreator();
 
             try
             {
@@ -40,7 +42,7 @@ namespace Lang
                 logger.Error(se.Message);
             }
 
-            return null;
+            return creator.GetInfo();
         }
 
         /// <summary>
@@ -114,6 +116,7 @@ namespace Lang
 
             if (tokens.CurrentTokenTypeIs(Token.Type.Label))
             {
+                creator.MarkNextRpn(tokens.CurrentOrLast);
                 MoveNext();
                 if (!tokens.CurrentTokenValueIs(":"))
                 {
@@ -159,7 +162,15 @@ namespace Lang
             }
 
             MoveNext();
-            return Leave(Expression());
+            if (Expression())
+            {
+                creator.Assignment();
+                return Leave(true);
+            }
+            else
+            {
+                return Leave(false);
+            }
         }
 
         private bool LeftValue()
@@ -171,6 +182,7 @@ namespace Lang
                 return Leave(false);
             }
 
+            creator.Variable(tokens.CurrentOrLast);
             MoveNext();
             return Leave(Tail());
         }
@@ -197,11 +209,12 @@ namespace Lang
             }
 
             MoveNext();
-
             if (!Expression())
             {
                 SetError("Expression in the indexator is expected");
             }
+
+            creator.Indexator();
 
             if (!tokens.CurrentTokenValueIs("]"))
             {
@@ -224,6 +237,7 @@ namespace Lang
             MoveNext();
             if (tokens.CurrentTokenValueIs(")"))
             {
+                creator.Eval();
                 MoveNext();
                 return Leave(true);
             }
@@ -250,6 +264,7 @@ namespace Lang
                 }
             }
 
+            creator.Eval();
             MoveNext();
             return Leave(true);
         }
@@ -258,8 +273,10 @@ namespace Lang
         {
             Enter(nameof(Expression));
 
+            Token unaryOperation = null;
             if (tokens.CurrentTokenIsUnaryOperation())
             {
+                unaryOperation = tokens.CurrentOrLast;
                 MoveNext();
             }
 
@@ -270,11 +287,19 @@ namespace Lang
 
             while (tokens.CurrentTokenIsBinaryOperation())
             {
+                var binaryOperation = tokens.CurrentOrLast;
                 MoveNext();
                 if (!Expression())
                 {
                     SetError("Expression as a binary operation right operand is expected");
                 }
+
+                creator.BinaryOperation(binaryOperation);
+            }
+
+            if (!(unaryOperation is null))
+            {
+                creator.UnaryOperation(unaryOperation);
             }
 
             return Leave(Tail());
@@ -321,7 +346,9 @@ namespace Lang
             MoveNext();
             if (tokens.CurrentTokenTypeIs(Token.Type.Integer))
             {
+                creator.PositionalArgument(tokens.CurrentOrLast);
                 MoveNext();
+                creator.Dereference();
                 return Leave(true);
             }
 
@@ -336,6 +363,7 @@ namespace Lang
                 tokens.CurrentTokenTypeIs(Token.Type.Float) ||
                 tokens.CurrentTokenTypeIs(Token.Type.String))
             {
+                creator.Literal(tokens.CurrentOrLast);
                 MoveNext();
                 return Leave(true);
             }
@@ -352,6 +380,7 @@ namespace Lang
                 return Leave(false);
             }
 
+            creator.CodeBlockStart();
             MoveNext();
             if (!Program())
             {
@@ -363,6 +392,7 @@ namespace Lang
                 SetError("Closing curly bracket at the end of the code block is expected");
             }
 
+            creator.CodeBlockFinish();
             MoveNext();
             return Leave(true);
         }
@@ -382,6 +412,8 @@ namespace Lang
                 SetError("Label in the goto statement is expected");
             }
 
+            creator.Label(tokens.CurrentOrLast);
+            creator.Goto();
             MoveNext();
             return Leave(true);
         }
@@ -401,6 +433,7 @@ namespace Lang
                 return Leave(false);
             }
 
+            creator.IfBlock();
             if (!CodeBlock())
             {
                 SetError("Code block in the if-part is expected");
@@ -409,12 +442,14 @@ namespace Lang
             if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
                 MoveNext();
+                creator.ElseBlock();
                 if (!CodeBlock())
                 {
                     SetError("Code block in the else-part is expected");
                 }
             }
 
+            creator.If();
             return Leave(true);
         }
     }
