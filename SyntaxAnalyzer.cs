@@ -4,7 +4,7 @@ using System.Linq;
 namespace Lang
 {
     /// <summary>
-    /// Performs syntax analysis, creating all needed tables.
+    /// Performs syntax analysis and preliminary interpretation info cration.
     /// </summary>
     public class SyntaxAnalyzer
     {
@@ -19,25 +19,37 @@ namespace Lang
         private bool finished = false;
         private string errorMessage;
 
+        private List<string> contexts = new List<string>();
+
         public SyntaxAnalyzer(ILogger logger)
         {
-            this.logger = logger;
+            this.logger = logger.ForContext("Syntax analysis");
         }
 
         private Token Current { get; set; }
 
+        /// <summary>
+        /// Performs analysis, creating needed interpratation info.
+        /// </summary>
+        /// <param name="tokens">The collection of the code tokens.</param>
+        /// <returns>Needed information for interpretation.</returns>
         public InterpretataionInfo Analyse(IEnumerable<Token> tokens)
         {
             this.tokens = tokens.GetEnumerator();
             MoveNext();
+
             if (!Program())
             {
-                throw new SyntaxException(errorMessage + $" {previousToken.Line}:{previousToken.StartPosition}");
+                throw new SyntaxException(errorMessage);
             }
 
             return null;
         }
 
+        /// <summary>
+        /// Moves one step forward in a token collection. Performs additional RPN
+        /// and other structures creation.
+        /// </summary>
         private void MoveNext()
         {
             previousToken = Current;
@@ -51,305 +63,344 @@ namespace Lang
                 Current = tokens.Current;
             }
 
-            errorMessage = null;
+            errorMessage = "";
         }
 
+        /// <summary>
+        /// Sets the error of the syntax analysis.
+        /// </summary>
+        /// <param name="msg">Error message.</param>
         private void SetError(string msg)
         {
-            errorMessage = msg;
+            errorMessage += $"({Current.Line}:{Current.StartPosition}) {msg}\n";
         }
+
+        /// <summary>
+        /// Actions on entering into the grammar node.
+        /// </summary>
+        /// <param name="context">The context of the node.</param>
+        private void Enter(string context)
+        {
+            logger.ForContext(context).Information("Entered");
+            contexts.Add(context);
+            errorMessage = "";
+        }
+
+        /// <summary>
+        /// Actions on leaving the last grammar node.
+        /// </summary>
+        /// <param name="isSuccessful">Status of the current node analysis.</param>
+        /// <returns>The given node analysis status.</returns>
+        private bool Leave(bool isSuccessful)
+        {
+            var context = contexts.Last();
+            contexts.RemoveAt(contexts.Count - 1);
+            var logger = this.logger.ForContext(context);
+
+            if (isSuccessful)
+            {
+                logger.Information("+");
+                errorMessage = "";
+            }
+            else
+            {
+                logger.Error("-");
+            }
+
+            return isSuccessful;
+        }
+
+        /// <summary>
+        /// Checks whether the given token is an unary operation.
+        /// </summary>
+        private bool IsUnaryOperation(Token token)
+        {
+            return
+                token.TokenType == Token.Type.Separator &&
+                UnarOperations.Contains(token.Value);
+        }
+
+        /// <summary>
+        /// Checks whether the given token is a binary operation.
+        /// </summary>
+        private bool IsBinaryOperation(Token token)
+        {
+            return
+                token.TokenType == Token.Type.Separator &&
+                BinarOperations.Contains(token.Value);
+        }
+
+        // Grammar nodes handlers
 
         private bool Program()
         {
-            logger.AddContext(nameof(Program));
+            Enter(nameof(Program));
 
             while (!finished)
             {
                 if (!Statement())
                 {
-                    return false;
+                    SetError("Valid statement is expected");
+                    return Leave(false);
                 }
             }
 
-            logger.CloseLastContext(true);
-            return true;
+            return Leave(true);
         }
 
         private bool Statement()
         {
-            logger.AddContext(nameof(Statement));
+            Enter(nameof(Statement));
 
             if (Current.TokenType == Token.Type.Label)
             {
                 MoveNext();
                 if (Current.Value != ":")
                 {
-                    SetError("Expected colomn after label");
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Colomn after label is expected");
+                    return Leave(false);
                 }
 
                 MoveNext();
-                bool help = Statement();
-                logger.CloseLastContext(help);
-                return help;
+                return Leave(Statement());
             }
             else if (IfStatement())
             {
-                logger.CloseLastContext(true);
-                return true;
+                return Leave(true);
             }
             else if (Expression() || GotoStatement() || Assignment())
             {
                 if (Current.Value != ";")
                 {
-                    SetError("Expected semicolon after statement");
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Semicolon after statement is expected");
+                    return Leave(false);
                 }
 
                 MoveNext();
-                logger.CloseLastContext(true);
-                return true;
+                return Leave(true);
             }
 
-            logger.CloseLastContext(false);
-            return false;
+            SetError("Unknown type of the statement");
+            return Leave(false);
         }
 
         private bool Assignment()
         {
-            logger.AddContext(nameof(Assignment));
+            Enter(nameof(Assignment));
+
             if (!LeftValue())
             {
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Left-value expression in assignment is expected");
+                return Leave(false);
             }
 
             if (Current.Value != "=")
             {
-                SetError("Expected '=' in assignment after the left value");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("'=' in assignment after the left-value expression is expected");
+                return Leave(false);
             }
 
             MoveNext();
-            bool help = Expression();
-            logger.CloseLastContext(help);
-            return help;
+            return Leave(Expression());
         }
 
         private bool LeftValue()
         {
-            logger.AddContext(nameof(LeftValue));
+            Enter(nameof(LeftValue));
+
             if (Current.TokenType != Token.Type.Identifier)
             {
-                SetError("Expected identifier at the beginning if the left value");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Identifier at the beginning if the left-value expression is expected");
+                return Leave(false);
             }
 
             MoveNext();
-            bool help = Tail();
-            logger.CloseLastContext(help);
-            return help;
+            return Leave(Tail());
         }
 
         private bool Tail()
         {
-            logger.AddContext(nameof(Tail));
+            Enter(nameof(Tail));
+
             if (Indexator() || Arguments())
             {
-                bool help = Tail();
-                logger.CloseLastContext(help);
-                return help;
+                return Leave(Tail());
             }
 
-            logger.CloseLastContext(true);
-            return true;
+            return Leave(true);
         }
 
         private bool Indexator()
         {
+            Enter(nameof(Indexator));
+
             if (Current.Value != "[")
             {
-                SetError("Expected '[' in the beggining of indexator");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("'[' at the beggining of indexator is expected");
+                return Leave(false);
             }
 
             MoveNext();
 
             if (!Expression())
             {
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Expression in the indexator is expected");
+                return Leave(false);
             }
 
             if (Current.Value != "]")
             {
-                SetError("Expected ']' in the end of the indexator");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("']' in the end of the indexator is expected");
+                return Leave(false);
             }
 
             MoveNext();
-            logger.CloseLastContext(true);
-            return true;
+            return Leave(true);
         }
 
         private bool Arguments()
         {
-            logger.AddContext(nameof(Arguments));
+            Enter(nameof(Arguments));
+
             if (Current.Value != "(")
             {
-                SetError("Expected open paranthesis at the beginning of argument list");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Opening paranthesis at the beginning of argument list is expected");
+                return Leave(false);
             }
 
             MoveNext();
             if (Current.Value == ")")
             {
                 MoveNext();
-                logger.CloseLastContext(true);
-                return true;
+                return Leave(true);
             }
 
             if (!Expression())
             {
-                logger.CloseLastContext(false);
-                return false;
+                SetError(
+                    "The first argument of the non-empty argument list is expected to be " +
+                    "an expression"
+                );
+
+                return Leave(false);
             }
 
             while (Current.Value != ")")
             {
                 if (Current.Value != ",")
                 {
-                    SetError("Expected comma between arguments");
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Comma between arguments is expected");
+                    return Leave(false);
                 }
 
                 MoveNext();
                 if (!Expression())
                 {
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Expression in an argument list is expected");
+                    return Leave(false);
                 }
             }
 
             MoveNext();
-            logger.CloseLastContext(true);
-            return true;
+            return Leave(true);
         }
 
         private bool Expression()
         {
-            logger.AddContext(nameof(Expression));
-            if (IsUnarOperation(Current))
+            Enter(nameof(Expression));
+
+            if (IsUnaryOperation(Current))
             {
                 MoveNext();
             }
 
             if (!Operand())
             {
-                logger.CloseLastContext(false);
-                return false;
+                SetError("The operand of the expression is expected");
+                return Leave(false);
             }
 
-            while (IsBinarOperation(Current))
+            while (IsBinaryOperation(Current))
             {
                 MoveNext();
                 if (!Expression())
                 {
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Expression as a binary operation right operand is expected");
+                    return Leave(false);
                 }
             }
 
-            bool help = Tail();
-            logger.CloseLastContext(help);
-            return help;
+            return Leave(Tail());
         }
 
         private bool Operand()
         {
-            logger.AddContext(nameof(Operand));
+            Enter(nameof(Operand));
+
             if (Current.Value == "(")
             {
                 MoveNext();
                 if (!Expression())
                 {
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Expression after opening parathesis is expected");
+                    return Leave(false);
                 }
 
                 if (Current.Value != ")")
                 {
-                    SetError("Closing paranthesis in the expression expected");
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Closing paranthesis in the expression is expected");
+                    return Leave(false);
                 }
 
                 MoveNext();
-                logger.CloseLastContext(true);
-                return true;
+                return Leave(true);
             }
 
             if (Current.Value == "$")
             {
                 MoveNext();
-                bool help = Dereference();
-                logger.CloseLastContext(help);
-                return help;
+                return Leave(Dereference());
             }
 
-            bool flag = Literal();
-            logger.CloseLastContext(flag);
-            return flag;
+            return Leave(Literal());
         }
 
         private bool Dereference()
         {
-            logger.AddContext(nameof(Dereference));
+            Enter(nameof(Dereference));
+
             if (Current.TokenType == Token.Type.Integer)
             {
                 MoveNext();
-                logger.CloseLastContext(true);
-                return true;
+                return Leave(true);
             }
 
-            bool help = LeftValue();
-            logger.CloseLastContext(help);
-            return help;
+            return Leave(LeftValue());
         }
 
         private bool Literal()
         {
-            logger.AddContext(nameof(Literal));
+            Enter(nameof(Literal));
+
             if (Current.TokenType == Token.Type.Integer ||
                 Current.TokenType == Token.Type.Float ||
                 Current.TokenType == Token.Type.String)
             {
                 MoveNext();
-                logger.CloseLastContext(true);
-                return true;
+                return Leave(true);
             }
 
-            bool help = CodeBlock();
-            logger.CloseLastContext(help);
-            return help;
+            return Leave(CodeBlock());
         }
 
         private bool CodeBlock()
         {
-            logger.AddContext(nameof(CodeBlock));
+            Enter(nameof(CodeBlock));
+
             if (Current.Value != "{")
             {
-                SetError("Expected opening curly bracket at the start of the code block");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Opening curly bracket at the start of the code block is expected");
+                return Leave(false);
             }
 
             MoveNext();
@@ -359,61 +410,63 @@ namespace Lang
 
             if (Current.Value != "}")
             {
-                SetError("Expected closing curly bracket at the end of the code block");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Closing curly bracket at the end of the code block is expected");
+                return Leave(false);
             }
 
             MoveNext();
-            logger.CloseLastContext(true);
-            return true;
+            return Leave(true);
         }
 
         private bool GotoStatement()
         {
-            logger.AddContext(nameof(GotoStatement));
+            Enter(nameof(GotoStatement));
+
             if (Current.Value != KeyWords.Goto)
             {
-                SetError($"Expected '{KeyWords.Goto}' at the beginning of the goto statement");
-                logger.CloseLastContext(false);
-                return false;
+                SetError(
+                    $"'{KeyWords.Goto}' key word at the beginning if the " +
+                    "goto-statement is expected"
+                );
+
+                return Leave(false);
             }
 
             MoveNext();
             if (Current.TokenType != Token.Type.Label)
             {
-                SetError("Expected label in the goto statement");
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Label in the goto statement is expected");
+                return Leave(false);
             }
 
             MoveNext();
-            logger.CloseLastContext(true);
-            return true;
+            return Leave(true);
         }
 
         private bool IfStatement()
         {
-            logger.AddContext(nameof(IfStatement));
+            Enter(nameof(IfStatement));
+
             if (Current.Value != KeyWords.If)
             {
-                SetError($"Expected {KeyWords.If} at the beginning of the if-statement");
-                logger.CloseLastContext(false);
-                return false;
+                SetError(
+                    $"'{KeyWords.If}' key word at the beginning if the " +
+                    "if-statement is expected"
+                );
+
+                return Leave(false);
             }
 
             MoveNext();
             if (!Expression())
             {
-                SetError("Expected expression in the condition part");
-                logger.CloseLastContext(false);
-                return false;
+                return Leave(false);
             }
 
             if (!CodeBlock())
             {
-                logger.CloseLastContext(false);
-                return false;
+                SetError("Code block in the if-part is expected");
+                return Leave(false);
             }
 
             if (Current.Value == KeyWords.Else)
@@ -421,27 +474,12 @@ namespace Lang
                 MoveNext();
                 if (!CodeBlock())
                 {
-                    logger.CloseLastContext(false);
-                    return false;
+                    SetError("Code block in the else-part is expected");
+                    return Leave(false);
                 }
             }
 
-            logger.CloseLastContext(true);
-            return true;
-        }
-
-        private bool IsUnarOperation(Token token)
-        {
-            return
-                token.TokenType == Token.Type.Separator &&
-                UnarOperations.Contains(token.Value);
-        }
-
-        private bool IsBinarOperation(Token token)
-        {
-            return
-                token.TokenType == Token.Type.Separator &&
-                BinarOperations.Contains(token.Value);
+            return Leave(true);
         }
     }
 }

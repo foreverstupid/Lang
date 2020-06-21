@@ -1,37 +1,27 @@
-using System.Collections.Generic;
-
 namespace Lang
 {
     public class ConsoleLogger : ILogger
     {
-        private List<string> contexts = new List<string>();
-        public void AddContext(string context)
+        private readonly string context;
+
+        public ConsoleLogger(string context = "Lang")
         {
-            contexts.Add(context);
+            this.context = context;
         }
 
-        public void CloseLastContext(bool mention)
+        public ILogger ForContext(string context)
         {
-            try
-            {
-                if (mention)
-                {
-                    System.Console.WriteLine(contexts[^1]);
-                }
-
-                contexts.RemoveAt(contexts.Count - 1);
-            }
-            catch{}
+            return new ConsoleLogger(this.context + "/" + context);
         }
 
         public void Error(string message, object[] args = null)
         {
-            throw new System.NotImplementedException();
+            System.Console.WriteLine($"{context} - [ERROR]: {message}", args);
         }
 
         public void Information(string message, object[] args = null)
         {
-            throw new System.NotImplementedException();
+            System.Console.WriteLine($"{context} - [Info]: {message}", args);
         }
     }
 }
