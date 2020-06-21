@@ -13,15 +13,13 @@
 
 <indexator> ::= \[ <expression> \]
 
-<args> ::= ( <end_of_args>
-
-<end_of_args> ::= ) | <expression> {, <expression> } )
+<args> ::= ( [ <expression> {, <expression> } ] )
 
 <expression> ::= [ <unar> ] <operand> { <binar><expression> }<tail>
 
-<operand> ::= ( <expression> ) | <literal> | $<deref>
+<operand> ::= ( <expression> ) | <literal> | <deref>
 
-<deref> ::= <int> | <lvalue>
+<deref> ::= $<int> | $<lvalue>
 
 <literal> ::= <string> | <int> | <float> | <code_block>
 
@@ -29,4 +27,4 @@
 
 <goto_statement> ::= goto <label>
 
-<if_statement> ::= if ( <expression> ) <code_block> [ else <code_block> ]
+<if_statement> ::= if <expression> <code_block> [ else <code_block> ]

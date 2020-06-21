@@ -10,14 +10,13 @@ namespace Lang
     {
         private static readonly string[] UnarOperations = new[] { "-", "!", "+" };
         private static readonly string[] BinarOperations =
-            new[] { "=", "+", "-", "/", "*", "/", "&", "|", ">", "<", "~", "%", "^" };
+            new[] { "+", "-", "/", "*", "/", "&", "|", ">", "<", "~", "%", "^" };
 
         private readonly ILogger logger;
 
         private IEnumerator<Token> tokens;
         private Token previousToken;
         private bool finished = false;
-        private string errorMessage;
 
         private List<string> contexts = new List<string>();
 
@@ -36,11 +35,13 @@ namespace Lang
         public InterpretataionInfo Analyse(IEnumerable<Token> tokens)
         {
             this.tokens = tokens.GetEnumerator();
-            MoveNext();
 
-            if (!Program())
+            MoveNext();
+            Program();
+
+            if (!finished)
             {
-                throw new SyntaxException(errorMessage);
+                SetError("Unknown statement");
             }
 
             return null;
@@ -62,8 +63,6 @@ namespace Lang
             {
                 Current = tokens.Current;
             }
-
-            errorMessage = "";
         }
 
         /// <summary>
@@ -72,7 +71,8 @@ namespace Lang
         /// <param name="msg">Error message.</param>
         private void SetError(string msg)
         {
-            errorMessage += $"({Current.Line}:{Current.StartPosition}) {msg}\n";
+            var errorMessage = $"({Current.Line}:{Current.StartPosition}) {msg}";
+            throw new SyntaxException(errorMessage);
         }
 
         /// <summary>
@@ -83,7 +83,6 @@ namespace Lang
         {
             logger.ForContext(context).Information("Entered");
             contexts.Add(context);
-            errorMessage = "";
         }
 
         /// <summary>
@@ -100,7 +99,6 @@ namespace Lang
             if (isSuccessful)
             {
                 logger.Information("+");
-                errorMessage = "";
             }
             else
             {
@@ -136,13 +134,8 @@ namespace Lang
         {
             Enter(nameof(Program));
 
-            while (!finished)
+            while (Statement())
             {
-                if (!Statement())
-                {
-                    SetError("Valid statement is expected");
-                    return Leave(false);
-                }
             }
 
             return Leave(true);
@@ -180,7 +173,6 @@ namespace Lang
                 return Leave(true);
             }
 
-            SetError("Unknown type of the statement");
             return Leave(false);
         }
 
@@ -190,7 +182,6 @@ namespace Lang
 
             if (!LeftValue())
             {
-                SetError("Left-value expression in assignment is expected");
                 return Leave(false);
             }
 
@@ -210,7 +201,6 @@ namespace Lang
 
             if (Current.TokenType != Token.Type.Identifier)
             {
-                SetError("Identifier at the beginning if the left-value expression is expected");
                 return Leave(false);
             }
 
@@ -236,8 +226,7 @@ namespace Lang
 
             if (Current.Value != "[")
             {
-                SetError("'[' at the beggining of indexator is expected");
-                return Leave(false);
+                return false;
             }
 
             MoveNext();
@@ -245,13 +234,11 @@ namespace Lang
             if (!Expression())
             {
                 SetError("Expression in the indexator is expected");
-                return Leave(false);
             }
 
             if (Current.Value != "]")
             {
                 SetError("']' in the end of the indexator is expected");
-                return Leave(false);
             }
 
             MoveNext();
@@ -264,7 +251,6 @@ namespace Lang
 
             if (Current.Value != "(")
             {
-                SetError("Opening paranthesis at the beginning of argument list is expected");
                 return Leave(false);
             }
 
@@ -281,8 +267,6 @@ namespace Lang
                     "The first argument of the non-empty argument list is expected to be " +
                     "an expression"
                 );
-
-                return Leave(false);
             }
 
             while (Current.Value != ")")
@@ -290,14 +274,12 @@ namespace Lang
                 if (Current.Value != ",")
                 {
                     SetError("Comma between arguments is expected");
-                    return Leave(false);
                 }
 
                 MoveNext();
                 if (!Expression())
                 {
                     SetError("Expression in an argument list is expected");
-                    return Leave(false);
                 }
             }
 
@@ -316,7 +298,6 @@ namespace Lang
 
             if (!Operand())
             {
-                SetError("The operand of the expression is expected");
                 return Leave(false);
             }
 
@@ -326,7 +307,6 @@ namespace Lang
                 if (!Expression())
                 {
                     SetError("Expression as a binary operation right operand is expected");
-                    return Leave(false);
                 }
             }
 
@@ -343,23 +323,20 @@ namespace Lang
                 if (!Expression())
                 {
                     SetError("Expression after opening parathesis is expected");
-                    return Leave(false);
                 }
 
                 if (Current.Value != ")")
                 {
                     SetError("Closing paranthesis in the expression is expected");
-                    return Leave(false);
                 }
 
                 MoveNext();
                 return Leave(true);
             }
 
-            if (Current.Value == "$")
+            if (Dereference())
             {
-                MoveNext();
-                return Leave(Dereference());
+                return Leave(true);
             }
 
             return Leave(Literal());
@@ -369,6 +346,12 @@ namespace Lang
         {
             Enter(nameof(Dereference));
 
+            if (Current.Value != "$")
+            {
+                return false;
+            }
+
+            MoveNext();
             if (Current.TokenType == Token.Type.Integer)
             {
                 MoveNext();
@@ -399,19 +382,18 @@ namespace Lang
 
             if (Current.Value != "{")
             {
-                SetError("Opening curly bracket at the start of the code block is expected");
                 return Leave(false);
             }
 
             MoveNext();
-            while (Statement())
+            if (!Program())
             {
+                SetError("Invalid code block body");
             }
 
             if (Current.Value != "}")
             {
                 SetError("Closing curly bracket at the end of the code block is expected");
-                return Leave(false);
             }
 
             MoveNext();
@@ -424,11 +406,6 @@ namespace Lang
 
             if (Current.Value != KeyWords.Goto)
             {
-                SetError(
-                    $"'{KeyWords.Goto}' key word at the beginning if the " +
-                    "goto-statement is expected"
-                );
-
                 return Leave(false);
             }
 
@@ -436,7 +413,6 @@ namespace Lang
             if (Current.TokenType != Token.Type.Label)
             {
                 SetError("Label in the goto statement is expected");
-                return Leave(false);
             }
 
             MoveNext();
@@ -449,11 +425,6 @@ namespace Lang
 
             if (Current.Value != KeyWords.If)
             {
-                SetError(
-                    $"'{KeyWords.If}' key word at the beginning if the " +
-                    "if-statement is expected"
-                );
-
                 return Leave(false);
             }
 
@@ -466,7 +437,6 @@ namespace Lang
             if (!CodeBlock())
             {
                 SetError("Code block in the if-part is expected");
-                return Leave(false);
             }
 
             if (Current.Value == KeyWords.Else)
@@ -475,7 +445,6 @@ namespace Lang
                 if (!CodeBlock())
                 {
                     SetError("Code block in the else-part is expected");
-                    return Leave(false);
                 }
             }
 
