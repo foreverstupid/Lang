@@ -9,7 +9,7 @@ namespace Lang
     /// </summary>
     public sealed class LexicalParser
     {
-        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}";
+        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}:";
         private readonly Dictionary<State, Func<char, Token>> stateHandlers;
 
         private readonly StringBuilder tokenValue = new StringBuilder();
@@ -29,6 +29,7 @@ namespace Lang
                 [State.Integer] = Integer,
                 [State.Float] = Float,
                 [State.Identifier] = Identifier,
+                [State.Label] = Label,
                 [State.String] = String,
                 [State.Slash] = Slash,
                 [State.Comment] = Comment,
@@ -47,6 +48,7 @@ namespace Lang
             Slash,
             Comment,
             Identifier,
+            Label,
         }
 
         /// <summary>
@@ -110,6 +112,11 @@ namespace Lang
             else if (char.IsLetter(character) || character == '_')
             {
                 state = State.Identifier;
+                tokenValue.Append(character);
+            }
+            else if (character == '@')
+            {
+                state = State.Label;
                 tokenValue.Append(character);
             }
             else if (character == '#')
@@ -232,6 +239,28 @@ namespace Lang
             else
             {
                 throw new ArgumentException($"Identifier contains unexpected character '{character}'");
+            }
+
+            return null;
+        }
+
+        private Token Label(char character)
+        {
+            if (char.IsWhiteSpace(character))
+            {
+                return OnNewToken(Token.Type.Label);
+            }
+            else if (Separators.Contains(character))
+            {
+                return OnExtraToken(character, Token.Type.Label);
+            }
+            else if (char.IsLetterOrDigit(character) || character == '_')
+            {
+                tokenValue.Append(character);
+            }
+            else
+            {
+                throw new ArgumentException($"Label contains unexpected character '{character}'");
             }
 
             return null;
