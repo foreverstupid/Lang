@@ -7,7 +7,9 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnFloat : RpnConst
     {
-        public RpnFloat(double val) => this.Value = val;
+        private readonly double value;
+
+        public RpnFloat(double val) => value = val;
 
         public RpnFloat(Token token)
             : base(token)
@@ -19,7 +21,8 @@ namespace Lang.RpnItems
 
             if (double.TryParse(token.Value, out double value))
             {
-                Value = value;
+                this.value = value;
+                ValueType = Type.Float;
             }
             else
             {
@@ -28,6 +31,15 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        public override object Value { get; }
+        public override Type ValueType { get; }
+
+        /// <inheritdoc/>
+        public override double GetFloat() => value;
+
+        /// <inheritdoc/>
+        public override int GetInt() => (int)value;
+
+        /// <inheritdoc/>
+        public override string GetString() => value.ToString();
     }
 }

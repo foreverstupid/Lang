@@ -18,7 +18,19 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         protected override RpnConst GetResult(Stack<RpnConst> stack)
         {
-            throw new System.NotImplementedException();
+            var right = stack.Pop();
+            var left = stack.Pop();
+
+            return left.ValueType switch
+            {
+                RpnConst.Type.Float => new RpnFloat(left.GetFloat() + right.GetFloat()),
+                RpnConst.Type.Integer => new RpnInteger(left.GetInt() + right.GetInt()),
+                RpnConst.Type.String => new RpnString(left.GetString() + right.GetString()),
+                var type =>
+                    throw new InterpretationException(
+                        $"Unexpected type of the left operand: {type}"
+                    )
+            };
         }
     }
 }

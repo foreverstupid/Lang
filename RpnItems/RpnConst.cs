@@ -8,7 +8,7 @@ namespace Lang.RpnItems
     public abstract class RpnConst : RpnSuccessive
     {
         public RpnConst()
-            : base (null)
+            : base(null)
         {
         }
 
@@ -18,9 +18,39 @@ namespace Lang.RpnItems
         }
 
         /// <summary>
-        /// The value of the item.
+        /// The value type.
         /// </summary>
-        public abstract object Value { get; }
+        public enum Type
+        {
+            Integer,
+            Float,
+            String,
+            Label,
+            Variable,
+        }
+
+        /// <summary>
+        /// The type of the item value.
+        /// </summary>
+        public abstract Type ValueType { get; }
+
+        /// <summary>
+        /// The value of the item as integer.
+        /// </summary>
+        /// <remarks>Throws if the cast is not possible.</remarks>
+        public abstract int GetInt();
+
+        /// <summary>
+        /// The value of the item as float.
+        /// </summary>
+        /// <remarks>Throws if the cast is not possible.</remarks>
+        public abstract double GetFloat();
+
+        /// <summary>
+        /// The value of the item as integer.
+        /// </summary>
+        /// <remarks>Throws if the cast is not possible.</remarks>
+        public abstract string GetString();
 
         /// <inheritdoc/>
         protected override void EvalCore(Stack<RpnConst> stack)

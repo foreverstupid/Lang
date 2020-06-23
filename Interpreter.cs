@@ -26,9 +26,9 @@ namespace Lang
                 lastCommand = currentCommand;
                 currentCommand = currentCommand.Value.Eval(stack, currentCommand);
             }
-            while (currentCommand != lastCommand);
+            while (!(currentCommand is null) && (currentCommand != lastCommand));
 
-            return stack.Count > 0 ? stack.Pop().Token.Value : "";
+            return stack.Count > 0 ? stack.Pop().GetString() : "";
         }
     }
 }

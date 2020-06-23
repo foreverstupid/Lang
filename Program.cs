@@ -27,6 +27,9 @@ namespace Lang
             {
                 Console.WriteLine(rpn);
             }
+
+            var interpreter = new Interpreter();
+            Console.WriteLine(interpreter.Run(program));
         }
 
         /// <summary>

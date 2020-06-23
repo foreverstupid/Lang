@@ -5,6 +5,10 @@ namespace Lang
     /// </summary>
     public class Variable
     {
-        public object Value { get; }
+        public int IntValue { get; }
+
+        public double FloatValue { get; }
+
+        public string StringValue { get; }
     }
 }

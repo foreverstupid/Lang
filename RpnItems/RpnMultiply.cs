@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lang.RpnItems
 {
@@ -18,7 +19,22 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         protected override RpnConst GetResult(Stack<RpnConst> stack)
         {
-            throw new System.NotImplementedException();
+            var right = stack.Pop();
+            var left = stack.Pop();
+
+            return left.ValueType switch
+            {
+                RpnConst.Type.Float => new RpnFloat(left.GetFloat() * right.GetFloat()),
+                RpnConst.Type.Integer => new RpnInteger(left.GetInt() * right.GetInt()),
+                RpnConst.Type.String =>
+                    right.ValueType == RpnConst.Type.Integer
+                    ? new RpnString(string.Join("", Enumerable.Repeat(left.GetString(), right.GetInt())))
+                    : throw new InterpretationException("Cannot multiply string"),
+                var type =>
+                    throw new InterpretationException(
+                        $"Unexpected type of the left operand: {type}"
+                    )
+            };
         }
     }
 }

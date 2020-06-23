@@ -7,7 +7,9 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnString : RpnConst
     {
-        public RpnString(string val) => Value = val;
+        public readonly string value;
+
+        public RpnString(string val) => value = val;
 
         public RpnString(Token token)
             : base(token)
@@ -17,10 +19,26 @@ namespace Lang.RpnItems
                 throw new ArgumentException("Token has not a type of a string");
             }
 
-            Value = token.Value;
+            this.value = token.Value;
+            ValueType = Type.String;
         }
 
         /// <inheritdoc/>
-        public override object Value { get; }
+        public override Type ValueType { get; }
+
+        /// <inheritdoc/>
+        public override double GetFloat() =>
+            double.TryParse(value, out var res)
+            ? res
+            : throw new InterpretationException("Cannot convert string into a float");
+
+        /// <inheritdoc/>
+        public override int GetInt() =>
+            int.TryParse(value, out var res)
+            ? res
+            : throw new InterpretationException("Cannot convert string into an integer");
+
+        /// <inheritdoc/>
+        public override string GetString() => value;
     }
 }

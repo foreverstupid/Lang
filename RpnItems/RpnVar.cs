@@ -10,15 +10,26 @@ namespace Lang.RpnItems
         public RpnVar(Variable value)
         {
             variableValue = value;
+            ValueType = Type.Variable;
         }
 
         public RpnVar(Token token, Variable value)
             : base(token)
         {
             variableValue = value;
+            ValueType = Type.Variable;
         }
 
         /// <inheritdoc/>
-        public override object Value => variableValue.Value;
+        public override Type ValueType { get; }
+
+        /// <inheritdoc/>
+        public override double GetFloat() => variableValue.FloatValue;
+
+        /// <inheritdoc/>
+        public override int GetInt() => variableValue.IntValue;
+
+        /// <inheritdoc/>
+        public override string GetString() => variableValue.StringValue;
     }
 }

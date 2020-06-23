@@ -7,7 +7,9 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnInteger : RpnConst
     {
-        public RpnInteger(int val) => Value = val;
+        private readonly int value;
+
+        public RpnInteger(int val) => value = val;
 
         public RpnInteger(Token token)
             : base(token)
@@ -19,7 +21,8 @@ namespace Lang.RpnItems
 
             if (int.TryParse(token.Value, out int value))
             {
-                Value = value;
+                this.value = value;
+                ValueType = Type.Integer;
             }
             else
             {
@@ -28,6 +31,15 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        public override object Value { get; }
+        public override Type ValueType { get; }
+
+        /// <inheritdoc/>
+        public override double GetFloat() => (double)value;
+
+        /// <inheritdoc/>
+        public override int GetInt() => value;
+
+        /// <inheritdoc/>
+        public override string GetString() => value.ToString();
     }
 }
