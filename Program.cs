@@ -21,7 +21,12 @@ namespace Lang
             }
 
             var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
-            syntaxer.Analyse(tokens);
+            var program = syntaxer.Analyse(tokens);
+
+            foreach (var rpn in program.Rpns)
+            {
+                Console.WriteLine(rpn);
+            }
         }
 
         /// <summary>

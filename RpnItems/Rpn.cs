@@ -5,6 +5,15 @@ namespace Lang.RpnItems
     /// </summary>
     public abstract class Rpn
     {
-        public Token Token { get; }
+        public Rpn(Token token) => Token = token;
+
+        public Rpn()
+        {
+        }
+
+        public Token Token { get; } = null;
+
+        public override string ToString()
+            => this.GetType().Name + (Token is null ? "" : $": {Token.Value}");
     }
 }

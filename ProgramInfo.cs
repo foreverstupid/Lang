@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using Lang.RpnItems;
+
 namespace Lang
 {
     /// <summary>
@@ -6,6 +9,6 @@ namespace Lang
     /// </summary>
     public class ProgramInfo
     {
-
+        public List<Rpn> Rpns { get; set; }
     }
 }

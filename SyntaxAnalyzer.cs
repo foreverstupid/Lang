@@ -120,7 +120,7 @@ namespace Lang
                 MoveNext();
                 if (!tokens.CurrentTokenValueIs(":"))
                 {
-                    SetError("Colomn after label is expected");
+                    SetError("Colon after label is expected");
                     return Leave(false);
                 }
 
@@ -161,10 +161,11 @@ namespace Lang
                 return Leave(false);
             }
 
+            var assignmentToken = tokens.CurrentOrLast;
             MoveNext();
             if (Expression())
             {
-                creator.Assignment();
+                creator.Assignment(assignmentToken);
                 return Leave(true);
             }
             else
@@ -343,12 +344,13 @@ namespace Lang
                 return false;
             }
 
+            var dereferenceToken = tokens.CurrentOrLast;
             MoveNext();
             if (tokens.CurrentTokenTypeIs(Token.Type.Integer))
             {
                 creator.PositionalArgument(tokens.CurrentOrLast);
                 MoveNext();
-                creator.Dereference();
+                creator.Dereference(dereferenceToken);
                 return Leave(true);
             }
 
@@ -406,6 +408,7 @@ namespace Lang
                 return Leave(false);
             }
 
+            var gotoToken = tokens.CurrentOrLast;
             MoveNext();
             if (!tokens.CurrentTokenTypeIs(Token.Type.Label))
             {
@@ -413,7 +416,7 @@ namespace Lang
             }
 
             creator.Label(tokens.CurrentOrLast);
-            creator.Goto();
+            creator.Goto(gotoToken);
             MoveNext();
             return Leave(true);
         }

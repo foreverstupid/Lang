@@ -15,7 +15,7 @@ namespace Lang
 
         public ProgramInfo GetInfo()
         {
-            return null;
+            return new ProgramInfo(){ Rpns = program };
         }
 
         public void MarkNextRpn(Token token)
@@ -31,28 +31,28 @@ namespace Lang
             labelsForNextRpn.Add(token.Value);
         }
 
-        public void Assignment()
+        public void Assignment(Token token)
         {
-            program.Add(new RpnAssign());
+            program.Add(new RpnAssign(token));
         }
 
         public void Indexator()
         {
-            program.Add(new RpnGetIndex());
+            program.Add(new RpnIndexator());
         }
 
-        public void Dereference()
+        public void Dereference(Token token)
         {
-            program.Add(new RpnGetValue());
+            program.Add(new RpnGetValue(token));
         }
 
         public void Literal(Token token)
         {
             RpnConst rpn = token.TokenType switch
             {
-                Token.Type.Float => new RpnFloat(),
-                Token.Type.Integer => new RpnInteger(),
-                Token.Type.String => new RpnString(),
+                Token.Type.Float => new RpnFloat(token),
+                Token.Type.Integer => new RpnInteger(token),
+                Token.Type.String => new RpnString(token),
                 _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
             };
 
@@ -65,7 +65,7 @@ namespace Lang
 
         public void Label(Token token)
         {
-            program.Add(new RpnLabel());
+            program.Add(new RpnLabel(token));
         }
 
         public void PositionalArgument(Token token)
@@ -75,12 +75,35 @@ namespace Lang
 
         public void UnaryOperation(Token token)
         {
+            RpnOperation rpn = token.Value switch
+            {
+                "!" => new RpnNot(token),
+                "-" => new RpnNegate(token),
+                "$" => new RpnGetValue(token),
+                var op => throw new RpnCreationException("Unknown unary operation: " + op)
+            };
 
+            program.Add(rpn);
         }
 
         public void BinaryOperation(Token token)
         {
+            RpnOperation rpn = token.Value switch
+            {
+                "+" => new RpnAdd(token),
+                "-" => new RpnSubtract(token),
+                "*" => new RpnMultiply(token),
+                "/" => new RpnDivide(token),
+                "%" => new RpnMod(token),
+                "|" => new RpnOr(token),
+                "&" => new RpnAnd(token),
+                "~" => new RpnEqual(token),
+                ">" => new RpnGreater(token),
+                "<" => new RpnLess(token),
+                var op => throw new RpnCreationException("Unknown binary operation: " + op)
+            };
 
+            program.Add(rpn);
         }
 
         public void CodeBlockStart()
@@ -93,9 +116,9 @@ namespace Lang
             
         }
 
-        public void Goto()
+        public void Goto(Token token)
         {
-            program.Add(new RpnGoto());
+            program.Add(new RpnGoto(token));
         }
 
         public void IfBlock()

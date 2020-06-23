@@ -1,8 +1,8 @@
 namespace Lang.RpnItems
 {
-    public class RpnMultiply : RpnOperation
+    public class RpnAdd : RpnOperation
     {
-        public RpnMultiply(Token token)
+        public RpnAdd(Token token)
             : base(token)
         {
             
