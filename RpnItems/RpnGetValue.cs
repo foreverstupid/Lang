@@ -8,6 +8,6 @@ namespace Lang.RpnItems
             
         }
 
-        protected override int Priority => 900;
+        protected override int Priority => RpnOperation.DereferencePriority;
     }
 }

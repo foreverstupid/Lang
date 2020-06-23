@@ -130,7 +130,7 @@ namespace Lang
             {
                 return Leave(true);
             }
-            else if (Expression() || GotoStatement() || Assignment())
+            else if (Expression() || GotoStatement())
             {
                 if (!tokens.CurrentTokenValueIs(";"))
                 {
@@ -144,48 +144,6 @@ namespace Lang
             }
 
             return Leave(false);
-        }
-
-        private bool Assignment()
-        {
-            Enter(nameof(Assignment));
-
-            if (!LeftValue())
-            {
-                return Leave(false);
-            }
-
-            if (!tokens.CurrentTokenValueIs("="))
-            {
-                SetError("'=' in assignment after the left-value expression is expected");
-                return Leave(false);
-            }
-
-            var assignmentToken = tokens.CurrentOrLast;
-            MoveNext();
-            if (Expression())
-            {
-                creator.Assignment(assignmentToken);
-                return Leave(true);
-            }
-            else
-            {
-                return Leave(false);
-            }
-        }
-
-        private bool LeftValue()
-        {
-            Enter(nameof(LeftValue));
-
-            if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
-            {
-                return Leave(false);
-            }
-
-            creator.Variable(tokens.CurrentOrLast);
-            MoveNext();
-            return Leave(Tail());
         }
 
         private bool Tail()
@@ -209,20 +167,20 @@ namespace Lang
                 return false;
             }
 
-            var indexatorStartToken = tokens.CurrentOrLast;
+            creator.Indexator(tokens.CurrentOrLast);
+            creator.OpenBracket();
             MoveNext();
             if (!Expression())
             {
                 SetError("Expression in the indexator is expected");
             }
 
-            creator.Indexator(indexatorStartToken);
-
             if (!tokens.CurrentTokenValueIs("]"))
             {
                 SetError("']' in the end of the indexator is expected");
             }
 
+            creator.CloseBracket();
             MoveNext();
             return Leave(true);
         }
@@ -324,33 +282,7 @@ namespace Lang
                 return Leave(true);
             }
 
-            if (Dereference())
-            {
-                return Leave(true);
-            }
-
             return Leave(Literal());
-        }
-
-        private bool Dereference()
-        {
-            Enter(nameof(Dereference));
-
-            if (!tokens.CurrentTokenValueIs("$"))
-            {
-                return false;
-            }
-
-            creator.Dereference(tokens.CurrentOrLast);
-            MoveNext();
-            if (tokens.CurrentTokenTypeIs(Token.Type.Integer))
-            {
-                creator.PositionalArgument(tokens.CurrentOrLast);
-                MoveNext();
-                return Leave(true);
-            }
-
-            return Leave(LeftValue());
         }
 
         private bool Literal()
@@ -359,7 +291,8 @@ namespace Lang
 
             if (tokens.CurrentTokenTypeIs(Token.Type.Integer) ||
                 tokens.CurrentTokenTypeIs(Token.Type.Float) ||
-                tokens.CurrentTokenTypeIs(Token.Type.String))
+                tokens.CurrentTokenTypeIs(Token.Type.String) ||
+                tokens.CurrentTokenTypeIs(Token.Type.Identifier))
             {
                 creator.Literal(tokens.CurrentOrLast);
                 MoveNext();

@@ -1,5 +1,3 @@
-using System;
-
 namespace Lang.RpnItems
 {
     public abstract class RpnOperation : Rpn
@@ -11,6 +9,7 @@ namespace Lang.RpnItems
         protected const int LogicalOperationPriority = 700;
         protected const int MulDivPriority = 600;
         protected const int AddSubPriority = 500;
+        protected const int AssignmentPriority = 200;
 
         public RpnOperation(Token token)
             : base(token)

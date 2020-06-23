@@ -8,9 +8,9 @@ namespace Lang
     /// </summary>
     public class TokenEnumerator
     {
-        private static readonly string[] UnarOperations = new[] { "-", "!", "+" };
-        private static readonly string[] BinarOperations =
-            new[] { "+", "-", "/", "*", "/", "&", "|", ">", "<", "~", "%", "^" };
+        private static readonly string[] UnaryOperations = new[] { "-", "!", "$" };
+        private static readonly string[] BinaryOperations =
+            new[] { "=", "+", "-", "/", "*", "&", "|", ">", "<", "~", "%" };
 
         private readonly IEnumerator<Token> tokens;
 
@@ -81,7 +81,7 @@ namespace Lang
             return
                 !IsFinished &&
                 CurrentOrLast.TokenType == Token.Type.Separator &&
-                UnarOperations.Contains(CurrentOrLast.Value);
+                UnaryOperations.Contains(CurrentOrLast.Value);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Lang
             return
                 !IsFinished && 
                 CurrentOrLast.TokenType == Token.Type.Separator &&
-                BinarOperations.Contains(CurrentOrLast.Value);
+                BinaryOperations.Contains(CurrentOrLast.Value);
         }
     }
 }

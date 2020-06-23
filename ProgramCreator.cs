@@ -37,19 +37,9 @@ namespace Lang
             labelsForNextRpn.Add(token.Value);
         }
 
-        public void Assignment(Token token)
-        {
-            program.Add(new RpnAssign(token));
-        }
-
         public void Indexator(Token token)
         {
-            program.Add(new RpnIndexator(token));
-        }
-
-        public void Dereference(Token token)
-        {
-            program.Add(new RpnGetValue(token));
+            NewOperation(new RpnIndexator(token));
         }
 
         public void Literal(Token token)
@@ -59,6 +49,7 @@ namespace Lang
                 Token.Type.Float => new RpnFloat(token),
                 Token.Type.Integer => new RpnInteger(token),
                 Token.Type.String => new RpnString(token),
+                Token.Type.Identifier => new RpnVar(token),
                 _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
             };
 
@@ -96,6 +87,7 @@ namespace Lang
         {
             RpnOperation rpn = token.Value switch
             {
+                "=" => new RpnAssign(token),
                 "+" => new RpnAdd(token),
                 "-" => new RpnSubtract(token),
                 "*" => new RpnMultiply(token),

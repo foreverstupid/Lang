@@ -21,7 +21,6 @@ namespace Lang
             Float,
             Separator,
             Label,
-            None,
         }
 
         public string Value { get; }

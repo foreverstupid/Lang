@@ -2,12 +2,7 @@
 
 <program> ::= { <statement> }
 
-<statement> ::= <expression>; | <if_statement> | <goto_statement>; |
-                <assignment>; | <label>: <statement>
-
-<assignment> ::= <lvalue> = <expression>
-
-<lvalue> ::= <identifier><tail>
+<statement> ::= <expression>; | <if_statement> | <goto_statement>; | <label>: <statement>
 
 <tail> ::= <indexator><tail> | <args><tail> |
 
@@ -17,14 +12,26 @@
 
 <expression> ::= [ <unar> ] <operand>[<tail>] { <binar><expression> }
 
-<operand> ::= ( <expression> ) | <literal> | <deref>
+<operand> ::= ( <expression> ) | <literal>
 
-<deref> ::= $<int> | $<lvalue>
-
-<literal> ::= <string> | <int> | <float> | <code_block>
+<literal> ::= <string> | <int> | <float> | <code_block> | <variable>
 
 <code_block> ::= \{ <program> \}
 
 <goto_statement> ::= goto <label>
 
 <if_statement> ::= if <expression> <code_block> [ else <code_block> ]
+
+<unar> ::= - | ! | $
+
+<binar> ::= + | - | * | / | % | > | < | ~ | & | \| | =
+
+<variable> ::= -//-
+
+<int> ::= -//-
+
+<float> ::= -//-
+
+<string> ::= -//-
+
+<label> ::= -//-
