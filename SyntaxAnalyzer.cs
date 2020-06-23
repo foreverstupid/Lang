@@ -10,7 +10,7 @@ namespace Lang
     {
         private readonly ILogger logger;
         private TokenEnumerator tokens;
-        private List<string> contexts = new List<string>();
+        private Stack<string> contexts = new Stack<string>();
         private ProgramCreator creator;
 
         public SyntaxAnalyzer(ILogger logger)
@@ -62,7 +62,7 @@ namespace Lang
         private void Enter(string context)
         {
             logger.ForContext(context).Information("Entered");
-            contexts.Add(context);
+            contexts.Push(context);
         }
 
         /// <summary>
@@ -72,8 +72,7 @@ namespace Lang
         /// <returns>The given node analysis status.</returns>
         private bool Leave(bool isSuccessful)
         {
-            var context = contexts.Last();
-            contexts.RemoveAt(contexts.Count - 1);
+            var context = contexts.Pop();
             var logger = this.logger.ForContext(context);
 
             if (isSuccessful)
@@ -93,7 +92,7 @@ namespace Lang
         /// </summary>
         private void MoveNext()
         {
-            logger.ForContext(contexts[^1]).Information(tokens.CurrentOrLast.Value);
+            logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
             tokens.MoveNext();
         }
 
@@ -139,6 +138,7 @@ namespace Lang
                     return Leave(false);
                 }
 
+                creator.EndOfStatement();
                 MoveNext();
                 return Leave(true);
             }
@@ -209,13 +209,14 @@ namespace Lang
                 return false;
             }
 
+            var indexatorStartToken = tokens.CurrentOrLast;
             MoveNext();
             if (!Expression())
             {
                 SetError("Expression in the indexator is expected");
             }
 
-            creator.Indexator();
+            creator.Indexator(indexatorStartToken);
 
             if (!tokens.CurrentTokenValueIs("]"))
             {
@@ -258,6 +259,7 @@ namespace Lang
                     SetError("Comma between arguments is expected");
                 }
 
+                creator.EndOfExpression();
                 MoveNext();
                 if (!Expression())
                 {
@@ -274,10 +276,9 @@ namespace Lang
         {
             Enter(nameof(Expression));
 
-            Token unaryOperation = null;
             if (tokens.CurrentTokenIsUnaryOperation())
             {
-                unaryOperation = tokens.CurrentOrLast;
+                creator.UnaryOperation(tokens.CurrentOrLast);
                 MoveNext();
             }
 
@@ -286,24 +287,18 @@ namespace Lang
                 return Leave(false);
             }
 
+            Tail(); // could or could not be
             while (tokens.CurrentTokenIsBinaryOperation())
             {
-                var binaryOperation = tokens.CurrentOrLast;
+                creator.BinaryOperation(tokens.CurrentOrLast);
                 MoveNext();
                 if (!Expression())
                 {
                     SetError("Expression as a binary operation right operand is expected");
                 }
-
-                creator.BinaryOperation(binaryOperation);
             }
 
-            if (!(unaryOperation is null))
-            {
-                creator.UnaryOperation(unaryOperation);
-            }
-
-            return Leave(Tail());
+            return Leave(true);
         }
 
         private bool Operand()
@@ -312,6 +307,7 @@ namespace Lang
 
             if (tokens.CurrentTokenValueIs("("))
             {
+                creator.OpenBracket();
                 MoveNext();
                 if (!Expression())
                 {
@@ -323,6 +319,7 @@ namespace Lang
                     SetError("Closing paranthesis in the expression is expected");
                 }
 
+                creator.CloseBracket();
                 MoveNext();
                 return Leave(true);
             }
@@ -344,13 +341,12 @@ namespace Lang
                 return false;
             }
 
-            var dereferenceToken = tokens.CurrentOrLast;
+            creator.Dereference(tokens.CurrentOrLast);
             MoveNext();
             if (tokens.CurrentTokenTypeIs(Token.Type.Integer))
             {
                 creator.PositionalArgument(tokens.CurrentOrLast);
                 MoveNext();
-                creator.Dereference(dereferenceToken);
                 return Leave(true);
             }
 

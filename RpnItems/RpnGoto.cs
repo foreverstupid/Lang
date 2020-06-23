@@ -1,6 +1,6 @@
 namespace Lang.RpnItems
 {
-    public class RpnGoto : RpnOperation
+    public class RpnGoto : Rpn
     {
         public RpnGoto()
         {

@@ -23,7 +23,7 @@ namespace Lang
         /// <summary>
         /// Whether the token collection is finished.
         /// </summary>
-        public bool IsFinished { get; private set; } = false;
+        public bool IsFinished { get; private set; }
 
         /// <summary>
         /// The current token of the enumerator or the last token if the enumerator is finished.
@@ -79,6 +79,7 @@ namespace Lang
         public bool CurrentTokenIsUnaryOperation()
         {
             return
+                !IsFinished &&
                 CurrentOrLast.TokenType == Token.Type.Separator &&
                 UnarOperations.Contains(CurrentOrLast.Value);
         }
@@ -89,6 +90,7 @@ namespace Lang
         public bool CurrentTokenIsBinaryOperation()
         {
             return
+                !IsFinished && 
                 CurrentOrLast.TokenType == Token.Type.Separator &&
                 BinarOperations.Contains(CurrentOrLast.Value);
         }

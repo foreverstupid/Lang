@@ -12,6 +12,12 @@ namespace Lang
         private readonly Dictionary<string, int> labels = new Dictionary<string, int>();
         private readonly Dictionary<string, RpnConst> variables = new Dictionary<string, RpnConst>();
         private readonly List<string> labelsForNextRpn = new List<string>();
+        private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
+
+        public ProgramCreator()
+        {
+            expressionStack.Push(null);
+        }
 
         public ProgramInfo GetInfo()
         {
@@ -36,9 +42,9 @@ namespace Lang
             program.Add(new RpnAssign(token));
         }
 
-        public void Indexator()
+        public void Indexator(Token token)
         {
-            program.Add(new RpnIndexator());
+            program.Add(new RpnIndexator(token));
         }
 
         public void Dereference(Token token)
@@ -83,7 +89,7 @@ namespace Lang
                 var op => throw new RpnCreationException("Unknown unary operation: " + op)
             };
 
-            program.Add(rpn);
+            NewOperation(rpn);
         }
 
         public void BinaryOperation(Token token)
@@ -103,7 +109,7 @@ namespace Lang
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 
-            program.Add(rpn);
+            NewOperation(rpn);
         }
 
         public void CodeBlockStart()
@@ -158,6 +164,54 @@ namespace Lang
             }
 
             labelsForNextRpn.Clear();
+        }
+
+        public void OpenBracket()
+        {
+            expressionStack.Push(null);
+        }
+
+        public void CloseBracket()
+        {
+            while (expressionStack.TryPop(out var operation) && !(operation is null))
+            {
+                program.Add(operation);
+            }
+        }
+
+        public void EndOfStatement()
+        {
+            CloseBracket();
+            if (expressionStack.TryPeek(out _))
+            {
+                throw new RpnCreationException("Expression is invalid");
+            }
+
+            expressionStack.Push(null);
+        }
+
+        public void EndOfExpression()
+        {
+            CloseBracket();
+            if (expressionStack.TryPeek(out _))
+            {
+                throw new RpnCreationException("Expression is invalid");
+            }
+
+            expressionStack.Push(null);
+        }
+
+        private void NewOperation(RpnOperation operation)
+        {
+            while (expressionStack.TryPeek(out var stackOp) &&
+                !(stackOp is null) &&
+                !(stackOp.HasLessPriorityThan(operation)))
+            {
+                program.Add(stackOp);
+                expressionStack.Pop();
+            }
+
+            expressionStack.Push(operation);
         }
     }
 }

@@ -15,7 +15,7 @@
 
 <args> ::= ( [ <expression> {, <expression> } ] )
 
-<expression> ::= [ <unar> ] <operand> { <binar><expression> }<tail>
+<expression> ::= [ <unar> ] <operand>[<tail>] { <binar><expression> }
 
 <operand> ::= ( <expression> ) | <literal> | <deref>
 

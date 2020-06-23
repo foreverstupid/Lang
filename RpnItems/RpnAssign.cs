@@ -1,6 +1,6 @@
 namespace Lang.RpnItems
 {
-    public class RpnAssign : RpnOperation
+    public class RpnAssign : Rpn
     {
         public RpnAssign(Token token)
             : base(token)

@@ -7,5 +7,7 @@ namespace Lang.RpnItems
         {
             
         }
+
+        protected override int Priority => 900;
     }
 }
