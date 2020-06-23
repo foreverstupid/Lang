@@ -2,8 +2,13 @@ using System;
 
 namespace Lang.RpnItems
 {
+    /// <summary>
+    /// RPN item that represents a string.
+    /// </summary>
     public class RpnString : RpnConst
     {
+        public RpnString(string val) => Value = val;
+
         public RpnString(Token token)
             : base(token)
         {
@@ -15,6 +20,7 @@ namespace Lang.RpnItems
             Value = token.Value;
         }
 
-        public string Value { get; }
+        /// <inheritdoc/>
+        public override object Value { get; }
     }
 }

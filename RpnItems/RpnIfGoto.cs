@@ -3,15 +3,11 @@ using System.Collections.Generic;
 namespace Lang.RpnItems
 {
     /// <summary>
-    /// RPN item that represents unconditional jump to the certain label.
+    /// RPN that represents conditional jump to the certain label.
     /// </summary>
-    public class RpnGoto : Rpn
+    public class RpnIfGoto : Rpn
     {
-        public RpnGoto()
-        {
-        }
-
-        public RpnGoto(Token token)
+        public RpnIfGoto(Token token)
             : base(token)
         {
         }

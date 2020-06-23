@@ -9,6 +9,6 @@ namespace Lang
     /// </summary>
     public class ProgramInfo
     {
-        public List<Rpn> Rpns { get; set; }
+        public LinkedList<Rpn> Rpns { get; set; }
     }
 }

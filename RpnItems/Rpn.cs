@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Lang.RpnItems
 {
     /// <summary>
@@ -12,6 +14,16 @@ namespace Lang.RpnItems
         }
 
         public Token Token { get; } = null;
+
+        /// <summary>
+        /// Evaluates the command that is described by the RPN.
+        /// </summary>
+        /// <param name="stack">The stack of the interpretation.</param>
+        /// <param name="currentCmd">The current command.</param>
+        /// <returns>The next command.</returns>
+        public abstract LinkedListNode<Rpn> Eval(
+            Stack<RpnConst> stack,
+            LinkedListNode<Rpn> currentCmd);
 
         public override string ToString()
             => this.GetType().Name + (Token is null ? "" : $": {Token.Value}");

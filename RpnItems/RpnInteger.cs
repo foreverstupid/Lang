@@ -2,8 +2,13 @@ using System;
 
 namespace Lang.RpnItems
 {
+    /// <summary>
+    /// RPN item that represents an integer number.
+    /// </summary>
     public class RpnInteger : RpnConst
     {
+        public RpnInteger(int val) => Value = val;
+
         public RpnInteger(Token token)
             : base(token)
         {
@@ -22,6 +27,7 @@ namespace Lang.RpnItems
             }
         }
 
-        public int Value { get; }
+        /// <inheritdoc/>
+        public override object Value { get; }
     }
 }

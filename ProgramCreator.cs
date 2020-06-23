@@ -8,9 +8,13 @@ namespace Lang
     /// </summary>
     public class ProgramCreator
     {
-        private readonly List<Rpn> program = new List<Rpn>();
-        private readonly Dictionary<string, int> labels = new Dictionary<string, int>();
-        private readonly Dictionary<string, RpnConst> variables = new Dictionary<string, RpnConst>();
+        private readonly LinkedList<Rpn> program = new LinkedList<Rpn>();
+        private readonly Dictionary<string, LinkedListNode<Rpn>> labels =
+            new Dictionary<string, LinkedListNode<Rpn>>();
+
+        private readonly Dictionary<string, Variable> variables =
+            new Dictionary<string, Variable>();
+
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
 
@@ -21,7 +25,16 @@ namespace Lang
 
         public ProgramInfo GetInfo()
         {
-            return new ProgramInfo(){ Rpns = program };
+            var linkedList = new LinkedList<Rpn>();
+            foreach (var rpn in program)
+            {
+                linkedList.AddLast(new LinkedListNode<Rpn>(rpn));
+            }
+
+            return new ProgramInfo()
+            {
+                Rpns = linkedList
+            };
         }
 
         public void MarkNextRpn(Token token)
@@ -49,25 +62,16 @@ namespace Lang
                 Token.Type.Float => new RpnFloat(token),
                 Token.Type.Integer => new RpnInteger(token),
                 Token.Type.String => new RpnString(token),
-                Token.Type.Identifier => new RpnVar(token),
+                //Token.Type.Identifier => new RpnVar(token, ),
                 _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
             };
 
-            program.Add(rpn);
-        }
-
-        public void Variable(Token token)
-        {
+            AddRpn(rpn);
         }
 
         public void Label(Token token)
         {
-            program.Add(new RpnLabel(token));
-        }
-
-        public void PositionalArgument(Token token)
-        {
-
+            //AddRpn(new RpnLabel(token, rpn));
         }
 
         public void UnaryOperation(Token token)
@@ -116,7 +120,7 @@ namespace Lang
 
         public void Goto(Token token)
         {
-            program.Add(new RpnGoto(token));
+            AddRpn(new RpnGoto(token));
         }
 
         public void IfBlock()
@@ -143,16 +147,16 @@ namespace Lang
         {
             foreach (var label in labelsForNextRpn)
             {
-                if (labels.TryGetValue(label, out int index))
+                if (labels.TryGetValue(label, out var command))
                 {
-                    var rpn = program[index];
+                    var token = command.Value.Token;
                     throw new RpnCreationException(
                         $"{label} is already used for labeling statement " +
-                        $"{rpn.Token.Value} ({rpn.Token.Line}:{rpn.Token.StartPosition})"
+                        $"{token.Value} ({token.Line}:{token.StartPosition})"
                     );
                 }
 
-                labels.Add(label, program.Count - 1);
+                labels.Add(label, program.Last);
             }
 
             labelsForNextRpn.Clear();
@@ -167,7 +171,7 @@ namespace Lang
         {
             while (expressionStack.TryPop(out var operation) && !(operation is null))
             {
-                program.Add(operation);
+                AddRpn(operation);
             }
         }
 
@@ -199,11 +203,13 @@ namespace Lang
                 !(stackOp is null) &&
                 !(stackOp.HasLessPriorityThan(operation)))
             {
-                program.Add(stackOp);
+                AddRpn(stackOp);
                 expressionStack.Pop();
             }
 
             expressionStack.Push(operation);
         }
+
+        private void AddRpn(Rpn rpn) => program.AddLast(new LinkedListNode<Rpn>(rpn));
     }
 }

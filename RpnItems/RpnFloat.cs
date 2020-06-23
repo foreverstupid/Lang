@@ -2,8 +2,13 @@ using System;
 
 namespace Lang.RpnItems
 {
+    /// <summary>
+    /// RPN item that represents a float point number.
+    /// </summary>
     public class RpnFloat : RpnConst
     {
+        public RpnFloat(double val) => this.Value = val;
+
         public RpnFloat(Token token)
             : base(token)
         {
@@ -22,6 +27,7 @@ namespace Lang.RpnItems
             }
         }
 
-        public double Value { get; }
+        /// <inheritdoc/>
+        public override object Value { get; }
     }
 }
