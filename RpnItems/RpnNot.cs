@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents logical NOT operation.
     /// </summary>
-    public class RpnNot : RpnOperation
+    public class RpnNot : RpnUnaryOperation
     {
         public RpnNot(Token token)
             : base(token)
@@ -16,9 +16,7 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.UnarOperationPriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
-        {
-            throw new System.NotImplementedException();
-        }
+        protected override RpnConst GetResultCore(RpnConst operand)
+            => new RpnInteger(!operand.GetBool());
     }
 }

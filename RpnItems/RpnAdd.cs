@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents addition.
     /// </summary>
-    public class RpnAdd : RpnOperation
+    public class RpnAdd : RpnBinaryOperation
     {
         public RpnAdd(Token token)
             : base(token)
@@ -16,12 +16,8 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.AddSubPriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
-        {
-            var right = stack.Pop();
-            var left = stack.Pop();
-
-            return left.ValueType switch
+        protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
+            => left.ValueType switch
             {
                 RpnConst.Type.Float => new RpnFloat(left.GetFloat() + right.GetFloat()),
                 RpnConst.Type.Integer => new RpnInteger(left.GetInt() + right.GetInt()),
@@ -31,6 +27,5 @@ namespace Lang.RpnItems
                         $"Unexpected type of the left operand: {type}"
                     )
             };
-        }
     }
 }

@@ -35,6 +35,10 @@ namespace Lang.RpnItems
         public override string GetString() =>
             throw new InterpretationException("Label cannot have a string value");
 
+        /// <inheritdoc/>
+        public override bool GetBool() =>
+            throw new InterpretationException("Label cannot have a bool value");
+
         /// <summary>
         /// Gets the labeled command.
         /// </summary>

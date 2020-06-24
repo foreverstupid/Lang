@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents logical AND operation.
     /// </summary>
-    public class RpnAnd : RpnOperation
+    public class RpnAnd : RpnBinaryOperation
     {
         public RpnAnd(Token token)
             : base(token)
@@ -16,9 +16,7 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.LogicalOperationPriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
-        {
-            throw new System.NotImplementedException();
-        }
+        protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
+            => new RpnInteger(left.GetBool() && right.GetBool());
     }
 }

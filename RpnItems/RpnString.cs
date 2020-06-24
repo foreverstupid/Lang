@@ -40,5 +40,8 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string GetString() => value;
+
+        /// <inheritdoc/>
+        public override bool GetBool() => value != "";
     }
 }

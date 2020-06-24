@@ -52,6 +52,12 @@ namespace Lang.RpnItems
         /// <remarks>Throws if the cast is not possible.</remarks>
         public abstract string GetString();
 
+        /// <summary>
+        /// The value of the item a bool.
+        /// </summary>
+        /// <remarks>Throws if the cast is not possible.</remarks>
+        public abstract bool GetBool();
+
         /// <inheritdoc/>
         protected override void EvalCore(Stack<RpnConst> stack)
             => stack.Push(this);

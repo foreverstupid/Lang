@@ -11,6 +11,8 @@ namespace Lang.RpnItems
 
         public RpnInteger(int val) => value = val;
 
+        public RpnInteger(bool val) => value = val ? 1 : 0;
+
         public RpnInteger(Token token)
             : base(token)
         {
@@ -41,5 +43,8 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string GetString() => value.ToString();
+
+        /// <inheritdoc/>
+        public override bool GetBool() => value != 0;
     }
 }

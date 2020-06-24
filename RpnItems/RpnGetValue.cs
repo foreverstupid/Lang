@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents dereference (getting value of the variable).
     /// </summary>
-    public class RpnGetValue : RpnOperation
+    public class RpnGetValue : RpnUnaryOperation
     {
         public RpnGetValue(Token token)
             : base(token)
@@ -16,8 +16,14 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.DereferencePriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
+        protected override RpnConst GetResultCore(RpnConst operand)
         {
+            // TODO: positional args
+            if (operand.ValueType != RpnConst.Type.Variable)
+            {
+                throw new InterpretationException("Cannot get a value of non-variable type");
+            }
+
             throw new System.NotImplementedException();
         }
     }

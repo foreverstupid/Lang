@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents division.
     /// </summary>
-    public class RpnDivide : RpnOperation
+    public class RpnDivide : RpnBinaryOperation
     {
         public RpnDivide(Token token)
             : base(token)
@@ -16,9 +16,17 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.MulDivPriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
-        {
-            throw new System.NotImplementedException();
-        }
+        protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
+            => left.ValueType switch
+            {
+                RpnConst.Type.Float => new RpnFloat(left.GetFloat() / right.GetFloat()),
+                RpnConst.Type.Integer => new RpnInteger(left.GetInt() / right.GetInt()),
+                RpnConst.Type.String =>
+                    throw new InterpretationException("String cannot be divided"),
+                var type =>
+                    throw new InterpretationException(
+                        $"Unexpected type of the left operand: {type}"
+                    )
+            };
     }
 }

@@ -31,5 +31,11 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string GetString() => variableValue.StringValue;
+
+        /// <inheritdoc/>
+        public override bool GetBool() =>
+            throw new InterpretationException(
+                "The variable itself cannot be casted to bool. Use dereference first"
+            );
     }
 }
