@@ -23,14 +23,28 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override Type ValueType { get; }
 
-        /// <inheritdoc/>
-        public override double GetFloat() => variableValue.FloatValue;
+        /// <summary>
+        /// Variable value of the item.
+        /// </summary>
+        public Variable VariableValue => variableValue;
 
         /// <inheritdoc/>
-        public override int GetInt() => variableValue.IntValue;
+        public override double GetFloat() =>
+            throw new InterpretationException(
+                "Cannot direct get the variable value. Use dereference"
+            );
 
         /// <inheritdoc/>
-        public override string GetString() => variableValue.StringValue;
+        public override int GetInt() =>
+            throw new InterpretationException(
+                "Cannot direct get the variable value. Use dereference"
+            );
+
+        /// <inheritdoc/>
+        public override string GetString() =>
+            throw new InterpretationException(
+                "Cannot direct get the variable value. Use dereference"
+            );
 
         /// <inheritdoc/>
         public override bool GetBool() =>

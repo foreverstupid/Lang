@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Lang.RpnItems
 {
     /// <summary>
@@ -21,10 +19,18 @@ namespace Lang.RpnItems
             // TODO: positional args
             if (operand.ValueType != RpnConst.Type.Variable)
             {
-                throw new InterpretationException("Cannot get a value of non-variable type");
+                throw new InterpretationException("Cannot get a value of a non-variable entity");
             }
 
-            throw new System.NotImplementedException();
+            var variable = operand as RpnVar;
+            try
+            {
+                return variable.VariableValue.Get();
+            }
+            catch (GetVariableValueException)
+            {
+                throw new InterpretationException($"The variable {this.Token.Value} doesn't exist");
+            }
         }
     }
 }

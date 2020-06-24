@@ -1,3 +1,5 @@
+using Lang.RpnItems;
+
 namespace Lang
 {
     /// <summary>
@@ -5,10 +7,30 @@ namespace Lang
     /// </summary>
     public class Variable
     {
-        public int IntValue { get; }
+        private bool isInitialized = false;
+        private RpnConst value;
 
-        public double FloatValue { get; }
+        /// <summary>
+        /// Sets the variable with the given value.
+        /// </summary>
+        public void Set(RpnConst value)
+        {
+            this.value = value;
+            isInitialized = true;
+        }
 
-        public string StringValue { get; }
+        /// <summary>
+        /// Gets the value of the variable.
+        /// </summary>
+        /// <remarks>Throws if the variable is not initialized.</remarks>
+        public RpnConst Get()
+        {
+            if (!isInitialized)
+            {
+                throw new GetVariableValueException();
+            }
+
+            return value;
+        }
     }
 }

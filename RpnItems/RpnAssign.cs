@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents assignment some value to the variable.
     /// </summary>
-    public class RpnAssign : RpnOperation
+    public class RpnAssign : RpnBinaryOperation
     {
         public RpnAssign(Token token)
             : base(token)
@@ -16,9 +16,16 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.AssignmentPriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
+        protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
         {
-            throw new System.NotImplementedException();
+            if (left.ValueType != RpnConst.Type.Variable)
+            {
+                throw new InterpretationException("Cannot assign to the non-variable value");
+            }
+
+            var variable = left as RpnVar;
+            variable.VariableValue.Set(right);
+            return right;
         }
     }
 }

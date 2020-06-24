@@ -57,14 +57,31 @@ namespace Lang
 
         public void Literal(Token token)
         {
-            RpnConst rpn = token.TokenType switch
+            RpnConst rpn = null;
+
+            if (token.TokenType == Token.Type.Identifier)
             {
-                Token.Type.Float => new RpnFloat(token),
-                Token.Type.Integer => new RpnInteger(token),
-                Token.Type.String => new RpnString(token),
-                //Token.Type.Identifier => new RpnVar(token, ),
-                _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
-            };
+                if (variables.TryGetValue(token.Value, out var variable))
+                {
+                    rpn = new RpnVar(token, variable);
+                }
+                else
+                {
+                    var newVarValue = new Variable();
+                    variables.Add(token.Value, newVarValue);
+                    rpn = new RpnVar(token, newVarValue);
+                }
+            }
+            else
+            {
+                rpn = token.TokenType switch
+                {
+                    Token.Type.Float => new RpnFloat(token),
+                    Token.Type.Integer => new RpnInteger(token),
+                    Token.Type.String => new RpnString(token),
+                    _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
+                };
+            }
 
             AddRpn(rpn);
         }
