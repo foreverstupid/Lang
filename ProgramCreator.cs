@@ -54,14 +54,31 @@ namespace Lang
 
         public void Literal(Token token)
         {
-            RpnConst rpn = token.TokenType switch
+            RpnConst rpn;
+
+            if (token.TokenType == Token.Type.Identifier)
             {
-                Token.Type.Float => new RpnFloat(token),
-                Token.Type.Integer => new RpnInteger(token),
-                Token.Type.String => new RpnString(token),
-                Token.Type.Identifier => new RpnVar(token, token.Value),
-                _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
-            };
+                if (BuiltIns.Funcs.ContainsKey(token.Value))
+                {
+                    rpn = new RpnBuiltIn(token, token.Value);
+                }
+                else
+                {
+                    rpn = new RpnVar(token, token.Value);
+                }
+            }
+            else
+            {
+                rpn = token.TokenType switch
+                {
+                    Token.Type.Float => new RpnFloat(token),
+                    Token.Type.Integer => new RpnInteger(token),
+                    Token.Type.String => new RpnString(token),
+                    _ => throw new RpnCreationException(
+                        $"Unexpected literal token type {token.TokenType}"
+                    )
+                };
+            }
 
             AddRpn(rpn);
         }
@@ -115,6 +132,11 @@ namespace Lang
             
         }
 
+        public void Ignore()
+        {
+            AddRpn(new RpnIgnore());
+        }
+
         public void Goto(Token token)
         {
             AddRpn(new RpnGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
@@ -145,9 +167,9 @@ namespace Lang
             AddRpn(new RpnNop());
         }
 
-        public void Eval()
+        public void Eval(Token token, int paramCount)
         {
-            
+            AddRpn(new RpnEval(token, paramCount, null));
         }
 
         public void OpenBracket()

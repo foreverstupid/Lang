@@ -141,6 +141,7 @@ namespace Lang
                 }
 
                 creator.EndOfStatement();
+                creator.Ignore();
                 MoveNext();
                 return Leave(true);
             }
@@ -196,10 +197,12 @@ namespace Lang
                 return Leave(false);
             }
 
+            var evalToken = tokens.CurrentOrLast;
+            int paramCount = 0;
             MoveNext();
             if (tokens.CurrentTokenValueIs(")"))
             {
-                creator.Eval();
+                creator.Eval(evalToken, paramCount);
                 MoveNext();
                 return Leave(true);
             }
@@ -212,6 +215,7 @@ namespace Lang
                 );
             }
 
+            paramCount++;
             while (!tokens.CurrentTokenValueIs(")"))
             {
                 if (!tokens.CurrentTokenValueIs(","))
@@ -225,9 +229,12 @@ namespace Lang
                 {
                     SetError("Expression in an argument list is expected");
                 }
+
+                paramCount++;
             }
 
-            creator.Eval();
+            creator.EndOfExpression();
+            creator.Eval(evalToken, paramCount);
             MoveNext();
             return Leave(true);
         }

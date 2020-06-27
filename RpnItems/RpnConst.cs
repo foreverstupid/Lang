@@ -27,6 +27,7 @@ namespace Lang.RpnItems
             String,
             Label,
             Variable,
+            BuiltIn,
         }
 
         /// <summary>

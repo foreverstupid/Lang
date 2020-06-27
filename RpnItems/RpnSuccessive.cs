@@ -7,6 +7,10 @@ namespace Lang.RpnItems
     /// </summary>
     public abstract class RpnSuccessive : Rpn
     {
+        public RpnSuccessive()
+        {
+        }
+
         public RpnSuccessive(Token token)
             : base(token)
         {

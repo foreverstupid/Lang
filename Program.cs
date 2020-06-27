@@ -13,23 +13,24 @@ namespace Lang
 
             var tokens = Parse(reader, parser);
 
-            Console.WriteLine($"{"Token",20} {"Type",20} {"Position"}");
-            Console.WriteLine("-------------------------------------------------------------------------------");
-            foreach (var token in tokens)
-            {
-                Console.WriteLine($"{token.Value, 20} {token.TokenType, 20} {token.Line}:{token.StartPosition}");
-            }
+            // Console.WriteLine($"{"Token",20} {"Type",20} {"Position"}");
+            // Console.WriteLine("-------------------------------------------------------------------------------");
+            // foreach (var token in tokens)
+            // {
+            //     Console.WriteLine($"{token.Value, 20} {token.TokenType, 20} {token.Line}:{token.StartPosition}");
+            // }
 
-            var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
+            var syntaxer = new SyntaxAnalyzer(new NullLogger());
             var program = syntaxer.Analyse(tokens);
 
-            foreach (var rpn in program.Program)
-            {
-                Console.WriteLine(rpn);
-            }
+            // foreach (var rpn in program.Program)
+            // {
+            //     Console.WriteLine(rpn);
+            // }
 
             var interpreter = new Interpreter();
-            Console.WriteLine(interpreter.Run(program));
+            var exitValue = interpreter.Run(program);
+            Console.WriteLine("\nProgram finished with exit value: " + exitValue);
         }
 
         /// <summary>
