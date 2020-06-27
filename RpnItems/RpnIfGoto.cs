@@ -21,8 +21,8 @@ namespace Lang.RpnItems
             Stack<RpnConst> stack,
             LinkedListNode<Rpn> currentCmd)
         {
-            var condition = stack.Pop();
             var label = stack.Pop();
+            var condition = stack.Pop();
 
             if (label.ValueType != RpnConst.Type.Label)
             {
@@ -31,7 +31,7 @@ namespace Lang.RpnItems
 
             if (labels.TryGetValue(label.GetString(), out var command))
             {
-                return condition.GetBool() ? command : currentCmd.Next;
+                return !condition.GetBool() ? command : currentCmd.Next;
             }
             else
             {

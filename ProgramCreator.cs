@@ -8,6 +8,9 @@ namespace Lang
     /// </summary>
     public class ProgramCreator
     {
+        private const string IfLabelPrefix = "#if#label#";
+        private const string ElseLabelPrefix = "#else#label#";
+
         private readonly LinkedList<Rpn> program = new LinkedList<Rpn>();
         private readonly IDictionary<string, RpnConst> variables =
             new Dictionary<string, RpnConst>();
@@ -16,6 +19,10 @@ namespace Lang
 
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
+
+        private int ifCount = 0;
+        private string ifLabelName;
+        private string endIfLabelName;
 
         public ProgramCreator()
         {
@@ -37,7 +44,7 @@ namespace Lang
                 );
             }
 
-            labelsForNextRpn.Add(token.Value);
+            AddLabelForNextRpn(token.Value);
         }
 
         public void Indexator(Token token)
@@ -113,43 +120,34 @@ namespace Lang
             AddRpn(new RpnGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
         }
 
-        public void IfBlock()
+        public void If(Token token)
         {
+            EndOfExpression();
+            ifCount++;
+            endIfLabelName = ifLabelName = IfLabelPrefix + ifCount;
 
+            Label(ifLabelName);
+            AddRpn(new RpnIfGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
         }
 
-        public void ElseBlock()
+        public void Else(Token token)
         {
+            endIfLabelName = ElseLabelPrefix + ifCount;
+            Label(endIfLabelName);
+            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
 
+            AddLabelForNextRpn(ifLabelName);
         }
 
-        public void If()
+        public void EndIf()
         {
-
+            AddLabelForNextRpn(endIfLabelName);
+            AddRpn(new RpnNop());
         }
 
         public void Eval()
         {
             
-        }
-
-        private void LabelLastRpn()
-        {
-            foreach (var label in labelsForNextRpn)
-            {
-                if (labels.TryGetValue(label, out var command))
-                {
-                    var token = command.Value.Token;
-                    throw new RpnCreationException(
-                        $"{label} is already used for labeling statement " +
-                        $"{token.Value} ({token.Line}:{token.StartPosition})"
-                    );
-                }
-
-                labels.Add(label, program.Last);
-            }
-
-            labelsForNextRpn.Clear();
         }
 
         public void OpenBracket()
@@ -185,6 +183,35 @@ namespace Lang
             }
 
             expressionStack.Push(null);
+        }
+
+        private void LabelLastRpn()
+        {
+            foreach (var label in labelsForNextRpn)
+            {
+                if (labels.TryGetValue(label, out var command))
+                {
+                    var token = command.Value?.Token;
+                    throw new RpnCreationException(
+                        $"{label} is already used for labeling statement " +
+                        $"{token?.Value} ({token?.Line}:{token?.StartPosition})"
+                    );
+                }
+
+                labels.Add(label, program.Last);
+            }
+
+            labelsForNextRpn.Clear();
+        }
+
+        private void AddLabelForNextRpn(string labelName)
+        {
+            labelsForNextRpn.Add(labelName);
+        }
+
+        private void Label(string labelName)
+        {
+            AddRpn(new RpnLabel(labelName));
         }
 
         private void NewOperation(RpnOperation operation)

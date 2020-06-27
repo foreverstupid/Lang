@@ -361,13 +361,14 @@ namespace Lang
                 return Leave(false);
             }
 
+            var ifToken = tokens.CurrentOrLast;
             MoveNext();
             if (!Expression())
             {
                 return Leave(false);
             }
 
-            creator.IfBlock();
+            creator.If(ifToken);
             if (!CodeBlock())
             {
                 SetError("Code block in the if-part is expected");
@@ -375,15 +376,15 @@ namespace Lang
 
             if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
+                creator.Else(tokens.CurrentOrLast);
                 MoveNext();
-                creator.ElseBlock();
                 if (!CodeBlock())
                 {
                     SetError("Code block in the else-part is expected");
                 }
             }
 
-            creator.If();
+            creator.EndIf();
             return Leave(true);
         }
     }
