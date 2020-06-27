@@ -7,16 +7,18 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnLabel : RpnConst
     {
-        public RpnLabel(LinkedListNode<Rpn> labeledCommand)
+        private readonly string name;
+
+        public RpnLabel(string name)
         {
-            Value = labeledCommand;
+            this.name = name;
             ValueType = Type.Label;
         }
 
-        public RpnLabel(Token token, LinkedListNode<Rpn> labeledCommand)
+        public RpnLabel(Token token, string name)
             : base(token)
         {
-            Value = labeledCommand;
+            this.name = name;
             ValueType = Type.Label;
         }
 
@@ -32,16 +34,10 @@ namespace Lang.RpnItems
             throw new InterpretationException("Label cannot have an integer value");
 
         /// <inheritdoc/>
-        public override string GetString() =>
-            throw new InterpretationException("Label cannot have a string value");
+        public override string GetString() => name;
 
         /// <inheritdoc/>
         public override bool GetBool() =>
             throw new InterpretationException("Label cannot have a bool value");
-
-        /// <summary>
-        /// Gets the labeled command.
-        /// </summary>
-        public LinkedListNode<Rpn> Value { get; }
     }
 }

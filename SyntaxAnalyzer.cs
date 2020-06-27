@@ -115,7 +115,7 @@ namespace Lang
 
             if (tokens.CurrentTokenTypeIs(Token.Type.Label))
             {
-                creator.MarkNextRpn(tokens.CurrentOrLast);
+                creator.AddLabelForNextRpn(tokens.CurrentOrLast);
                 MoveNext();
                 if (!tokens.CurrentTokenValueIs(":"))
                 {
@@ -126,11 +126,13 @@ namespace Lang
                 MoveNext();
                 return Leave(Statement());
             }
-            else if (IfStatement())
+
+
+            if (IfStatement())
             {
                 return Leave(true);
             }
-            else if (Expression() || GotoStatement())
+            else if (GotoStatement() || Expression())
             {
                 if (!tokens.CurrentTokenValueIs(";"))
                 {

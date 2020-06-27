@@ -24,16 +24,10 @@ namespace Lang
 
         public ProgramInfo GetInfo()
         {
-            var linkedList = new LinkedList<Rpn>();
-            foreach (var rpn in program)
-            {
-                linkedList.AddLast(new LinkedListNode<Rpn>(rpn));
-            }
-
             return new ProgramInfo(program);
         }
 
-        public void MarkNextRpn(Token token)
+        public void AddLabelForNextRpn(Token token)
         {
             if (token.TokenType != Token.Type.Label)
             {
@@ -67,7 +61,7 @@ namespace Lang
 
         public void Label(Token token)
         {
-            //AddRpn(new RpnLabel(token, rpn));
+            AddRpn(new RpnLabel(token, token.Value));
         }
 
         public void UnaryOperation(Token token)
@@ -116,7 +110,7 @@ namespace Lang
 
         public void Goto(Token token)
         {
-            AddRpn(new RpnGoto(token));
+            AddRpn(new RpnGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
         }
 
         public void IfBlock()
@@ -206,6 +200,13 @@ namespace Lang
             expressionStack.Push(operation);
         }
 
-        private void AddRpn(Rpn rpn) => program.AddLast(new LinkedListNode<Rpn>(rpn));
+        private void AddRpn(Rpn rpn)
+        {
+            program.AddLast(new LinkedListNode<Rpn>(rpn));
+            if (labelsForNextRpn.Count > 0)
+            {
+                LabelLastRpn();
+            }
+        }
     }
 }

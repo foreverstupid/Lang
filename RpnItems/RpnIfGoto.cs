@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Lang.RpnItems
@@ -7,9 +8,12 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnIfGoto : Rpn
     {
-        public RpnIfGoto(Token token)
+        private IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels;
+
+        public RpnIfGoto(Token token, IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
             : base(token)
         {
+            this.labels = labels;
         }
 
         /// <inheritdoc/>
@@ -17,7 +21,22 @@ namespace Lang.RpnItems
             Stack<RpnConst> stack,
             LinkedListNode<Rpn> currentCmd)
         {
-            throw new System.NotImplementedException();
+            var condition = stack.Pop();
+            var label = stack.Pop();
+
+            if (label.ValueType != RpnConst.Type.Label)
+            {
+                throw new ArgumentException("Label expected");
+            }
+
+            if (labels.TryGetValue(label.GetString(), out var command))
+            {
+                return condition.GetBool() ? command : currentCmd.Next;
+            }
+            else
+            {
+                throw new ArgumentException("Label is uninitialized");
+            }
         }
     }
 }

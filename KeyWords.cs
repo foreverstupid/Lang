@@ -5,8 +5,8 @@ namespace Lang
     /// </summary>
     public static class KeyWords
     {
-        public const string If = "if";
-        public const string Else = "else";
-        public const string Goto = "goto";
+        public const string If = "whether";
+        public const string Else = "otherwise";
+        public const string Goto = "jump";
     }
 }
