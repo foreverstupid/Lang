@@ -18,6 +18,19 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst array, RpnConst index)
         {
+            if (array.ValueType == RpnConst.Type.String)
+            {
+                int idx = index.GetInt();
+                string str = array.GetString();
+
+                if (idx < 0 || idx >= str.Length)
+                {
+                    throw new InterpretationException("Index is out of range");
+                }
+
+                return new RpnString(str[idx].ToString());
+            }
+
             if (array.ValueType != RpnConst.Type.Variable)
             {
                 throw new InterpretationException("Cannot index not a variable");
