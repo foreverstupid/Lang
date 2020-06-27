@@ -9,6 +9,11 @@ namespace Lang
     /// </summary>
     public class ProgramInfo
     {
-        public LinkedList<Rpn> Rpns { get; set; }
+        public ProgramInfo(LinkedList<Rpn> program)
+        {
+            Program = program;
+        }
+
+        public LinkedList<Rpn> Program { get; }
     }
 }

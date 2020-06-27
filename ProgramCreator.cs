@@ -9,11 +9,10 @@ namespace Lang
     public class ProgramCreator
     {
         private readonly LinkedList<Rpn> program = new LinkedList<Rpn>();
-        private readonly Dictionary<string, LinkedListNode<Rpn>> labels =
+        private readonly IDictionary<string, RpnConst> variables =
+            new Dictionary<string, RpnConst>();
+        private readonly IDictionary<string, LinkedListNode<Rpn>> labels =
             new Dictionary<string, LinkedListNode<Rpn>>();
-
-        private readonly Dictionary<string, Variable> variables =
-            new Dictionary<string, Variable>();
 
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
@@ -31,10 +30,7 @@ namespace Lang
                 linkedList.AddLast(new LinkedListNode<Rpn>(rpn));
             }
 
-            return new ProgramInfo()
-            {
-                Rpns = linkedList
-            };
+            return new ProgramInfo(program);
         }
 
         public void MarkNextRpn(Token token)
@@ -57,31 +53,14 @@ namespace Lang
 
         public void Literal(Token token)
         {
-            RpnConst rpn = null;
-
-            if (token.TokenType == Token.Type.Identifier)
+            RpnConst rpn = token.TokenType switch
             {
-                if (variables.TryGetValue(token.Value, out var variable))
-                {
-                    rpn = new RpnVar(token, variable);
-                }
-                else
-                {
-                    var newVarValue = new Variable();
-                    variables.Add(token.Value, newVarValue);
-                    rpn = new RpnVar(token, newVarValue);
-                }
-            }
-            else
-            {
-                rpn = token.TokenType switch
-                {
-                    Token.Type.Float => new RpnFloat(token),
-                    Token.Type.Integer => new RpnInteger(token),
-                    Token.Type.String => new RpnString(token),
-                    _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
-                };
-            }
+                Token.Type.Float => new RpnFloat(token),
+                Token.Type.Integer => new RpnInteger(token),
+                Token.Type.String => new RpnString(token),
+                Token.Type.Identifier => new RpnVar(token, token.Value),
+                _ => throw new RpnCreationException($"Unexpected literal token type {token.TokenType}")
+            };
 
             AddRpn(rpn);
         }
@@ -97,7 +76,7 @@ namespace Lang
             {
                 "!" => new RpnNot(token),
                 "-" => new RpnNegate(token),
-                "$" => new RpnGetValue(token),
+                "$" => new RpnGetValue(token, variables as IReadOnlyDictionary<string, RpnConst>),
                 var op => throw new RpnCreationException("Unknown unary operation: " + op)
             };
 
@@ -108,7 +87,7 @@ namespace Lang
         {
             RpnOperation rpn = token.Value switch
             {
-                "=" => new RpnAssign(token),
+                "=" => new RpnAssign(token, variables),
                 "+" => new RpnAdd(token),
                 "-" => new RpnSubtract(token),
                 "*" => new RpnMultiply(token),

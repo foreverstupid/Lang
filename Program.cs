@@ -23,7 +23,7 @@ namespace Lang
             var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
             var program = syntaxer.Analyse(tokens);
 
-            foreach (var rpn in program.Rpns)
+            foreach (var rpn in program.Program)
             {
                 Console.WriteLine(rpn);
             }

@@ -19,7 +19,7 @@ namespace Lang
         /// <returns>The value of the last running statement in a string format.</returns>
         public string Run(ProgramInfo program)
         {
-            currentCommand = program.Rpns.First;
+            currentCommand = program.Program.First;
 
             do
             {

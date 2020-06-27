@@ -7,9 +7,12 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnAssign : RpnBinaryOperation
     {
-        public RpnAssign(Token token)
+        private readonly IDictionary<string, RpnConst> variables;
+
+        public RpnAssign(Token token, IDictionary<string, RpnConst> variables)
             : base(token)
-        { 
+        {
+            this.variables = variables;
         }
 
         /// <inheritdoc/>
@@ -23,8 +26,7 @@ namespace Lang.RpnItems
                 throw new InterpretationException("Cannot assign to the non-variable value");
             }
 
-            var variable = left as RpnVar;
-            variable.VariableValue.Set(right);
+            variables[left.GetString()] = right;
             return right;
         }
     }

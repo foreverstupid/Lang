@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Lang.RpnItems
 {
     /// <summary>
@@ -5,9 +7,12 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnGetValue : RpnUnaryOperation
     {
-        public RpnGetValue(Token token)
+        private readonly IReadOnlyDictionary<string, RpnConst> variables;
+
+        public RpnGetValue(Token token, IReadOnlyDictionary<string, RpnConst> variables)
             : base(token)
         {
+            this.variables = variables;
         }
 
         /// <inheritdoc/>
@@ -22,14 +27,14 @@ namespace Lang.RpnItems
                 throw new InterpretationException("Cannot get a value of a non-variable entity");
             }
 
-            var variable = operand as RpnVar;
-            try
+            
+            if (variables.TryGetValue(operand.GetString(), out var value))
             {
-                return variable.VariableValue.Get();
+                return value;
             }
-            catch (GetVariableValueException)
+            else
             {
-                throw new InterpretationException($"The variable {this.Token.Value} doesn't exist");
+                throw new InterpretationException($"The variable '{operand.Token.Value}' doesn't exist");
             }
         }
     }

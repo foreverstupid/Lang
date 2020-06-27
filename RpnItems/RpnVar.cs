@@ -5,28 +5,23 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnVar : RpnConst
     {
-        private readonly Variable variableValue;
+        private readonly string name;
 
-        public RpnVar(Variable value)
+        public RpnVar(string name)
         {
-            variableValue = value;
+            this.name = name;
             ValueType = Type.Variable;
         }
 
-        public RpnVar(Token token, Variable value)
+        public RpnVar(Token token, string name)
             : base(token)
         {
-            variableValue = value;
+            this.name = name;
             ValueType = Type.Variable;
         }
 
         /// <inheritdoc/>
         public override Type ValueType { get; }
-
-        /// <summary>
-        /// Variable value of the item.
-        /// </summary>
-        public Variable VariableValue => variableValue;
 
         /// <inheritdoc/>
         public override double GetFloat() =>
@@ -41,10 +36,7 @@ namespace Lang.RpnItems
             );
 
         /// <inheritdoc/>
-        public override string GetString() =>
-            throw new InterpretationException(
-                "Cannot direct get the variable value. Use dereference"
-            );
+        public override string GetString() => name;
 
         /// <inheritdoc/>
         public override bool GetBool() =>
