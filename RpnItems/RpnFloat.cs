@@ -22,7 +22,6 @@ namespace Lang.RpnItems
             if (double.TryParse(token.Value, out double value))
             {
                 this.value = value;
-                ValueType = Type.Float;
             }
             else
             {
@@ -31,7 +30,7 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        public override Type ValueType { get; }
+        public override Type ValueType => Type.Float;
 
         /// <inheritdoc/>
         public override double GetFloat() => value;

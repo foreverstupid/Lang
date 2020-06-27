@@ -15,7 +15,7 @@ namespace Lang
 
         public SyntaxAnalyzer(ILogger logger)
         {
-            this.logger = logger.ForContext("Syntax analysis");
+            this.logger = logger;
         }
 
         /// <summary>
@@ -61,8 +61,8 @@ namespace Lang
         /// <param name="context">The context of the node.</param>
         private void Enter(string context)
         {
-            logger.ForContext(context).Information("Entered");
-            contexts.Push(context);
+            //logger.ForContext(context).Information("Entered");
+            //contexts.Push(context);
         }
 
         /// <summary>
@@ -72,17 +72,17 @@ namespace Lang
         /// <returns>The given node analysis status.</returns>
         private bool Leave(bool isSuccessful)
         {
-            var context = contexts.Pop();
-            var logger = this.logger.ForContext(context);
+            // var context = contexts.Pop();
+            // var logger = this.logger.ForContext(context);
 
-            if (isSuccessful)
-            {
-                logger.Information("+");
-            }
-            else
-            {
-                logger.Error("-");
-            }
+            // if (isSuccessful)
+            // {
+            //     logger.Information("+");
+            // }
+            // else
+            // {
+            //     logger.Error("-");
+            // }
 
             return isSuccessful;
         }
@@ -92,7 +92,7 @@ namespace Lang
         /// </summary>
         private void MoveNext()
         {
-            logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
+            //logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
             tokens.MoveNext();
         }
 

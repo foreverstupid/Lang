@@ -24,7 +24,6 @@ namespace Lang.RpnItems
             if (int.TryParse(token.Value, out int value))
             {
                 this.value = value;
-                ValueType = Type.Integer;
             }
             else
             {
@@ -33,7 +32,7 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        public override Type ValueType { get; }
+        public override Type ValueType => Type.Integer;
 
         /// <inheritdoc/>
         public override double GetFloat() => (double)value;

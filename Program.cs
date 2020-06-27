@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Lang.RpnItems;
 
 namespace Lang
 {
@@ -9,28 +10,36 @@ namespace Lang
         public static void Main(string[] args)
         {
             using var reader = GetReader(args);
+
             var parser = new LexicalParser();
-
             var tokens = Parse(reader, parser);
+            // LogTokens(tokens);
 
-            // Console.WriteLine($"{"Token",20} {"Type",20} {"Position"}");
-            // Console.WriteLine("-------------------------------------------------------------------------------");
-            // foreach (var token in tokens)
-            // {
-            //     Console.WriteLine($"{token.Value, 20} {token.TokenType, 20} {token.Line}:{token.StartPosition}");
-            // }
-
-            var syntaxer = new SyntaxAnalyzer(new NullLogger());
+            var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
             var program = syntaxer.Analyse(tokens);
-
-            // foreach (var rpn in program.Program)
-            // {
-            //     Console.WriteLine(rpn);
-            // }
+            // LogRpns(program.Program);
 
             var interpreter = new Interpreter();
             var exitValue = interpreter.Run(program);
             Console.WriteLine("\nProgram finished with exit value: " + exitValue);
+        }
+
+        private static void LogTokens(IEnumerable<Token> tokens)
+        {
+            Console.WriteLine($"{"Token",20} {"Type",20} {"Position"}");
+            Console.WriteLine("-------------------------------------------------------------------------------");
+            foreach (var token in tokens)
+            {
+                Console.WriteLine($"{token.Value, 20} {token.TokenType, 20} {token.Line}:{token.StartPosition}");
+            }
+        }
+
+        private static void LogRpns(IEnumerable<Rpn> rpns)
+        {
+            foreach (var rpn in rpns)
+            {
+                Console.WriteLine(rpn);
+            }
         }
 
         /// <summary>

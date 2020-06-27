@@ -9,7 +9,7 @@ namespace Lang
     /// </summary>
     public sealed class LexicalParser
     {
-        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}:";
+        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}:?";
         private readonly Dictionary<State, Func<char, Token>> stateHandlers;
 
         private readonly StringBuilder tokenValue = new StringBuilder();
@@ -60,6 +60,8 @@ namespace Lang
         public Token GetNextToken(int character)
         {
             var newToken = extraToken;  // the last extra token should be returned on the current invocation
+
+            // TODO: check string ending
 
             // process the current character
             char nextChar = character == -1 ? ' ' : (char)character;
@@ -208,7 +210,16 @@ namespace Lang
 
         private Token Slash(char character)
         {
-            tokenValue.Append(character);
+            if (character == 'n')
+            {
+                tokenValue.Append('\n');
+            }
+            else
+            {
+                tokenValue.Append(character);
+            }
+
+            state = State.String;
             return null;
         }
 

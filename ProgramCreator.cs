@@ -116,6 +116,7 @@ namespace Lang
                 "~" => new RpnEqual(token),
                 ">" => new RpnGreater(token),
                 "<" => new RpnLess(token),
+                "?" => new RpnCast(token),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 
@@ -242,8 +243,7 @@ namespace Lang
                 !(stackOp is null) &&
                 !(stackOp.HasLessPriorityThan(operation)))
             {
-                AddRpn(stackOp);
-                expressionStack.Pop();
+                AddRpn(expressionStack.Pop());
             }
 
             expressionStack.Push(operation);

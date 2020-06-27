@@ -10,7 +10,8 @@ namespace Lang
     /// </summary>
     public static class BuiltIns
     {
-        public const string Write = "write";
+        public const string Write = "_write";
+        public const string Read = "_read";
 
         public delegate RpnConst Function(params RpnConst[] parameters);
 
@@ -24,6 +25,10 @@ namespace Lang
                         Console.Write(ps[0].GetString());
                         return ps[0];
                     }
+                ),
+                [Read] = new BuiltinFunc(
+                    0,
+                    _ => new RpnString(Console.ReadLine())
                 )
             };
 

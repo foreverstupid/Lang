@@ -15,6 +15,7 @@ namespace Lang.RpnItems
         protected const int MulDivPriority = 600;
         protected const int AddSubPriority = 500;
         protected const int ComparisionPriority = 400;
+        protected const int CastPriority = 300;
         protected const int AssignmentPriority = 200;
 
         public RpnOperation(Token token)
@@ -33,7 +34,15 @@ namespace Lang.RpnItems
         /// given one or not.
         /// </summary>
         public bool HasLessPriorityThan(RpnOperation anotherOperation)
-            => this.Priority < anotherOperation.Priority;
+        {
+            // TODO: something reasonable instead
+            if (this is RpnAssign && anotherOperation is RpnAssign)
+            {
+                return true;
+            }
+
+            return this.Priority < anotherOperation.Priority;
+        }
 
         /// <inheritdoc/>
         protected override void EvalCore(Stack<RpnConst> stack)

@@ -20,11 +20,10 @@ namespace Lang.RpnItems
             }
 
             this.value = token.Value;
-            ValueType = Type.String;
         }
 
         /// <inheritdoc/>
-        public override Type ValueType { get; }
+        public override Type ValueType => Type.String;
 
         /// <inheritdoc/>
         public override double GetFloat() =>

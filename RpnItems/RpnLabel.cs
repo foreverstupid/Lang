@@ -12,18 +12,16 @@ namespace Lang.RpnItems
         public RpnLabel(string name)
         {
             this.name = name;
-            ValueType = Type.Label;
         }
 
         public RpnLabel(Token token, string name)
             : base(token)
         {
             this.name = name;
-            ValueType = Type.Label;
         }
 
         /// <inheritdoc/>
-        public override Type ValueType { get; }
+        public override Type ValueType => Type.Label;
 
         /// <inheritdoc/>
         public override double GetFloat() =>
