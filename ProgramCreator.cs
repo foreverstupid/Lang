@@ -96,7 +96,7 @@ namespace Lang
 
         public void Label(Token token)
         {
-            AddRpn(new RpnLabel(token, token.Value));
+            AddRpn(new RpnLabel(token, lambdaContext + token.Value));
         }
 
         public void UnaryOperation(Token token)
@@ -162,7 +162,7 @@ namespace Lang
             var lambdaEndLabel = LambdaEndPrefix + lambdaIdx;
             var lambdaName = LambdaPrefix + lambdaIdx;
 
-            Label(Const.ReturnLabelName);
+            Label(Const.ReturnLabelName, global: true);
             AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
 
             AddLabelForNextRpn(lambdaEndLabel);
@@ -294,12 +294,12 @@ namespace Lang
 
         private void AddLabelForNextRpn(string labelName)
         {
-            labelsForNextRpn.Add(labelName);
+            labelsForNextRpn.Add(lambdaContext + labelName);
         }
 
-        private void Label(string labelName)
+        private void Label(string labelName, bool global = false)
         {
-            AddRpn(new RpnLabel(labelName));
+            AddRpn(new RpnLabel((global ? "" : lambdaContext) + labelName));
         }
 
         private void NewOperation(RpnOperation operation)

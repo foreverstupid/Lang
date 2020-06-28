@@ -21,13 +21,11 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst operand)
         {
-            // TODO: positional args
             if (operand.ValueType != RpnConst.Type.Variable)
             {
                 throw new InterpretationException("Cannot get a value of a non-variable entity");
             }
 
-            
             if (variables.TryGetValue(operand.GetString(), out var value))
             {
                 return value;
