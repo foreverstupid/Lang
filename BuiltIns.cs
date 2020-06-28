@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using Lang.RpnItems;
 
 namespace Lang
@@ -12,6 +12,10 @@ namespace Lang
     {
         public const string Write = "_write";
         public const string Read = "_read";
+        public const string Rand = "_rnd";
+        public const string GetFileContent = "_readFile";
+        public const string WriteToFile = "_writeFile";
+        public const string Length = "_length";
 
         public delegate RpnConst Function(params RpnConst[] parameters);
 
@@ -29,6 +33,53 @@ namespace Lang
                 [Read] = new BuiltinFunc(
                     0,
                     _ => new RpnString(Console.ReadLine())
+                ),
+                [Rand] = new BuiltinFunc(
+                    0,
+                    _ =>
+                    {
+                        var rnd = new Random();
+                        return new RpnFloat(rnd.NextDouble());
+                    }
+                ),
+                [GetFileContent] = new BuiltinFunc(
+                    1,
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        if (!File.Exists(path))
+                        {
+                            throw new InterpretationException(
+                                $"File {path} doesn't exist"
+                            );
+                        }
+
+                        using var reader = new StreamReader(path);
+                        var content = reader.ReadToEnd();
+                        return new RpnString(content);
+                    }
+                ),
+                [WriteToFile] = new BuiltinFunc(
+                    2,
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        if (!File.Exists(path))
+                        {
+                            throw new InterpretationException(
+                                $"File {path} doesn't exist"
+                            );
+                        }
+
+                        using var writer = new StreamWriter(path);
+                        var content = ps[1].GetString();
+                        writer.Write(content);
+                        return new RpnString(content);
+                    }
+                ),
+                [Length] = new BuiltinFunc(
+                    1,
+                    ps => new RpnInteger(ps[0].GetString().Length)
                 )
             };
 
