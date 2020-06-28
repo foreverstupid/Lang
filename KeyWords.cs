@@ -1,13 +1,12 @@
 namespace Lang
 {
     /// <summary>
-    /// String constants.
+    /// String constants for the language key words.
     /// </summary>
-    public static class Const
+    public static class KeyWords
     {
         public const string If = "if";
         public const string Else = "or";
         public const string Goto = "jump";
-        public const string ReturnLabelName = "#return#";
     }
 }

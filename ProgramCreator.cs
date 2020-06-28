@@ -12,15 +12,13 @@ namespace Lang
         private const string ElseLabelPrefix = "#else#label#";
         private const string LambdaPrefix = "#f#";
         private const string LambdaEndPrefix = "#end#of#f#";
+        private const string ReturnLabelPrefix = "#return#";
 
         private readonly IDictionary<string, RpnConst> variables =
             new Dictionary<string, RpnConst>();
 
         private readonly IDictionary<string, LinkedListNode<Rpn>> labels =
-            new Dictionary<string, LinkedListNode<Rpn>>()
-            {
-                [Const.ReturnLabelName] = null
-    };
+            new Dictionary<string, LinkedListNode<Rpn>>();
 
         private readonly IDictionary<string, LinkedListNode<Rpn>> functions =
             new Dictionary<string, LinkedListNode<Rpn>>();
@@ -161,14 +159,16 @@ namespace Lang
             var lambdaIdx = lambdaIdxStack.Pop();
             var lambdaEndLabel = LambdaEndPrefix + lambdaIdx;
             var lambdaName = LambdaPrefix + lambdaIdx;
+            var withoutLastContext = lambdaContext
+                .Substring(0, lambdaContext.Length - lambdaName.Length);
 
-            Label(Const.ReturnLabelName, global: true);
+            Label(ReturnLabelPrefix, context: withoutLastContext);
             AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
 
             AddLabelForNextRpn(lambdaEndLabel);
             AddRpn(new RpnFunc(lambdaName));
 
-            lambdaContext = lambdaContext.Substring(0, lambdaContext.Length - lambdaName.Length);
+            lambdaContext = withoutLastContext;
         }
 
         public void Parameter(Token token)
@@ -229,12 +229,13 @@ namespace Lang
 
         public void Eval(Token token, int paramCount)
         {
+            var ctxt = lambdaContext;
             AddRpn(new RpnEval(
                 token,
                 paramCount,
                 functions as IReadOnlyDictionary<string, LinkedListNode<Rpn>>,
                 variables as IReadOnlyDictionary<string, RpnConst>,
-                ret => labels[Const.ReturnLabelName] = ret
+                ret => labels[ctxt + ReturnLabelPrefix] = ret
             ));
         }
 
@@ -297,9 +298,10 @@ namespace Lang
             labelsForNextRpn.Add(lambdaContext + labelName);
         }
 
-        private void Label(string labelName, bool global = false)
+        private void Label(string labelName, string context = null)
         {
-            AddRpn(new RpnLabel((global ? "" : lambdaContext) + labelName));
+            context ??= lambdaContext;
+            AddRpn(new RpnLabel(context + labelName));
         }
 
         private void NewOperation(RpnOperation operation)

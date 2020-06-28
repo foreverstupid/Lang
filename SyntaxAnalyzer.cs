@@ -392,7 +392,7 @@ namespace Lang
         {
             Enter(nameof(GotoStatement));
 
-            if (!tokens.CurrentTokenValueIs(Const.Goto))
+            if (!tokens.CurrentTokenValueIs(KeyWords.Goto))
             {
                 return Leave(false);
             }
@@ -414,7 +414,7 @@ namespace Lang
         {
             Enter(nameof(IfStatement));
 
-            if (!tokens.CurrentTokenValueIs(Const.If))
+            if (!tokens.CurrentTokenValueIs(KeyWords.If))
             {
                 return Leave(false);
             }
@@ -432,7 +432,7 @@ namespace Lang
                 SetError("Statement in the if-part is expected");
             }
 
-            if (tokens.CurrentTokenValueIs(Const.Else))
+            if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
                 creator.Else(tokens.CurrentOrLast);
                 MoveNext();
