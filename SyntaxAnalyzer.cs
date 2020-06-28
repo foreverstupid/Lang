@@ -315,7 +315,7 @@ namespace Lang
             return Leave(CodeBlock());
         }
 
-        private bool CodeBlock()
+        private bool CodeBlock(bool isPure = true)
         {
             Enter(nameof(CodeBlock));
 
@@ -324,7 +324,11 @@ namespace Lang
                 return Leave(false);
             }
 
-            creator.CodeBlockStart();
+            if (isPure)
+            {
+                creator.CodeBlockStart();
+            }
+
             MoveNext();
             if (!Program())
             {
@@ -336,7 +340,11 @@ namespace Lang
                 SetError("Closing curly bracket at the end of the code block is expected");
             }
 
-            creator.CodeBlockFinish();
+            if (isPure)
+            {
+                creator.CodeBlockFinish();
+            }
+
             MoveNext();
             return Leave(true);
         }
@@ -380,18 +388,18 @@ namespace Lang
             }
 
             creator.If(ifToken);
-            if (!CodeBlock())
+            if (!CodeBlock(isPure: false) && !Statement())
             {
-                SetError("Code block in the if-part is expected");
+                SetError("Code block or a single statement in the if-part is expected");
             }
 
             if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
                 creator.Else(tokens.CurrentOrLast);
                 MoveNext();
-                if (!CodeBlock())
+                if (!CodeBlock(isPure: false) && !Statement())
                 {
-                    SetError("Code block in the else-part is expected");
+                    SetError("Code block or a single statement in the else-part is expected");
                 }
 
                 creator.EndElse();

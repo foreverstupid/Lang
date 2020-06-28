@@ -34,7 +34,7 @@ namespace Lang.RpnItems
             }
             else
             {
-                throw new InterpretationException($"The variable '{operand.Token.Value}' doesn't exist");
+                throw new InterpretationException($"The variable '{operand.Token?.Value}' doesn't exist");
             }
         }
     }

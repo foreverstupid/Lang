@@ -20,7 +20,9 @@
 
 <goto_statement> ::= goto <label>
 
-<if_statement> ::= if <expression> <code_block> [ else <code_block> ]
+<if_statement> ::= if <expression> <case_part> [ else <case_part> ]
+
+<case_part> ::= <statement> | <code_block>
 
 <unar> ::= - | ! | $
 
