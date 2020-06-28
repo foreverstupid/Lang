@@ -19,10 +19,9 @@ namespace Lang
 
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
+        private readonly Stack<int> ifIdxStack = new Stack<int>();
 
         private int ifCount = 0;
-        private string ifLabelName;
-        private string endIfLabelName;
 
         public ProgramCreator()
         {
@@ -146,17 +145,21 @@ namespace Lang
         public void If(Token token)
         {
             EndOfExpression();
-            ifCount++;
-            endIfLabelName = ifLabelName = IfLabelPrefix + ifCount;
+            ifIdxStack.Push(ifCount);
+            var ifLabelName = IfLabelPrefix + ifCount;
 
             Label(ifLabelName);
             AddRpn(new RpnIfGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            ifCount++;
         }
 
         public void Else(Token token)
         {
-            endIfLabelName = ElseLabelPrefix + ifCount;
-            Label(endIfLabelName);
+            var idx = ifIdxStack.Peek();
+            var elseLabelName = ElseLabelPrefix + idx;
+            var ifLabelName = IfLabelPrefix + idx;
+
+            Label(elseLabelName);
             AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
 
             AddLabelForNextRpn(ifLabelName);
@@ -164,7 +167,17 @@ namespace Lang
 
         public void EndIf()
         {
-            AddLabelForNextRpn(endIfLabelName);
+            var idx = ifIdxStack.Pop();
+            var ifLabelName = IfLabelPrefix + idx;
+            AddLabelForNextRpn(ifLabelName);
+            AddRpn(new RpnNop());
+        }
+
+        public void EndElse()
+        {
+            var idx = ifIdxStack.Pop();
+            var elseLabelName = ElseLabelPrefix + idx;
+            AddLabelForNextRpn(elseLabelName);
             AddRpn(new RpnNop());
         }
 

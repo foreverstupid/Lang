@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Lang.RpnItems;
 
@@ -24,7 +25,19 @@ namespace Lang
             do
             {
                 lastCommand = currentCommand;
-                currentCommand = currentCommand.Value.Eval(stack, currentCommand);
+                try
+                {
+                    currentCommand = currentCommand.Value.Eval(stack, currentCommand);
+                }
+                catch (InterpretationException e)
+                {
+                    Console.WriteLine(
+                        $"({currentCommand.Value.Token.Line}:{currentCommand.Value.Token.StartPosition}) " +
+                        e.Message
+                    );
+
+                    return "ERROR";
+                }
             }
             while (!(currentCommand is null) && (currentCommand != lastCommand));
 

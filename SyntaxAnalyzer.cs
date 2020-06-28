@@ -199,9 +199,12 @@ namespace Lang
 
             var evalToken = tokens.CurrentOrLast;
             int paramCount = 0;
+            creator.OpenBracket();
             MoveNext();
+
             if (tokens.CurrentTokenValueIs(")"))
             {
+                creator.CloseBracket();
                 creator.Eval(evalToken, paramCount);
                 MoveNext();
                 return Leave(true);
@@ -223,8 +226,9 @@ namespace Lang
                     SetError("Comma between arguments is expected");
                 }
 
-                creator.EndOfExpression();
+                creator.CloseBracket();
                 MoveNext();
+                creator.OpenBracket();
                 if (!Expression())
                 {
                     SetError("Expression in an argument list is expected");
@@ -233,7 +237,7 @@ namespace Lang
                 paramCount++;
             }
 
-            creator.EndOfExpression();
+            creator.CloseBracket();
             creator.Eval(evalToken, paramCount);
             MoveNext();
             return Leave(true);
@@ -389,9 +393,14 @@ namespace Lang
                 {
                     SetError("Code block in the else-part is expected");
                 }
+
+                creator.EndElse();
+            }
+            else
+            {
+                creator.EndIf();
             }
 
-            creator.EndIf();
             return Leave(true);
         }
     }
