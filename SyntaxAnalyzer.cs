@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Lang.RpnItems;
 
 namespace Lang
 {
@@ -23,7 +24,7 @@ namespace Lang
         /// </summary>
         /// <param name="tokens">The collection of the code tokens.</param>
         /// <returns>Needed information for interpretation.</returns>
-        public ProgramInfo Analyse(IEnumerable<Token> tokens)
+        public LinkedList<Rpn> Analyse(IEnumerable<Token> tokens)
         {
             this.tokens = new TokenEnumerator(tokens);
             creator = new ProgramCreator();
@@ -42,7 +43,7 @@ namespace Lang
                 logger.Error(se.Message);
             }
 
-            return creator.GetInfo();
+            return creator.Program;
         }
 
         /// <summary>

@@ -18,9 +18,9 @@ namespace Lang
         /// </summary>
         /// <param name="program">The program to run.</param>
         /// <returns>The value of the last running statement in a string format.</returns>
-        public string Run(ProgramInfo program)
+        public string Run(LinkedList<Rpn> program)
         {
-            currentCommand = program.Program.First;
+            currentCommand = program.First;
 
             do
             {

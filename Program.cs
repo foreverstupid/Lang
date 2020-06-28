@@ -17,7 +17,7 @@ namespace Lang
 
             var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
             var program = syntaxer.Analyse(tokens);
-             LogRpns(program.Program);
+            // LogRpns(program);
 
             var interpreter = new Interpreter();
             var exitValue = interpreter.Run(program);

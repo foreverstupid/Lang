@@ -11,7 +11,6 @@ namespace Lang
         private const string IfLabelPrefix = "#if#label#";
         private const string ElseLabelPrefix = "#else#label#";
 
-        private readonly LinkedList<Rpn> program = new LinkedList<Rpn>();
         private readonly IDictionary<string, RpnConst> variables =
             new Dictionary<string, RpnConst>();
         private readonly IDictionary<string, LinkedListNode<Rpn>> labels =
@@ -28,10 +27,10 @@ namespace Lang
             expressionStack.Push(null);
         }
 
-        public ProgramInfo GetInfo()
-        {
-            return new ProgramInfo(program);
-        }
+        /// <summary>
+        /// Program representation as RPNs.
+        /// </summary>
+        public LinkedList<Rpn> Program { get; } = new LinkedList<Rpn>();
 
         public void AddLabelForNextRpn(Token token)
         {
@@ -234,7 +233,7 @@ namespace Lang
                     );
                 }
 
-                labels.Add(label, program.Last);
+                labels.Add(label, Program.Last);
             }
 
             labelsForNextRpn.Clear();
@@ -264,7 +263,7 @@ namespace Lang
 
         private void AddRpn(Rpn rpn)
         {
-            program.AddLast(new LinkedListNode<Rpn>(rpn));
+            Program.AddLast(new LinkedListNode<Rpn>(rpn));
             if (labelsForNextRpn.Count > 0)
             {
                 LabelLastRpn();
