@@ -10,13 +10,17 @@ namespace Lang
     {
         private const string IfLabelPrefix = "#if#label#";
         private const string ElseLabelPrefix = "#else#label#";
-        private const string LambdaPrefix = "#lambda#";
+        private const string LambdaPrefix = "#f#";
+        private const string LambdaEndPrefix = "#end#of#f#";
 
         private readonly IDictionary<string, RpnConst> variables =
             new Dictionary<string, RpnConst>();
 
         private readonly IDictionary<string, LinkedListNode<Rpn>> labels =
-            new Dictionary<string, LinkedListNode<Rpn>>();
+            new Dictionary<string, LinkedListNode<Rpn>>()
+            {
+                [Const.ReturnLabelName] = null
+    };
 
         private readonly IDictionary<string, LinkedListNode<Rpn>> functions =
             new Dictionary<string, LinkedListNode<Rpn>>();
@@ -24,9 +28,12 @@ namespace Lang
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
+        private readonly Stack<int> lambdaIdxStack = new Stack<int>();
+        private readonly Stack<Token> parameterStack = new Stack<Token>();
 
         private int ifCount = 0;
         private int lambdaCount = 0;
+        private string lambdaContext = "";
 
         public ProgramCreator()
         {
@@ -68,7 +75,7 @@ namespace Lang
                 }
                 else
                 {
-                    rpn = new RpnVar(token, token.Value);
+                    rpn = new RpnVar(token, lambdaContext + token.Value);
                 }
             }
             else
@@ -121,6 +128,7 @@ namespace Lang
                 ">" => new RpnGreater(token),
                 "<" => new RpnLess(token),
                 "?" => new RpnCast(token),
+                "->" => new RpnRightAssign(token, variables),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 
@@ -129,16 +137,45 @@ namespace Lang
 
         public void CodeBlockStart()
         {
-            var lambdaName = LambdaPrefix + lambdaCount;
+            OpenBracket();
             lambdaCount++;
-            
+            lambdaIdxStack.Push(lambdaCount);
+            var lambdaName = LambdaPrefix + lambdaCount;
+            var lambdaEndLabel = LambdaEndPrefix + lambdaCount;
+
+            lambdaContext += lambdaName;
+
+            // add jump to the end of the code block
+            Label(lambdaEndLabel);
+            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+
             AddRpn(new RpnNop());
             functions.Add(lambdaName, Program.Last);
         }
 
         public void CodeBlockFinish()
         {
-            
+            CloseBracket();
+            Program.RemoveLast();   // not ignore the last valur to return it from the function
+
+            var lambdaIdx = lambdaIdxStack.Pop();
+            var lambdaEndLabel = LambdaEndPrefix + lambdaIdx;
+            var lambdaName = LambdaPrefix + lambdaIdx;
+
+            Label(Const.ReturnLabelName);
+            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+
+            AddLabelForNextRpn(lambdaEndLabel);
+            AddRpn(new RpnFunc(lambdaName));
+
+            lambdaContext = lambdaContext.Substring(0, lambdaContext.Length - lambdaName.Length);
+        }
+
+        public void Parameter(Token token)
+        {
+            AddRpn(new RpnVar(token, lambdaContext + token.Value));
+            AddRpn(new RpnRightAssign(token, variables));
+            AddRpn(new RpnIgnore());
         }
 
         public void Ignore()
@@ -192,7 +229,13 @@ namespace Lang
 
         public void Eval(Token token, int paramCount)
         {
-            AddRpn(new RpnEval(token, paramCount, null));
+            AddRpn(new RpnEval(
+                token,
+                paramCount,
+                functions as IReadOnlyDictionary<string, LinkedListNode<Rpn>>,
+                variables as IReadOnlyDictionary<string, RpnConst>,
+                ret => labels[Const.ReturnLabelName] = ret
+            ));
         }
 
         public void OpenBracket()
@@ -213,7 +256,7 @@ namespace Lang
             CloseBracket();
             if (expressionStack.TryPeek(out _))
             {
-                throw new RpnCreationException("Expression is invalid");
+                //throw new RpnCreationException("Expression is invalid");
             }
 
             expressionStack.Push(null);
@@ -224,7 +267,7 @@ namespace Lang
             CloseBracket();
             if (expressionStack.TryPeek(out _))
             {
-                throw new RpnCreationException("Expression is invalid");
+               // throw new RpnCreationException("Expression is invalid");
             }
 
             expressionStack.Push(null);

@@ -16,7 +16,9 @@
 
 <literal> ::= <string> | <int> | <float> | <variable>
 
-<code_block> ::= \{ <program> \}
+<code_block> ::= \{ [ <params> -> ] <program> \}
+
+<params> ::= \[ <variable> { ,<variable> } \]
 
 <goto_statement> ::= jump <label>
 
@@ -24,7 +26,7 @@
 
 <unar> ::= - | ! | $
 
-<binar> ::= + | - | * | / | % | > | < | ~ | & | \| | = | ?
+<binar> ::= + | - | * | / | % | > | < | ~ | & | \| | = | ? | ->
 
 <variable> ::= -//-
 

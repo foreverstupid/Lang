@@ -327,6 +327,9 @@ namespace Lang
 
             creator.CodeBlockStart();
             MoveNext();
+
+            Parameters();   // can or can not be
+
             if (!Program())
             {
                 SetError("Invalid code block body");
@@ -342,11 +345,54 @@ namespace Lang
             return Leave(true);
         }
 
+        private bool Parameters()
+        {
+            Enter(nameof(Parameters));
+
+            if (!tokens.CurrentTokenValueIs("["))
+            {
+                return Leave(false);
+            }
+
+            MoveNext();
+            if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+            {
+                SetError("Parameter definition is expected");
+            }
+
+            creator.Parameter(tokens.CurrentOrLast);
+            MoveNext();
+            while (!tokens.CurrentTokenValueIs("]"))
+            {
+                if (!tokens.CurrentTokenValueIs(","))
+                {
+                    SetError("Comma in parameter enumeration is expected");
+                }
+
+                MoveNext();
+                if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+                {
+                    SetError("Parameter definition is expected");
+                }
+
+                creator.Parameter(tokens.CurrentOrLast);
+                MoveNext();
+            }
+
+            if (!tokens.CurrentTokenValueIs("]"))
+            {
+                SetError("']' is expected at the end of the parameters enumeration");
+            }
+
+            MoveNext();
+            return Leave(true);
+        }
+
         private bool GotoStatement()
         {
             Enter(nameof(GotoStatement));
 
-            if (!tokens.CurrentTokenValueIs(KeyWords.Goto))
+            if (!tokens.CurrentTokenValueIs(Const.Goto))
             {
                 return Leave(false);
             }
@@ -368,7 +414,7 @@ namespace Lang
         {
             Enter(nameof(IfStatement));
 
-            if (!tokens.CurrentTokenValueIs(KeyWords.If))
+            if (!tokens.CurrentTokenValueIs(Const.If))
             {
                 return Leave(false);
             }
@@ -386,7 +432,7 @@ namespace Lang
                 SetError("Statement in the if-part is expected");
             }
 
-            if (tokens.CurrentTokenValueIs(KeyWords.Else))
+            if (tokens.CurrentTokenValueIs(Const.Else))
             {
                 creator.Else(tokens.CurrentOrLast);
                 MoveNext();

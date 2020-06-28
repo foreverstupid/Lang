@@ -13,11 +13,11 @@ namespace Lang
 
             var parser = new LexicalParser();
             var tokens = Parse(reader, parser);
-            // LogTokens(tokens);
+             LogTokens(tokens);
 
             var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
             var program = syntaxer.Analyse(tokens);
-            // LogRpns(program);
+             LogRpns(program);
 
             var interpreter = new Interpreter();
             var exitValue = interpreter.Run(program);

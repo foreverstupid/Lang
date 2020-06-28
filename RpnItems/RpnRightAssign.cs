@@ -3,14 +3,14 @@ using System.Collections.Generic;
 namespace Lang.RpnItems
 {
     /// <summary>
-    /// RPN item that represents assignment some value to the variable.
-    /// Returns assigning value to the stack.
+    /// RPN item that represents assignment when assignable value is right and
+    /// assigning is left one. Returns assignable value to the stack.
     /// </summary>
-    public class RpnAssign : RpnBinaryOperation
+    public class RpnRightAssign : RpnBinaryOperation
     {
         private readonly IDictionary<string, RpnConst> variables;
 
-        public RpnAssign(Token token, IDictionary<string, RpnConst> variables)
+        public RpnRightAssign(Token token, IDictionary<string, RpnConst> variables)
             : base(token)
         {
             this.variables = variables;
@@ -22,12 +22,12 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
         {
-            if (left.ValueType != RpnConst.Type.Variable)
+            if (right.ValueType != RpnConst.Type.Variable)
             {
                 throw new InterpretationException("Cannot assign to the non-variable value");
             }
 
-            variables[left.GetString()] = right;
+            variables[right.GetString()] = left;
             return right;
         }
     }

@@ -33,6 +33,7 @@ namespace Lang
                 [State.String] = String,
                 [State.Slash] = Slash,
                 [State.Comment] = Comment,
+                [State.RightAssign] = RightAssign,
             };
         }
 
@@ -49,6 +50,7 @@ namespace Lang
             Comment,
             Identifier,
             Label,
+            RightAssign,
         }
 
         /// <summary>
@@ -124,6 +126,11 @@ namespace Lang
             else if (character == '#')
             {
                 state = State.Comment;
+            }
+            else if (character == '-')
+            {
+                state = State.RightAssign;
+                tokenValue.Append(character);
             }
             else if (Separators.Contains(character))
             {
@@ -275,6 +282,19 @@ namespace Lang
             }
 
             return null;
+        }
+
+        private Token RightAssign(char character)
+        {
+            if (character == '>')
+            {
+                tokenValue.Append(character);
+                return OnNewToken(Token.Type.Separator);
+            }
+            else
+            {
+                return OnExtraToken(character, Token.Type.Separator);
+            }
         }
 
         /// <summary>

@@ -28,6 +28,7 @@ namespace Lang.RpnItems
             Label,
             Variable,
             BuiltIn,
+            Func,
         }
 
         /// <summary>
