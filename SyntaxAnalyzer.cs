@@ -296,7 +296,7 @@ namespace Lang
                 return Leave(true);
             }
 
-            return Leave(Literal());
+            return Leave(Literal() || CodeBlock());
         }
 
         private bool Literal()
@@ -313,10 +313,10 @@ namespace Lang
                 return Leave(true);
             }
 
-            return Leave(CodeBlock());
+            return Leave(false);
         }
 
-        private bool CodeBlock(bool isPure = true)
+        private bool CodeBlock()
         {
             Enter(nameof(CodeBlock));
 
@@ -325,11 +325,7 @@ namespace Lang
                 return Leave(false);
             }
 
-            if (isPure)
-            {
-                creator.CodeBlockStart();
-            }
-
+            creator.CodeBlockStart();
             MoveNext();
             if (!Program())
             {
@@ -341,11 +337,7 @@ namespace Lang
                 SetError("Closing curly bracket at the end of the code block is expected");
             }
 
-            if (isPure)
-            {
-                creator.CodeBlockFinish();
-            }
-
+            creator.CodeBlockFinish();
             MoveNext();
             return Leave(true);
         }
@@ -389,18 +381,18 @@ namespace Lang
             }
 
             creator.If(ifToken);
-            if (!CodeBlock(isPure: false) && !Statement())
+            if (!Statement())
             {
-                SetError("Code block or a single statement in the if-part is expected");
+                SetError("Statement in the if-part is expected");
             }
 
             if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
                 creator.Else(tokens.CurrentOrLast);
                 MoveNext();
-                if (!CodeBlock(isPure: false) && !Statement())
+                if (!Statement())
                 {
-                    SetError("Code block or a single statement in the else-part is expected");
+                    SetError("Statement in the else-part is expected");
                 }
 
                 creator.EndElse();

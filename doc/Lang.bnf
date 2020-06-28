@@ -12,17 +12,15 @@
 
 <expression> ::= [ <unar> ] <operand>[<tail>] { <binar><expression> }
 
-<operand> ::= ( <expression> ) | <literal>
+<operand> ::= ( <expression> ) | <literal> | <code_block>
 
-<literal> ::= <string> | <int> | <float> | <code_block> | <variable>
+<literal> ::= <string> | <int> | <float> | <variable>
 
 <code_block> ::= \{ <program> \}
 
-<goto_statement> ::= goto <label>
+<goto_statement> ::= jump <label>
 
-<if_statement> ::= if <expression> <case_part> [ else <case_part> ]
-
-<case_part> ::= <statement> | <code_block>
+<if_statement> ::= if <expression> <statement> [ or <statement> ]
 
 <unar> ::= - | ! | $
 

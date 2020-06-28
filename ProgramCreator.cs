@@ -10,10 +10,15 @@ namespace Lang
     {
         private const string IfLabelPrefix = "#if#label#";
         private const string ElseLabelPrefix = "#else#label#";
+        private const string LambdaPrefix = "#lambda#";
 
         private readonly IDictionary<string, RpnConst> variables =
             new Dictionary<string, RpnConst>();
+
         private readonly IDictionary<string, LinkedListNode<Rpn>> labels =
+            new Dictionary<string, LinkedListNode<Rpn>>();
+
+        private readonly IDictionary<string, LinkedListNode<Rpn>> functions =
             new Dictionary<string, LinkedListNode<Rpn>>();
 
         private readonly List<string> labelsForNextRpn = new List<string>();
@@ -21,6 +26,7 @@ namespace Lang
         private readonly Stack<int> ifIdxStack = new Stack<int>();
 
         private int ifCount = 0;
+        private int lambdaCount = 0;
 
         public ProgramCreator()
         {
@@ -123,7 +129,11 @@ namespace Lang
 
         public void CodeBlockStart()
         {
-
+            var lambdaName = LambdaPrefix + lambdaCount;
+            lambdaCount++;
+            
+            AddRpn(new RpnNop());
+            functions.Add(lambdaName, Program.Last);
         }
 
         public void CodeBlockFinish()
