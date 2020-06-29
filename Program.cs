@@ -11,17 +11,28 @@ namespace Lang
         {
             using var reader = GetReader(args);
 
-            var parser = new LexicalParser();
-            var tokens = Parse(reader, parser);
-             LogTokens(tokens);
+            try
+            {
+                var parser = new LexicalParser();
+                var tokens = Parse(reader, parser);
+                LogTokens(tokens);
 
-            var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
-            var program = syntaxer.Analyse(tokens);
-             LogRpns(program);
+                var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
+                var program = syntaxer.Analyse(tokens);
+                LogRpns(program);
 
-            var interpreter = new Interpreter();
-            var exitValue = interpreter.Run(program);
-            Console.WriteLine("\nProgram finished with exit value: " + exitValue);
+                var interpreter = new Interpreter();
+                var exitValue = interpreter.Run(program);
+                Console.WriteLine("\nProgram finished with exit value: " + exitValue);
+            }
+            catch (SyntaxException se)
+            {
+                Console.WriteLine(se.Message);
+            }
+            catch (InterpretationException ie)
+            {
+                Console.WriteLine(ie.Message);
+            }
         }
 
         private static void LogTokens(IEnumerable<Token> tokens)

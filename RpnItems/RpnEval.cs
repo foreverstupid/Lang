@@ -8,7 +8,7 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnEval : Rpn
     {
-        private readonly Action<LinkedListNode<Rpn>> setReturnCommand;
+        private readonly Action<string, LinkedListNode<Rpn>> setReturnCommand;
         private readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions;
         private readonly IReadOnlyDictionary<string, RpnConst> variables;
         private readonly int paramCount;
@@ -18,7 +18,7 @@ namespace Lang.RpnItems
             int paramCount,
             IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions,
             IReadOnlyDictionary<string, RpnConst> variables,
-            Action<LinkedListNode<Rpn>> setReturnCommand
+            Action<string, LinkedListNode<Rpn>> setReturnCommand
         )
             : base(token)
         {
@@ -109,7 +109,7 @@ namespace Lang.RpnItems
                     stack.Push(parameters[i]);
                 }
 
-                setReturnCommand(currentCmd.Next);
+                setReturnCommand(funcName, currentCmd.Next);
             }
         }
     }

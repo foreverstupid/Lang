@@ -154,21 +154,20 @@ namespace Lang
         public void LambdaFinish()
         {
             CloseBracket();
-            Program.RemoveLast();   // not ignore the last valur to return it from the function
+            Program.RemoveLast();   // not ignore the last value to return it from the function
 
             var lambdaIdx = lambdaIdxStack.Pop();
             var lambdaEndLabel = LambdaEndPrefix + lambdaIdx;
             var lambdaName = LambdaPrefix + lambdaIdx;
-            var withoutLastContext = lambdaContext
-                .Substring(0, lambdaContext.Length - lambdaName.Length);
 
-            Label(ReturnLabelPrefix, context: withoutLastContext);
+            Label(ReturnLabelPrefix, lambdaName);
             AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
 
             AddLabelForNextRpn(lambdaEndLabel);
             AddRpn(new RpnFunc(lambdaName));
 
-            lambdaContext = withoutLastContext;
+            lambdaContext = lambdaContext
+                .Substring(0, lambdaContext.Length - lambdaName.Length);
         }
 
         public void Parameter(Token token)
@@ -235,7 +234,7 @@ namespace Lang
                 paramCount,
                 functions as IReadOnlyDictionary<string, LinkedListNode<Rpn>>,
                 variables as IReadOnlyDictionary<string, RpnConst>,
-                ret => labels[ctxt + ReturnLabelPrefix] = ret
+                (funcName, ret) => labels[funcName + ReturnLabelPrefix] = ret
             ));
         }
 

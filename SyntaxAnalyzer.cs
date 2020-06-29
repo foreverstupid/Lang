@@ -29,18 +29,11 @@ namespace Lang
             this.tokens = new TokenEnumerator(tokens);
             creator = new ProgramCreator();
 
-            try
-            {
-                Program();
+            Program();
 
-                if (!this.tokens.IsFinished)
-                {
-                    SetError("Unknown statement");
-                }
-            }
-            catch (SyntaxException se)
+            if (!this.tokens.IsFinished)
             {
-                logger.Error(se.Message);
+                SetError("Unknown statement");
             }
 
             return creator.Program;
@@ -382,11 +375,6 @@ namespace Lang
 
                 creator.Parameter(tokens.CurrentOrLast);
                 MoveNext();
-            }
-
-            if (!tokens.CurrentTokenValueIs("]"))
-            {
-                SetError("']' is expected at the end of the parameters enumeration");
             }
 
             MoveNext();
