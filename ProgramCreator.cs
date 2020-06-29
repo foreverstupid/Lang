@@ -133,7 +133,7 @@ namespace Lang
             NewOperation(rpn);
         }
 
-        public void CodeBlockStart()
+        public void LambdaStart()
         {
             OpenBracket();
             lambdaCount++;
@@ -151,7 +151,7 @@ namespace Lang
             functions.Add(lambdaName, Program.Last);
         }
 
-        public void CodeBlockFinish()
+        public void LambdaFinish()
         {
             CloseBracket();
             Program.RemoveLast();   // not ignore the last valur to return it from the function

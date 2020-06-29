@@ -12,11 +12,11 @@
 
 <expression> ::= [ <unar> ] <operand>[<tail>] { <binar><expression> }
 
-<operand> ::= ( <expression> ) | <literal> | <code_block>
+<operand> ::= ( <expression> ) | <literal> | <lambda>
 
 <literal> ::= <string> | <int> | <float> | <variable>
 
-<code_block> ::= \{ [ <params> -> ] <program> \}
+<lambda> ::= [ <params> ]\{ <program> \}
 
 <params> ::= \[ <variable> { ,<variable> } \]
 

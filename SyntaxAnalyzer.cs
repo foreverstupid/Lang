@@ -296,7 +296,7 @@ namespace Lang
                 return Leave(true);
             }
 
-            return Leave(Literal() || CodeBlock());
+            return Leave(Literal() || Lambda());
         }
 
         private bool Literal()
@@ -316,19 +316,23 @@ namespace Lang
             return Leave(false);
         }
 
-        private bool CodeBlock()
+        private bool Lambda()
         {
-            Enter(nameof(CodeBlock));
+            Enter(nameof(Lambda));
+
+            bool hasParams = Parameters();
 
             if (!tokens.CurrentTokenValueIs("{"))
             {
                 return Leave(false);
             }
 
-            creator.CodeBlockStart();
-            MoveNext();
+            if (!hasParams)
+            {
+                creator.LambdaStart();
+            }
 
-            Parameters();   // can or can not be
+            MoveNext();
 
             if (!Program())
             {
@@ -340,7 +344,7 @@ namespace Lang
                 SetError("Closing curly bracket at the end of the code block is expected");
             }
 
-            creator.CodeBlockFinish();
+            creator.LambdaFinish();
             MoveNext();
             return Leave(true);
         }
@@ -355,6 +359,7 @@ namespace Lang
             }
 
             MoveNext();
+            creator.LambdaStart();
             if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
             {
                 SetError("Parameter definition is expected");
