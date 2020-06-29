@@ -43,5 +43,9 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override bool GetBool() => value != 0.0;
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => this.GetType().Name + ": " + value;
     }
 }

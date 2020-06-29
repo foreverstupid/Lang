@@ -25,6 +25,7 @@ namespace Lang.RpnItems
             Stack<RpnConst> stack,
             LinkedListNode<Rpn> currentCmd);
 
+        /// <inheritdoc/>
         public override string ToString()
             => this.GetType().Name + (Token is null ? "" : $": {Token.Value}");
     }

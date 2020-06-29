@@ -30,5 +30,9 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override string GetString()
             => name;
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => this.GetType().Name + ": " + name;
     }
 }

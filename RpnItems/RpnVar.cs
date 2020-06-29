@@ -41,5 +41,9 @@ namespace Lang.RpnItems
             throw new InterpretationException(
                 "The variable itself cannot be casted to bool. Use dereference first"
             );
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => this.GetType().Name + ": " + name;
     }
 }

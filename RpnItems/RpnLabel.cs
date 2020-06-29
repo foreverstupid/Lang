@@ -37,5 +37,9 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override bool GetBool() =>
             throw new InterpretationException("Label cannot have a bool value");
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => this.GetType().Name + ": " + name;
     }
 }
