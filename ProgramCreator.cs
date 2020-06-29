@@ -8,10 +8,10 @@ namespace Lang
     /// </summary>
     public class ProgramCreator
     {
-        private const string IfLabelPrefix = "#if#label#";
-        private const string ElseLabelPrefix = "#else#label#";
+        private const string IfLabelPrefix = "#if#";
+        private const string ElseLabelPrefix = "#else#";
         private const string LambdaPrefix = "#f#";
-        private const string LambdaEndPrefix = "#end#of#f#";
+        private const string LambdaEndPrefix = "#f#end#";
         private const string ReturnLabelPrefix = "#return#";
 
         private readonly IDictionary<string, RpnConst> variables =
@@ -42,19 +42,6 @@ namespace Lang
         /// Program representation as RPNs.
         /// </summary>
         public LinkedList<Rpn> Program { get; } = new LinkedList<Rpn>();
-
-        public void AddLabelForNextRpn(Token token)
-        {
-            if (token.TokenType != Token.Type.Label)
-            {
-                throw new RpnCreationException(
-                    $"Given token {token.Value} is " +
-                    $"not a label, but {token.TokenType}"
-                );
-            }
-
-            AddLabelForNextRpn(token.Value);
-        }
 
         public void Indexator(Token token)
         {
@@ -90,11 +77,6 @@ namespace Lang
             }
 
             AddRpn(rpn);
-        }
-
-        public void Label(Token token)
-        {
-            AddRpn(new RpnLabel(token, lambdaContext + token.Value));
         }
 
         public void UnaryOperation(Token token)
@@ -181,25 +163,19 @@ namespace Lang
             AddRpn(new RpnIgnore());
         }
 
-        public void Ignore()
+        public void Ignore(Token token)
         {
-            AddRpn(new RpnIgnore());
-        }
-
-        public void Goto(Token token)
-        {
-            AddRpn(new RpnGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnIgnore(token));
         }
 
         public void If(Token token)
         {
-            EndOfExpression();
+            ifCount++;
             ifIdxStack.Push(ifCount);
             var ifLabelName = IfLabelPrefix + ifCount;
 
             Label(ifLabelName);
             AddRpn(new RpnIfGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
-            ifCount++;
         }
 
         public void Else(Token token)
@@ -227,6 +203,36 @@ namespace Lang
             var idx = ifIdxStack.Pop();
             var elseLabelName = ElseLabelPrefix + idx;
             AddLabelForNextRpn(elseLabelName);
+            AddRpn(new RpnNop());
+        }
+
+        public void CycleStart()
+        {
+            ifCount++;
+            ifIdxStack.Push(ifCount);
+            var cycleStartLabelName = IfLabelPrefix + ifCount;
+            AddLabelForNextRpn(cycleStartLabelName);
+        }
+
+        public void While(Token token)
+        {
+            var idx = ifIdxStack.Peek();
+            var cycleEndLabelName = ElseLabelPrefix + idx;
+
+            Label(cycleEndLabelName);
+            AddRpn(new RpnIfGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+        }
+
+        public void CycleEnd()
+        {
+            var idx = ifIdxStack.Pop();
+            var cycleStartLabelName = IfLabelPrefix + idx;
+            var cycleEndLabelName = ElseLabelPrefix + idx;
+
+            Label(cycleStartLabelName);
+            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+
+            AddLabelForNextRpn(cycleEndLabelName);
             AddRpn(new RpnNop());
         }
 

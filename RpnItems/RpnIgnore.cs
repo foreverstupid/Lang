@@ -7,6 +7,15 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnIgnore : RpnSuccessive
     {
+        public RpnIgnore()
+        {
+        }
+
+        public RpnIgnore(Token token)
+            : base(token)
+        {
+        }
+
         /// <inheritdoc/>
         protected override void EvalCore(Stack<RpnConst> stack)
             => stack.Pop();

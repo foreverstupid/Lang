@@ -7,6 +7,6 @@ namespace Lang
     {
         public const string If = "if";
         public const string Else = "or";
-        public const string Goto = "jump";
+        public const string While = "as";
     }
 }

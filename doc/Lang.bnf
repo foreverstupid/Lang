@@ -1,8 +1,8 @@
 # BNF of LANG
 
-<program> ::= { <statement> }
+<program> ::= { <expression>; }
 
-<statement> ::= <expression>; | <if_statement> | <goto_statement>; | <label>: <statement>
+<expression> ::= [ <unar> ] <operand>[ <tail> ] { <binar><expression> }
 
 <tail> ::= <indexator><tail> | <args><tail> |
 
@@ -10,19 +10,17 @@
 
 <args> ::= ( [ <expression> {, <expression> } ] )
 
-<expression> ::= [ <unar> ] <operand>[<tail>] { <binar><expression> }
-
-<operand> ::= ( <expression> ) | <literal> | <lambda>
+<operand> ::= ( <expression> ) | <if_expression> | <while_expression> | <literal> | <lambda>
 
 <literal> ::= <string> | <int> | <float> | <variable>
 
 <lambda> ::= [ <params> ]\{ <program> \} | <params> => <expression>
 
-<params> ::= \[ [ <variable> ] { ,<variable> } \]
+<params> ::= \[ [ <variable> { ,<variable> } ] \]
 
-<goto_statement> ::= jump <label>
+<if_expression> ::= if <expression> <expression> [ or <expression> ]
 
-<if_statement> ::= if <expression> <statement> [ or <statement> ]
+<while_expression> ::= as <expression> <expression>
 
 <unar> ::= - | ! | $
 
@@ -35,5 +33,3 @@
 <float> ::= -//-
 
 <string> ::= -//-
-
-<label> ::= -//-

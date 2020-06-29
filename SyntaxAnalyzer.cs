@@ -96,37 +96,7 @@ namespace Lang
         {
             Enter(nameof(Program));
 
-            while (Statement())
-            {
-            }
-
-            return Leave(true);
-        }
-
-        private bool Statement()
-        {
-            Enter(nameof(Statement));
-
-            if (tokens.CurrentTokenTypeIs(Token.Type.Label))
-            {
-                creator.AddLabelForNextRpn(tokens.CurrentOrLast);
-                MoveNext();
-                if (!tokens.CurrentTokenValueIs(":"))
-                {
-                    SetError("Colon after label is expected");
-                    return Leave(false);
-                }
-
-                MoveNext();
-                return Leave(Statement());
-            }
-
-
-            if (IfStatement())
-            {
-                return Leave(true);
-            }
-            else if (GotoStatement() || Expression())
+            while (Expression())
             {
                 if (!tokens.CurrentTokenValueIs(";"))
                 {
@@ -135,12 +105,55 @@ namespace Lang
                 }
 
                 creator.EndOfStatement();
-                creator.Ignore();
+                creator.Ignore(tokens.CurrentOrLast);
                 MoveNext();
-                return Leave(true);
             }
 
-            return Leave(false);
+            return Leave(true);
+        }
+
+        private bool Expression()
+        {
+            Enter(nameof(Expression));
+
+            Token unaryOperationToken = null;
+            if (tokens.CurrentTokenIsUnaryOperation())
+            {
+                creator.UnaryOperation(tokens.CurrentOrLast);
+                unaryOperationToken = tokens.CurrentOrLast;
+                MoveNext();
+            }
+
+            if (!Operand())
+            {
+                if (!(unaryOperationToken is null))
+                {
+                    SetError(
+                        "Operand of the unary operation " +
+                        $"'{unaryOperationToken.Value}' is expected"
+                    );
+                }
+
+                return Leave(false);
+            }
+
+            Tail(); // could or could not be
+            while (tokens.CurrentTokenIsBinaryOperation())
+            {
+                creator.BinaryOperation(tokens.CurrentOrLast);
+                var binaryOperationToken = tokens.CurrentOrLast;
+                MoveNext();
+
+                if (!Expression())
+                {
+                    SetError(
+                        "Expression as a binary operation " +
+                        $"'{binaryOperationToken.Value}' right operand is expected"
+                    );
+                }
+            }
+
+            return Leave(true);
         }
 
         private bool Tail()
@@ -161,7 +174,7 @@ namespace Lang
 
             if (!tokens.CurrentTokenValueIs("["))
             {
-                return false;
+                return Leave(false);
             }
 
             creator.Indexator(tokens.CurrentOrLast);
@@ -174,7 +187,7 @@ namespace Lang
 
             if (!tokens.CurrentTokenValueIs("]"))
             {
-                SetError("']' in the end of the indexator is expected");
+                SetError("']' at the end of the indexator is expected");
             }
 
             creator.CloseBracket();
@@ -237,35 +250,6 @@ namespace Lang
             return Leave(true);
         }
 
-        private bool Expression()
-        {
-            Enter(nameof(Expression));
-
-            if (tokens.CurrentTokenIsUnaryOperation())
-            {
-                creator.UnaryOperation(tokens.CurrentOrLast);
-                MoveNext();
-            }
-
-            if (!Operand())
-            {
-                return Leave(false);
-            }
-
-            Tail(); // could or could not be
-            while (tokens.CurrentTokenIsBinaryOperation())
-            {
-                creator.BinaryOperation(tokens.CurrentOrLast);
-                MoveNext();
-                if (!Expression())
-                {
-                    SetError("Expression as a binary operation right operand is expected");
-                }
-            }
-
-            return Leave(true);
-        }
-
         private bool Operand()
         {
             Enter(nameof(Operand));
@@ -276,7 +260,7 @@ namespace Lang
                 MoveNext();
                 if (!Expression())
                 {
-                    SetError("Expression after opening parathesis is expected");
+                    SetError("Expression after an opening paranthesis is expected");
                 }
 
                 if (!tokens.CurrentTokenValueIs(")"))
@@ -289,7 +273,7 @@ namespace Lang
                 return Leave(true);
             }
 
-            return Leave(Literal() || Lambda());
+            return Leave(IfExpression() || WhileExpression() || Literal() || Lambda());
         }
 
         private bool Literal()
@@ -314,7 +298,6 @@ namespace Lang
             Enter(nameof(Lambda));
 
             bool hasParams = Parameters();
-
             if (hasParams && tokens.CurrentTokenValueIs("=>"))
             {
                 MoveNext();
@@ -323,7 +306,7 @@ namespace Lang
                     SetError("Expression in a one-line lambda is expected");
                 }
 
-                creator.LambdaFinish(true);
+                creator.LambdaFinish(oneLine: true);
                 return Leave(true);
             }
 
@@ -341,12 +324,12 @@ namespace Lang
 
             if (!Program())
             {
-                SetError("Invalid code block body");
+                SetError("Invalid lambda body");
             }
 
             if (!tokens.CurrentTokenValueIs("}"))
             {
-                SetError("Closing curly bracket at the end of the code block is expected");
+                SetError("Closing curly bracket at the end of the lambda body is expected");
             }
 
             creator.LambdaFinish();
@@ -400,31 +383,9 @@ namespace Lang
             return Leave(true);
         }
 
-        private bool GotoStatement()
+        private bool IfExpression()
         {
-            Enter(nameof(GotoStatement));
-
-            if (!tokens.CurrentTokenValueIs(KeyWords.Goto))
-            {
-                return Leave(false);
-            }
-
-            var gotoToken = tokens.CurrentOrLast;
-            MoveNext();
-            if (!tokens.CurrentTokenTypeIs(Token.Type.Label))
-            {
-                SetError("Label in the goto statement is expected");
-            }
-
-            creator.Label(tokens.CurrentOrLast);
-            creator.Goto(gotoToken);
-            MoveNext();
-            return Leave(true);
-        }
-
-        private bool IfStatement()
-        {
-            Enter(nameof(IfStatement));
+            Enter(nameof(IfExpression));
 
             if (!tokens.CurrentTokenValueIs(KeyWords.If))
             {
@@ -435,24 +396,27 @@ namespace Lang
             MoveNext();
             if (!Expression())
             {
-                return Leave(false);
+                SetError("Invalid condition expression");
             }
 
+            creator.EndOfExpression();
             creator.If(ifToken);
-            if (!Statement())
+            if (!Expression())
             {
-                SetError("Statement in the if-part is expected");
+                SetError("Invalid if-part body");
             }
 
+            creator.EndOfExpression();
             if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
                 creator.Else(tokens.CurrentOrLast);
                 MoveNext();
-                if (!Statement())
+                if (!Expression())
                 {
-                    SetError("Statement in the else-part is expected");
+                    SetError("Invalid else-part body");
                 }
 
+                creator.EndOfExpression();
                 creator.EndElse();
             }
             else
@@ -460,6 +424,36 @@ namespace Lang
                 creator.EndIf();
             }
 
+            return Leave(true);
+        }
+
+        private bool WhileExpression()
+        {
+            Enter(nameof(WhileExpression));
+
+            if (!tokens.CurrentTokenValueIs(KeyWords.While))
+            {
+                return Leave(false);
+            }
+
+            creator.CycleStart();
+            var whileToken = tokens.CurrentOrLast;
+            MoveNext();
+
+            if (!Expression())
+            {
+                SetError("Invalid condition expression");
+            }
+
+            creator.EndOfExpression();
+            creator.While(whileToken);
+            if (!Expression())
+            {
+                SetError("Invalid cycle body");
+            }
+
+            creator.EndOfExpression();
+            creator.CycleEnd();
             return Leave(true);
         }
     }
