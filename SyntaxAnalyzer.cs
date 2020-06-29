@@ -315,6 +315,18 @@ namespace Lang
 
             bool hasParams = Parameters();
 
+            if (hasParams && tokens.CurrentTokenValueIs("=>"))
+            {
+                MoveNext();
+                if (!Expression())
+                {
+                    SetError("Expression in a one-line lambda is expected");
+                }
+
+                creator.LambdaFinish(true);
+                return Leave(true);
+            }
+
             if (!tokens.CurrentTokenValueIs("{"))
             {
                 return Leave(false);
@@ -353,6 +365,13 @@ namespace Lang
 
             MoveNext();
             creator.LambdaStart();
+
+            if (tokens.CurrentTokenValueIs("]"))
+            {
+                MoveNext();
+                return Leave(true);
+            }
+
             if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
             {
                 SetError("Parameter definition is expected");

@@ -151,10 +151,14 @@ namespace Lang
             functions.Add(lambdaName, Program.Last);
         }
 
-        public void LambdaFinish()
+        public void LambdaFinish(bool oneLine = false)
         {
             CloseBracket();
-            Program.RemoveLast();   // not ignore the last value to return it from the function
+
+            if (!oneLine)
+            {
+                Program.RemoveLast();   // not ignore the last value to return it from the function
+            }
 
             var lambdaIdx = lambdaIdxStack.Pop();
             var lambdaEndLabel = LambdaEndPrefix + lambdaIdx;
