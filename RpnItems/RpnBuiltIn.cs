@@ -19,13 +19,13 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override double GetFloat() =>
             throw new InterpretationException(
-                "Cannot get the value of a built-in function"
+                "Built-in function cannot be casted to float"
             );
 
         /// <inheritdoc/>
         public override int GetInt() =>
             throw new InterpretationException(
-                "Cannot get the value of a built-in function"
+                "Built-in function cannot be casted to int"
             );
 
         /// <inheritdoc/>

@@ -207,6 +207,15 @@ namespace Lang
 
             AddLabelForNextRpn(lambdaEndLabel);
             AddRpn(new RpnFunc(lambdaName));
+
+            if (lambdaIdxStack.TryPeek(out var idx))
+            {
+                lambdaContext = LambdaPrefix + idx;
+            }
+            else
+            {
+                lambdaContext = "";
+            }
         }
 
         /// <summary>
