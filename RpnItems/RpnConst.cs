@@ -29,6 +29,7 @@ namespace Lang.RpnItems
             Variable,
             BuiltIn,
             Func,
+            None,
         }
 
         /// <summary>

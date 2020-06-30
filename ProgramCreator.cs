@@ -27,7 +27,7 @@ namespace Lang
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
         private readonly Stack<int> lambdaIdxStack = new Stack<int>();
-        private readonly Stack<Token> parameterStack = new Stack<Token>();
+        private readonly Stack<List<string>> parametersStack = new Stack<List<string>>();
 
         private int ifCount = 0;
         private int lambdaCount = 0;
@@ -60,7 +60,13 @@ namespace Lang
                 }
                 else
                 {
-                    rpn = new RpnVar(token, lambdaContext + token.Value);
+                    var name = token.Value;
+                    if (parametersStack.TryPeek(out var ps) && ps.Contains(name))
+                    {
+                        name = lambdaContext + name;
+                    }
+
+                    rpn = new RpnVar(token, name);
                 }
             }
             else
@@ -117,13 +123,12 @@ namespace Lang
 
         public void LambdaStart()
         {
+            parametersStack.Push(new List<string>());
             OpenBracket();
             lambdaCount++;
             lambdaIdxStack.Push(lambdaCount);
-            var lambdaName = LambdaPrefix + lambdaCount;
+            var lambdaName = lambdaContext = LambdaPrefix + lambdaCount;
             var lambdaEndLabel = LambdaEndPrefix + lambdaCount;
-
-            lambdaContext += lambdaName;
 
             // add jump to the end of the code block
             Label(lambdaEndLabel);
@@ -133,14 +138,10 @@ namespace Lang
             functions.Add(lambdaName, Program.Last);
         }
 
-        public void LambdaFinish(bool oneLine = false)
+        public void LambdaFinish()
         {
+            parametersStack.Pop();
             CloseBracket();
-
-            if (!oneLine)
-            {
-                Program.RemoveLast();   // not ignore the last value to return it from the function
-            }
 
             var lambdaIdx = lambdaIdxStack.Pop();
             var lambdaEndLabel = LambdaEndPrefix + lambdaIdx;
@@ -151,13 +152,11 @@ namespace Lang
 
             AddLabelForNextRpn(lambdaEndLabel);
             AddRpn(new RpnFunc(lambdaName));
-
-            lambdaContext = lambdaContext
-                .Substring(0, lambdaContext.Length - lambdaName.Length);
         }
 
         public void Parameter(Token token)
         {
+            parametersStack.Peek().Add(token.Value);
             AddRpn(new RpnVar(token, lambdaContext + token.Value));
             AddRpn(new RpnRightAssign(token, variables));
             AddRpn(new RpnIgnore());
@@ -211,6 +210,8 @@ namespace Lang
             ifCount++;
             ifIdxStack.Push(ifCount);
             var cycleStartLabelName = IfLabelPrefix + ifCount;
+
+            AddRpn(new RpnNone());
             AddLabelForNextRpn(cycleStartLabelName);
         }
 
@@ -221,6 +222,7 @@ namespace Lang
 
             Label(cycleEndLabelName);
             AddRpn(new RpnIfGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnIgnore());    // ignores the value of the last iteration
         }
 
         public void CycleEnd()
@@ -238,7 +240,6 @@ namespace Lang
 
         public void Eval(Token token, int paramCount)
         {
-            var ctxt = lambdaContext;
             AddRpn(new RpnEval(
                 token,
                 paramCount,
@@ -304,12 +305,11 @@ namespace Lang
 
         private void AddLabelForNextRpn(string labelName)
         {
-            labelsForNextRpn.Add(lambdaContext + labelName);
+            labelsForNextRpn.Add(labelName);
         }
 
-        private void Label(string labelName, string context = null)
+        private void Label(string labelName, string context = "")
         {
-            context ??= lambdaContext;
             AddRpn(new RpnLabel(context + labelName));
         }
 

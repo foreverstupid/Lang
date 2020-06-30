@@ -1,8 +1,9 @@
 # BNF of LANG
+# A program in LANG is <expression> where:
 
-<program> ::= { <expression>; }
+<expression> ::= <group> | [ <unar> ] <operand> [ <tail> ] { <binar><expression> }
 
-<expression> ::= [ <unar> ] <operand>[ <tail> ] { <binar><expression> }
+<group> ::= \{ <expression> { ;<expression> } \}
 
 <tail> ::= <indexator><tail> | <args><tail> |
 
@@ -14,7 +15,7 @@
 
 <literal> ::= <string> | <int> | <float> | <variable>
 
-<lambda> ::= [ <params> ]\{ <program> \} | <params> => <expression>
+<lambda> ::= <params> => <expression>
 
 <params> ::= \[ [ <variable> { ,<variable> } ] \]
 

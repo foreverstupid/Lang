@@ -41,7 +41,7 @@ namespace Lang
             }
             while (!(currentCommand is null) && (currentCommand != lastCommand));
 
-            return stack.Count > 0 ? stack.Pop().GetString() : "";
+            return stack.Pop().GetString();
         }
     }
 }

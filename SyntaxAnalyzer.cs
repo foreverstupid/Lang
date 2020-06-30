@@ -29,7 +29,7 @@ namespace Lang
             this.tokens = new TokenEnumerator(tokens);
             creator = new ProgramCreator();
 
-            Program();
+            Expression();
 
             if (!this.tokens.IsFinished)
             {
@@ -55,8 +55,8 @@ namespace Lang
         /// <param name="context">The context of the node.</param>
         private void Enter(string context)
         {
-            //logger.ForContext(context).Information("Entered");
-            //contexts.Push(context);
+            logger.ForContext(context).Information("Entered");
+            contexts.Push(context);
         }
 
         /// <summary>
@@ -66,17 +66,17 @@ namespace Lang
         /// <returns>The given node analysis status.</returns>
         private bool Leave(bool isSuccessful)
         {
-            // var context = contexts.Pop();
-            // var logger = this.logger.ForContext(context);
+            var context = contexts.Pop();
+            var logger = this.logger.ForContext(context);
 
-            // if (isSuccessful)
-            // {
-            //     logger.Information("+");
-            // }
-            // else
-            // {
-            //     logger.Error("-");
-            // }
+            if (isSuccessful)
+            {
+                logger.Information("+");
+            }
+            else
+            {
+                logger.Error("-");
+            }
 
             return isSuccessful;
         }
@@ -86,35 +86,20 @@ namespace Lang
         /// </summary>
         private void MoveNext()
         {
-            //logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
+            logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
             tokens.MoveNext();
         }
 
         // Grammar nodes handlers
 
-        private bool Program()
-        {
-            Enter(nameof(Program));
-
-            while (Expression())
-            {
-                if (!tokens.CurrentTokenValueIs(";"))
-                {
-                    SetError("Semicolon after statement is expected");
-                    return Leave(false);
-                }
-
-                creator.EndOfStatement();
-                creator.Ignore(tokens.CurrentOrLast);
-                MoveNext();
-            }
-
-            return Leave(true);
-        }
-
         private bool Expression()
         {
             Enter(nameof(Expression));
+
+            if (Group())
+            {
+                return Leave(true);
+            }
 
             Token unaryOperationToken = null;
             if (tokens.CurrentTokenIsUnaryOperation())
@@ -153,6 +138,43 @@ namespace Lang
                 }
             }
 
+            return Leave(true);
+        }
+
+        private bool Group()
+        {
+            Enter(nameof(Group));
+
+            if (!tokens.CurrentTokenValueIs("{"))
+            {
+                return Leave(false);
+            }
+
+            MoveNext();
+            if (!Expression())
+            {
+                SetError("Expression group should have at least one expression");
+            }
+
+            creator.EndOfExpression();
+            while (tokens.CurrentTokenValueIs(";"))
+            {
+                creator.Ignore(tokens.CurrentOrLast);
+                MoveNext();
+                if (!Expression())
+                {
+                    SetError("Invalid expression");
+                }
+
+                creator.EndOfExpression();
+            }
+
+            if (!tokens.CurrentTokenValueIs("}"))
+            {
+                SetError("'}' is expected at the end of the expression group");
+            }
+
+            MoveNext();
             return Leave(true);
         }
 
@@ -297,43 +319,24 @@ namespace Lang
         {
             Enter(nameof(Lambda));
 
-            bool hasParams = Parameters();
-            if (hasParams && tokens.CurrentTokenValueIs("=>"))
-            {
-                MoveNext();
-                if (!Expression())
-                {
-                    SetError("Expression in a one-line lambda is expected");
-                }
-
-                creator.LambdaFinish(oneLine: true);
-                return Leave(true);
-            }
-
-            if (!tokens.CurrentTokenValueIs("{"))
+            if (!Parameters())
             {
                 return Leave(false);
             }
 
-            if (!hasParams)
+            if (!tokens.CurrentTokenValueIs("=>"))
             {
-                creator.LambdaStart();
+                SetError("'=>' after lambda parameter list is expected");
             }
 
             MoveNext();
 
-            if (!Program())
+            if (!Expression())
             {
                 SetError("Invalid lambda body");
             }
 
-            if (!tokens.CurrentTokenValueIs("}"))
-            {
-                SetError("Closing curly bracket at the end of the lambda body is expected");
-            }
-
             creator.LambdaFinish();
-            MoveNext();
             return Leave(true);
         }
 
