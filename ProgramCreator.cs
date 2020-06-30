@@ -40,6 +40,12 @@ namespace Lang
             variables = new Dictionary<string, RpnConst>();
             labels = new Dictionary<string, LinkedListNode<Rpn>>();
             lambdas = new Dictionary<string, LinkedListNode<Rpn>>();
+
+            labelsForNextRpn.Clear();
+            expressionStack.Clear();
+            ifIdxStack.Clear();
+            lambdaIdxStack.Clear();
+            parametersStack.Clear();
         }
 
         /// <summary>

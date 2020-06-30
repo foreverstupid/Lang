@@ -24,7 +24,7 @@ namespace Lang
                 var interpreter = new Interpreter();
                 var exitValue = interpreter.Run(program);
                 Console.WriteLine(
-                    "\n\n=============================================\n" +
+                    "\n=============================================\n" +
                     "Program finished with exit value: " + exitValue
                 );
             }

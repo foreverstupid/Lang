@@ -21,12 +21,20 @@ namespace Lang
         public string Run(LinkedList<Rpn> program)
         {
             currentCommand = program.First;
-
+            Console.WriteLine("==================== INTERPRETATION ====================");
             do
             {
                 lastCommand = currentCommand;
                 try
                 {
+                    // var positionInfo =
+                    //     currentCommand.Value.Token is null
+                    //     ? ""
+                    //     : $" ({currentCommand.Value.Token.Line}:{currentCommand.Value.Token.StartPosition})";
+
+                    // Console.WriteLine("Stack: " + string.Join(" | ", stack));
+                    // Console.WriteLine("=> " + currentCommand.Value + positionInfo + "\n");
+
                     currentCommand = currentCommand.Value.Eval(stack, currentCommand);
                 }
                 catch (InterpretationException e)
