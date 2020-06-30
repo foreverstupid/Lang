@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Lang.RpnItems;
 
 namespace Lang
@@ -12,7 +11,7 @@ namespace Lang
         private readonly ILogger logger;
         private TokenEnumerator tokens;
         private Stack<string> contexts = new Stack<string>();
-        private ProgramCreator creator;
+        private ProgramCreator creator = new ProgramCreator();
 
         public SyntaxAnalyzer(ILogger logger)
         {
@@ -27,7 +26,8 @@ namespace Lang
         public LinkedList<Rpn> Analyse(IEnumerable<Token> tokens)
         {
             this.tokens = new TokenEnumerator(tokens);
-            creator = new ProgramCreator();
+            creator.StartProgramCreation();
+            contexts.Clear();
 
             Expression();
 
@@ -36,7 +36,7 @@ namespace Lang
                 SetError("Unknown statement");
             }
 
-            return creator.Program;
+            return creator.FinishProgramCreation();
         }
 
         /// <summary>
@@ -150,23 +150,25 @@ namespace Lang
                 return Leave(false);
             }
 
+            creator.OpenBracket();
             MoveNext();
             if (!Expression())
             {
                 SetError("Expression group should have at least one expression");
             }
 
-            creator.EndOfExpression();
+            creator.CloseBracket();
             while (tokens.CurrentTokenValueIs(";"))
             {
                 creator.Ignore(tokens.CurrentOrLast);
+                creator.OpenBracket();
                 MoveNext();
                 if (!Expression())
                 {
                     SetError("Invalid expression");
                 }
 
-                creator.EndOfExpression();
+                creator.CloseBracket();
             }
 
             if (!tokens.CurrentTokenValueIs("}"))
@@ -397,29 +399,47 @@ namespace Lang
 
             var ifToken = tokens.CurrentOrLast;
             MoveNext();
+
+            if (!tokens.CurrentTokenValueIs("("))
+            {
+                SetError("Openning paranthesis at the beggining of the condition is expected");
+            }
+
+            creator.OpenBracket();
+            MoveNext();
             if (!Expression())
             {
                 SetError("Invalid condition expression");
             }
 
-            creator.EndOfExpression();
+            if (!tokens.CurrentTokenValueIs(")"))
+            {
+                SetError("Closing paranthesis at the end of the condition is expected");
+            }
+
+            creator.CloseBracket();
+            MoveNext();
+
             creator.If(ifToken);
+            creator.OpenBracket();
             if (!Expression())
             {
                 SetError("Invalid if-part body");
             }
 
-            creator.EndOfExpression();
+            creator.CloseBracket();
             if (tokens.CurrentTokenValueIs(KeyWords.Else))
             {
                 creator.Else(tokens.CurrentOrLast);
                 MoveNext();
+                creator.OpenBracket();
+
                 if (!Expression())
                 {
                     SetError("Invalid else-part body");
                 }
 
-                creator.EndOfExpression();
+                creator.CloseBracket();
                 creator.EndElse();
             }
             else
@@ -443,19 +463,41 @@ namespace Lang
             var whileToken = tokens.CurrentOrLast;
             MoveNext();
 
+            if (!tokens.CurrentTokenValueIs("("))
+            {
+                SetError(
+                    "Opening paranthesis at the beginning " +
+                    "of the cycle condition is expected"
+                );
+            }
+
+            creator.OpenBracket();
+            MoveNext();
+
             if (!Expression())
             {
                 SetError("Invalid condition expression");
             }
 
-            creator.EndOfExpression();
+            if (!tokens.CurrentTokenValueIs(")"))
+            {
+                SetError(
+                    "Closing paranthesis at the end " +
+                    "of the cycle condition is expected"
+                );
+            }
+
+            creator.CloseBracket();
+            MoveNext();
             creator.While(whileToken);
+            creator.OpenBracket();
+
             if (!Expression())
             {
                 SetError("Invalid cycle body");
             }
 
-            creator.EndOfExpression();
+            creator.CloseBracket();
             creator.CycleEnd();
             return Leave(true);
         }

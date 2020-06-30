@@ -14,15 +14,7 @@ namespace Lang
         private const string LambdaEndPrefix = "#f#end#";
         private const string ReturnLabelPrefix = "#return#";
 
-        private readonly IDictionary<string, RpnConst> variables =
-            new Dictionary<string, RpnConst>();
-
-        private readonly IDictionary<string, LinkedListNode<Rpn>> labels =
-            new Dictionary<string, LinkedListNode<Rpn>>();
-
-        private readonly IDictionary<string, LinkedListNode<Rpn>> functions =
-            new Dictionary<string, LinkedListNode<Rpn>>();
-
+        // help variables
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
@@ -33,21 +25,72 @@ namespace Lang
         private int lambdaCount = 0;
         private string lambdaContext = "";
 
-        public ProgramCreator()
+        // creating program information
+        private LinkedList<Rpn> program;
+        private Dictionary<string, RpnConst> variables;
+        private Dictionary<string, LinkedListNode<Rpn>> labels;
+        private Dictionary<string, LinkedListNode<Rpn>> lambdas;
+
+        /// <summary>
+        /// Starts a new program creation.
+        /// </summary>
+        public void StartProgramCreation()
         {
-            expressionStack.Push(null);
+            program = new LinkedList<Rpn>();
+            variables = new Dictionary<string, RpnConst>();
+            labels = new Dictionary<string, LinkedListNode<Rpn>>();
+            lambdas = new Dictionary<string, LinkedListNode<Rpn>>();
         }
 
         /// <summary>
-        /// Program representation as RPNs.
+        /// Finishes the program creation.
         /// </summary>
-        public LinkedList<Rpn> Program { get; } = new LinkedList<Rpn>();
+        /// <returns>The program RPN representation.</returns>
+        public LinkedList<Rpn> FinishProgramCreation()
+        {
+            if (expressionStack.Count > 0)
+            {
+                throw new RpnCreationException(
+                    "Invalid expression, expression stack is not empty"
+                );
+            }
 
+            if (parametersStack.Count > 0)
+            {
+                throw new RpnCreationException(
+                    "Invalid expression, lambda parameters stack is not empty"
+                );
+            }
+
+            if (ifIdxStack.Count > 0)
+            {
+                throw new RpnCreationException(
+                    "Invalid expression, 'if' stack is not empty"
+                );
+            }
+
+            if (lambdaIdxStack.Count > 0)
+            {
+                throw new RpnCreationException(
+                    "Invalid expression, lambda stack is not empty"
+                );
+            }
+
+            labelsForNextRpn.Clear();
+            return program;
+        }
+
+        /// <summary>
+        /// creates an indexator.
+        /// </summary>
         public void Indexator(Token token)
         {
             NewOperation(new RpnIndexator(token));
         }
 
+        /// <summary>
+        /// Creates a new program entity that is represented as literal.
+        /// </summary>
         public void Literal(Token token)
         {
             RpnConst rpn;
@@ -85,19 +128,25 @@ namespace Lang
             AddRpn(rpn);
         }
 
+        /// <summary>
+        /// Adds a new unary operation.
+        /// </summary>
         public void UnaryOperation(Token token)
         {
             RpnOperation rpn = token.Value switch
             {
                 "!" => new RpnNot(token),
                 "-" => new RpnNegate(token),
-                "$" => new RpnGetValue(token, variables as IReadOnlyDictionary<string, RpnConst>),
+                "$" => new RpnGetValue(token, variables),
                 var op => throw new RpnCreationException("Unknown unary operation: " + op)
             };
 
             NewOperation(rpn);
         }
 
+        /// <summary>
+        /// Adds a new binary operation.
+        /// </summary>
         public void BinaryOperation(Token token)
         {
             RpnOperation rpn = token.Value switch
@@ -121,6 +170,9 @@ namespace Lang
             NewOperation(rpn);
         }
 
+        /// <summary>
+        /// Starts creating of a lambda.
+        /// </summary>
         public void LambdaStart()
         {
             parametersStack.Push(new List<string>());
@@ -132,12 +184,15 @@ namespace Lang
 
             // add jump to the end of the code block
             Label(lambdaEndLabel);
-            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnGoto(labels));
 
             AddRpn(new RpnNop());
-            functions.Add(lambdaName, Program.Last);
+            lambdas.Add(lambdaName, program.Last);
         }
 
+        /// <summary>
+        /// Finishes creating of a lambda
+        /// </summary>
         public void LambdaFinish()
         {
             parametersStack.Pop();
@@ -148,12 +203,15 @@ namespace Lang
             var lambdaName = LambdaPrefix + lambdaIdx;
 
             Label(ReturnLabelPrefix, lambdaName);
-            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnGoto(labels));
 
             AddLabelForNextRpn(lambdaEndLabel);
             AddRpn(new RpnFunc(lambdaName));
         }
 
+        /// <summary>
+        /// Creates an initializer of a lambda parameter.
+        /// </summary>
         public void Parameter(Token token)
         {
             parametersStack.Peek().Add(token.Value);
@@ -162,11 +220,17 @@ namespace Lang
             AddRpn(new RpnIgnore());
         }
 
+        /// <summary>
+        /// Adds expression value ignoring RPN.
+        /// </summary>
         public void Ignore(Token token)
         {
             AddRpn(new RpnIgnore(token));
         }
 
+        /// <summary>
+        /// Starts creating if-expression.
+        /// </summary>
         public void If(Token token)
         {
             ifCount++;
@@ -174,9 +238,12 @@ namespace Lang
             var ifLabelName = IfLabelPrefix + ifCount;
 
             Label(ifLabelName);
-            AddRpn(new RpnIfGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnIfGoto(token, labels));
         }
 
+        /// <summary>
+        /// Adds else-part to the if-expression.
+        /// </summary>
         public void Else(Token token)
         {
             var idx = ifIdxStack.Peek();
@@ -184,11 +251,14 @@ namespace Lang
             var ifLabelName = IfLabelPrefix + idx;
 
             Label(elseLabelName);
-            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnGoto(labels));
 
             AddLabelForNextRpn(ifLabelName);
         }
 
+        /// <summary>
+        /// Finishes creating if-only-expression.
+        /// </summary>
         public void EndIf()
         {
             var idx = ifIdxStack.Pop();
@@ -197,6 +267,9 @@ namespace Lang
             AddRpn(new RpnNop());
         }
 
+        /// <summary>
+        /// Finishes creating if-else-expression.
+        /// </summary>
         public void EndElse()
         {
             var idx = ifIdxStack.Pop();
@@ -205,6 +278,9 @@ namespace Lang
             AddRpn(new RpnNop());
         }
 
+        /// <summary>
+        /// Starts creating of the cycle.
+        /// </summary>
         public void CycleStart()
         {
             ifCount++;
@@ -215,16 +291,22 @@ namespace Lang
             AddLabelForNextRpn(cycleStartLabelName);
         }
 
+        /// <summary>
+        /// Creates condition checking part of the cycle.
+        /// </summary>
         public void While(Token token)
         {
             var idx = ifIdxStack.Peek();
             var cycleEndLabelName = ElseLabelPrefix + idx;
 
             Label(cycleEndLabelName);
-            AddRpn(new RpnIfGoto(token, labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnIfGoto(token, labels));
             AddRpn(new RpnIgnore());    // ignores the value of the last iteration
         }
 
+        /// <summary>
+        /// Finishes creating od the cycle.
+        /// </summary>
         public void CycleEnd()
         {
             var idx = ifIdxStack.Pop();
@@ -232,56 +314,43 @@ namespace Lang
             var cycleEndLabelName = ElseLabelPrefix + idx;
 
             Label(cycleStartLabelName);
-            AddRpn(new RpnGoto(labels as IReadOnlyDictionary<string, LinkedListNode<Rpn>>));
+            AddRpn(new RpnGoto(labels));
 
             AddLabelForNextRpn(cycleEndLabelName);
             AddRpn(new RpnNop());
         }
 
+        /// <summary>
+        /// Adds evaluation token for the function of the certain amount of parameters.
+        /// </summary>
         public void Eval(Token token, int paramCount)
         {
             AddRpn(new RpnEval(
                 token,
                 paramCount,
-                functions as IReadOnlyDictionary<string, LinkedListNode<Rpn>>,
-                variables as IReadOnlyDictionary<string, RpnConst>,
+                lambdas,
+                variables,
                 (funcName, ret) => labels[funcName + ReturnLabelPrefix] = ret
             ));
         }
 
+        /// <summary>
+        /// Starts expression operations group.
+        /// </summary>
         public void OpenBracket()
         {
             expressionStack.Push(null);
         }
 
+        /// <summary>
+        /// Finishes the expression operation group.
+        /// </summary>
         public void CloseBracket()
         {
             while (expressionStack.TryPop(out var operation) && !(operation is null))
             {
                 AddRpn(operation);
             }
-        }
-
-        public void EndOfStatement()
-        {
-            CloseBracket();
-            if (expressionStack.TryPeek(out _))
-            {
-                //throw new RpnCreationException("Expression is invalid");
-            }
-
-            expressionStack.Push(null);
-        }
-
-        public void EndOfExpression()
-        {
-            CloseBracket();
-            if (expressionStack.TryPeek(out _))
-            {
-               // throw new RpnCreationException("Expression is invalid");
-            }
-
-            expressionStack.Push(null);
         }
 
         private void LabelLastRpn()
@@ -297,7 +366,7 @@ namespace Lang
                     );
                 }
 
-                labels.Add(label, Program.Last);
+                labels.Add(label, program.Last);
             }
 
             labelsForNextRpn.Clear();
@@ -327,7 +396,7 @@ namespace Lang
 
         private void AddRpn(Rpn rpn)
         {
-            Program.AddLast(new LinkedListNode<Rpn>(rpn));
+            program.AddLast(new LinkedListNode<Rpn>(rpn));
             if (labelsForNextRpn.Count > 0)
             {
                 LabelLastRpn();

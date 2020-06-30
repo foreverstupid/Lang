@@ -19,9 +19,9 @@
 
 <params> ::= \[ [ <variable> { ,<variable> } ] \]
 
-<if_expression> ::= if <expression> <expression> [ or <expression> ]
+<if_expression> ::= if ( <expression> ) <expression> [ or <expression> ]
 
-<while_expression> ::= as <expression> <expression>
+<while_expression> ::= as ( <expression> ) <expression>
 
 <unar> ::= - | ! | $
 
