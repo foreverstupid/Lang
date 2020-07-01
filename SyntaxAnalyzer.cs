@@ -13,6 +13,8 @@ namespace Lang
         private Stack<string> contexts = new Stack<string>();
         private ProgramCreator creator = new ProgramCreator();
 
+        private bool isDebug;
+
         public SyntaxAnalyzer(ILogger logger)
         {
             this.logger = logger;
@@ -23,9 +25,11 @@ namespace Lang
         /// </summary>
         /// <param name="tokens">The collection of the code tokens.</param>
         /// <returns>Needed information for interpretation.</returns>
-        public LinkedList<Rpn> Analyse(IEnumerable<Token> tokens)
+        public LinkedList<Rpn> Analyse(IEnumerable<Token> tokens, bool isDebug = false)
         {
             this.tokens = new TokenEnumerator(tokens);
+            this.isDebug = isDebug;
+
             creator.StartProgramCreation();
             contexts.Clear();
 
@@ -55,8 +59,11 @@ namespace Lang
         /// <param name="context">The context of the node.</param>
         private void Enter(string context)
         {
-            logger.ForContext(context).Information("Entered");
-            contexts.Push(context);
+            if (isDebug)
+            {
+                logger.ForContext(context).Information("Entered");
+                contexts.Push(context);
+            }
         }
 
         /// <summary>
@@ -66,16 +73,19 @@ namespace Lang
         /// <returns>The given node analysis status.</returns>
         private bool Leave(bool isSuccessful)
         {
-            var context = contexts.Pop();
-            var logger = this.logger.ForContext(context);
+            if (isDebug)
+            {
+                var context = contexts.Pop();
+                var logger = this.logger.ForContext(context);
 
-            if (isSuccessful)
-            {
-                logger.Information("+");
-            }
-            else
-            {
-                logger.Error("-");
+                if (isSuccessful)
+                {
+                    logger.Information("+");
+                }
+                else
+                {
+                    logger.Error("-");
+                }
             }
 
             return isSuccessful;
@@ -86,7 +96,11 @@ namespace Lang
         /// </summary>
         private void MoveNext()
         {
-            logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
+            if (isDebug)
+            {
+                logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
+            }
+
             tokens.MoveNext();
         }
 
@@ -398,6 +412,7 @@ namespace Lang
             }
 
             var ifToken = tokens.CurrentOrLast;
+            creator.IfStart();
             MoveNext();
 
             if (!tokens.CurrentTokenValueIs("("))

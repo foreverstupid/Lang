@@ -244,7 +244,15 @@ namespace Lang
         }
 
         /// <summary>
-        /// Starts creating if-expression.
+        /// Starts creation og if-expression.
+        /// </summary>
+        public void IfStart()
+        {
+            AddRpn(new RpnNone());
+        }
+
+        /// <summary>
+        /// Creates condition checking part of if-expression.
         /// </summary>
         public void If(Token token)
         {
@@ -254,6 +262,7 @@ namespace Lang
 
             Label(ifLabelName);
             AddRpn(new RpnIfGoto(token, labels));
+            AddRpn(new RpnIgnore());    // ignore the None value if the condition is true
         }
 
         /// <summary>
@@ -269,6 +278,7 @@ namespace Lang
             AddRpn(new RpnGoto(labels));
 
             AddLabelForNextRpn(ifLabelName);
+            AddRpn(new RpnIgnore());    // ignore the None value if have else-part
         }
 
         /// <summary>

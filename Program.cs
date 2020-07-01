@@ -10,19 +10,28 @@ namespace Lang
         public static void Main(string[] args)
         {
             using var reader = GetReader(args);
+            bool isDebug = args.Length > 1 && args[1] == "-d";
 
             try
             {
                 var parser = new LexicalParser();
                 var tokens = Parse(reader, parser);
-                LogTokens(tokens);
+
+                if (isDebug)
+                {
+                    LogTokens(tokens);
+                }
 
                 var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
-                var program = syntaxer.Analyse(tokens);
-                LogRpns(program);
+                var program = syntaxer.Analyse(tokens, isDebug);
+
+                if (isDebug)
+                {
+                    LogRpns(program);
+                }
 
                 var interpreter = new Interpreter();
-                var exitValue = interpreter.Run(program);
+                var exitValue = interpreter.Run(program, isDebug);
                 Console.WriteLine(
                     "\n=============================================\n" +
                     "Program finished with exit value: " + exitValue

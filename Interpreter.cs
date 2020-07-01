@@ -18,22 +18,30 @@ namespace Lang
         /// </summary>
         /// <param name="program">The program to run.</param>
         /// <returns>The value of the last running statement in a string format.</returns>
-        public string Run(LinkedList<Rpn> program)
+        public string Run(LinkedList<Rpn> program, bool isDebug = false)
         {
             currentCommand = program.First;
-            Console.WriteLine("==================== INTERPRETATION ====================");
+
+            if (isDebug)
+            {
+                Console.WriteLine("==================== INTERPRETATION ====================");
+            }
+
             do
             {
                 lastCommand = currentCommand;
                 try
                 {
-                    // var positionInfo =
-                    //     currentCommand.Value.Token is null
-                    //     ? ""
-                    //     : $" ({currentCommand.Value.Token.Line}:{currentCommand.Value.Token.StartPosition})";
+                    if (isDebug)
+                    {
+                        var positionInfo =
+                            currentCommand.Value.Token is null
+                            ? ""
+                            : $" ({currentCommand.Value.Token.Line}:{currentCommand.Value.Token.StartPosition})";
 
-                    // Console.WriteLine("Stack: " + string.Join(" | ", stack));
-                    // Console.WriteLine("=> " + currentCommand.Value + positionInfo + "\n");
+                        Console.WriteLine("Stack: " + string.Join(" | ", stack));
+                        Console.WriteLine("=> " + currentCommand.Value + positionInfo + "\n");
+                    }
 
                     currentCommand = currentCommand.Value.Eval(stack, currentCommand);
                 }
