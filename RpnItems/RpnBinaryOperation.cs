@@ -17,6 +17,14 @@ namespace Lang.RpnItems
         {
             var right = stack.Pop();
             var left = stack.Pop();
+
+            if (left.ValueType == RpnConst.Type.None || right.ValueType == RpnConst.Type.None)
+            {
+                throw new InterpretationException(
+                    "Cannot perform operations over the None value"
+                );
+            }
+
             return GetResultCore(left, right);
         }
 

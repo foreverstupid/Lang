@@ -26,6 +26,21 @@ namespace Lang
                     1,
                     ps =>
                     {
+                        if (ps[0].ValueType == RpnConst.Type.Func)
+                        {
+                            throw new InterpretationException("Cannot write a lambda");
+                        }
+
+                        if (ps[0].ValueType == RpnConst.Type.None)
+                        {
+                            throw new InterpretationException("Cannot write the None value");
+                        }
+
+                        if (ps[0].ValueType == RpnConst.Type.BuiltIn)
+                        {
+                            throw new InterpretationException("Cannot write a built-in function");
+                        }
+
                         Console.Write(ps[0].GetString());
                         return ps[0];
                     }

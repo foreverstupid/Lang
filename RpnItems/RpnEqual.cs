@@ -20,10 +20,19 @@ namespace Lang.RpnItems
                 RpnConst.Type.Float => new RpnInteger(left.GetFloat() == right.GetFloat()),
                 RpnConst.Type.Integer => new RpnInteger(left.GetInt() == right.GetInt()),
                 RpnConst.Type.String => new RpnInteger(left.GetString() == right.GetString()),
-                var type =>
-                    throw new InterpretationException(
-                        $"Unexpected type of the left operand: {type}"
-                    )
+                RpnConst.Type.BuiltIn =>
+                    right.ValueType == RpnConst.Type.BuiltIn
+                    ? new RpnInteger(left.GetString() == right.GetString())
+                    : new RpnInteger(false),
+                RpnConst.Type.Func =>
+                    right.ValueType == RpnConst.Type.Func
+                    ? new RpnInteger(left.GetString() == right.GetString())
+                    : new RpnInteger(false),
+                RpnConst.Type.Variable =>
+                    right.ValueType == RpnConst.Type.Variable
+                    ? new RpnInteger(left.GetString() == right.GetString())
+                    : new RpnInteger(false),
+                _ => new RpnInteger(false)
             };
     }
 }

@@ -22,7 +22,7 @@ namespace Lang.RpnItems
                 RpnConst.Type.Float => new RpnFloat(left.GetFloat() * right.GetFloat()),
                 RpnConst.Type.Integer => new RpnInteger(left.GetInt() * right.GetInt()),
                 RpnConst.Type.String =>
-                    right.ValueType == RpnConst.Type.Integer
+                    right.ValueType == RpnConst.Type.Integer && right.GetInt() >= 0
                     ? new RpnString(string.Join("", Enumerable.Repeat(left.GetString(), right.GetInt())))
                     : throw new InterpretationException("Cannot multiply string"),
                 var type =>

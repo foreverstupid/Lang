@@ -14,7 +14,17 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         protected override RpnConst GetResult(Stack<RpnConst> stack)
-            => GetResultCore(stack.Pop());
+        {
+            var operand = stack.Pop();
+            if (operand.ValueType == RpnConst.Type.None)
+            {
+                throw new InterpretationException(
+                    "Cannot perform operations over the None value"
+                );
+            }
+
+            return GetResultCore(operand);
+        }
 
         /// <summary>
         /// The main calculations of the result.
