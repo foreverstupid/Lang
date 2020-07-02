@@ -11,11 +11,11 @@ namespace Lang.RpnItems
         protected const int IndexatorPriority = 1000;
         protected const int DereferencePriority = 999;
         protected const int UnarOperationPriority = 900;
-        protected const int LogicalOperationPriority = 700;
         protected const int MulDivPriority = 600;
         protected const int AddSubPriority = 500;
         protected const int ComparisionPriority = 400;
         protected const int CastPriority = 300;
+        protected const int LogicalOperationPriority = 250;
         protected const int AssignmentPriority = 200;
 
         public RpnOperation(Token token)
