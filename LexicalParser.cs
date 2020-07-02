@@ -9,7 +9,7 @@ namespace Lang
     /// </summary>
     public sealed class LexicalParser
     {
-        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}:?";
+        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}:";
         private readonly Dictionary<State, Func<char, Token>> stateHandlers;
 
         private readonly StringBuilder tokenValue = new StringBuilder();
@@ -167,6 +167,9 @@ namespace Lang
             {
                 tokenValue.Append(character);
             }
+            else if (character == '_')
+            {
+            }
             else
             {
                 throw new ArgumentException($"Integer number token contains unexpected character '{character}'");
@@ -188,6 +191,9 @@ namespace Lang
             else if (char.IsDigit(character))
             {
                 tokenValue.Append(character);
+            }
+            else if (character == '_')
+            {
             }
             else
             {

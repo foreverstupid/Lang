@@ -1,8 +1,6 @@
 # LANG
 
-**Lang** is a Turing-full script programming language. The main concept of the
-program in Lang is an *expresion* - the statement that returns some value. The
-Lang program itself is expression.
+**Lang** is a Turing-full script programming language. The main concept of the program in Lang is an *expresion* - the statement that returns some value. The Lang program itself is expression.
 
 ## BNF of Lang
 
@@ -30,13 +28,13 @@ Lang program itself is expression.
 
 **\<unar\>** ::= **-** | **!** | **$**
 
-**\<binar\>** ::= **+** | **-** | **\*** | **/** | **%** | **>** | **<** | **~** | **&** | **|** | **=** | **?** | **->**
+**\<binar\>** ::= **+** | **-** | **\*** | **/** | **%** | **>** | **<** | **~** | **&** | **|** | **=** | **->** | **:**
 
 **\<variable\>** ::= **\<letter\>**{ **\<letter_or_digit\>** }
 
-**\<int\>** ::= **\<digit\>**{ **\<digit\>** }
+**\<int\>** ::= **\<digit\>**{ **\<digit_or_underscore\>** }
 
-**\<float\>** ::= **\<digit\>**{ **\<digit\>** }**.**{ **\<digit\>** }
+**\<float\>** ::= **\<digit\>**{ **\<digit_or_underscore\>** }**.**{ **\<digit_or_underscore\>** }
 
 **\<string\>** ::= **"**{**\<any_symbol\>**}**"**
 
@@ -46,6 +44,8 @@ Lang program itself is expression.
 
 **\<letter_or_digit\>** ::= **\<letter\>** | **\<digit\>**
 
+**\<digit_or_underscore\>** ::= **\<digit\>** | **_**
+
 ## Main concepts
 
 ### Data types
@@ -54,7 +54,7 @@ Lang has three main data types: integer number, float point number, and string. 
 
 #### Casting
 
-The main data types (integer, float, and string) can be automatically casted to each other in some situations. Thus, in every binary operations the right operand will be casted to the type of the left operand. If such a transformation is not possible then the programm finishes with an error. Moreover there exists the special cast operator (?). Here is a cast table:
+The main data types (integer, float, and string) can be automatically casted to each other in some situations. Thus, in every binary operations the right operand will be casted to the type of the left operand. If such a transformation is not possible then the programm finishes with an error. Moreover there exists the special cast operator (**:**). Here is a cast table:
 
 |Casting type|Integer|Float|String|
 |--|--|--|--|
@@ -94,7 +94,7 @@ Expression is the main concept of Lang. It is a set of operations over data that
 1. **Usual expression**: operands linked by binary and unary operations (e.g. arithmetic operations, assignment, etc.)
 2. **Expression group**: several expressions grouped together. The value of such an expression is the value of the last expression of the group.
 3. **Lambda**: expression that can be evaluated only after substitution certain values as parameters.
-4. **If-expression**: expression that evaluates or not according to some condition. Can have else-part (if-else-expression) that is evaluated if the consition is false. If has only if-part (if-only-expression) and the condition is false, then returns the special *None* value that cannot be used in any expressions.
+4. **If-expression**: expression that evaluates or not according to some condition. Can have else-part (*if-else-expression*) that is evaluated if the consition is false. If has only if-part (*if-only-expression*) and the condition is false, then returns the special *None* value that cannot be used in any expressions.
 5. **Cycle-expression**: expression that evaluates several times while some consition is true. Its value is a value of its last iteration. If none iteration is performed, returns the special *None* value that cannot be used in any expressions.
 
 ## Operations
@@ -114,7 +114,7 @@ All the following operations can be applied only for main data types: integers, 
 |*|Applying to numbers, returns their multiplication. If the left operand is string and the right one is a non-negative integer *n* then returns a string that is concatenation of *n* copies of the given string. All other operand types are not permited.|
 |/|Can be applied only to numbers, returning their division|
 |%|Can be applied only to numbers, returning their modulo division|
-|?|Casts the left operand to the type of the right one (see [casting](####Casting))|
+|:|Casts the left operand to the type of the right one (see [casting](####Casting))|
 
 #### Comparision operations
 

@@ -168,7 +168,7 @@ namespace Lang
                 "~" => new RpnEqual(token),
                 ">" => new RpnGreater(token),
                 "<" => new RpnLess(token),
-                "?" => new RpnCast(token),
+                ":" => new RpnCast(token),
                 "->" => new RpnRightAssign(token, variables),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };

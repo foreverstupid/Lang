@@ -10,7 +10,7 @@ namespace Lang
     {
         private static readonly string[] UnaryOperations = new[] { "-", "!", "$" };
         private static readonly string[] BinaryOperations =
-            new[] { "=", "+", "-", "/", "*", "&", "|", ">", "<", "~", "%", "?", "->" };
+            new[] { "=", "+", "-", "/", "*", "&", "|", ">", "<", "~", "%", "->", ":" };
 
         private readonly IEnumerator<Token> tokens;
 
