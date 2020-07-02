@@ -1,6 +1,6 @@
 # LANG
 
-**Lang** is a Turing-full script programming language. The main concept of the program in Lang is an *expresion* - the statement that returns some value. The Lang program itself is expression.
+**Lang** is a Turing-full script programming language. The main concept of the program in Lang is an *expresion* - the statement that returns some value. The Lang program itself is an expression.
 
 ## BNF of Lang
 
@@ -50,11 +50,11 @@
 
 ### Data types
 
-Lang has three main data types: integer number, float point number, and string. All number literals are non-negative (to get negative literal use negate operation). The fourth data type is a functional type that represents some lambda function.
+Lang has three the main data types: integer number, float point number, and string. All number literals are non-negative (to get a negative literal use negate operation). The fourth data type is a functional type that represents some lambda function.
 
 #### Casting
 
-The main data types (integer, float, and string) can be automatically casted to each other in some situations. Thus, in every binary operations the right operand will be casted to the type of the left operand. If such a transformation is not possible then the programm finishes with an error. Moreover there exists the special cast operator (**:**). Here is a cast table:
+The main data types (integer, float, and string) can be automatically casted to each other in some situations. Thus, in every binary operation the right operand will be casted to the type of the left one. If such a transformation is not possible then the programm finishes with an error. Moreover there exists the special cast operator (**:**). Here is the cast table:
 
 |Casting type|Integer|Float|String|
 |--|--|--|--|
@@ -68,21 +68,21 @@ There isn't such a type as bool in Lang. Nevertheless, integer, float, and strin
 
 ### Variables
 
-Variables in Lang are created on their first assignment from some values. They can change their values and types. In a sense variables are just labels for data, to get the variable value a special dereference operation ($) is used. Thus, variables can be thought as pointers to data that should be dereferenced. Variables could have another variables as their values. Variables of a functional type could be evaluated as functions.
+Variables in Lang are created on their first assignment from some values. They can change their values and types. In a sense variables are just labels for a data, to get the variable value a special dereference operation (**$**) is used. Thus, variables can be thought as pointers to a data that should be dereferenced. Variables could have another variables as their values. Variables of a functional type could be evaluated as functions.
 
 ### Lambdas
 
-All functions in Lang are lambdas. You can give them names by assignment to some variable. Lambda return value is the value of its body expression. Any lambda takes values (maybe none of them) as its input parameters, but as far as variable itself can be a value, you can pass a variable without dereferencing, that is similar to passing arguments by the reference in C++. Lambda parameters override any outer variables of the same name.
+All functions in Lang are lambdas. You can give them names by assignment to some variable. Lambda returning value is the value of its body expression. Any lambda takes values (maybe none of them) as its input parameters, but as far as variable itself can be a value, you can pass a variable without dereferencing, that is similar to passing arguments by the reference in C++. Lambda parameters override any outer variables of the same name.
 
 ### Buil-in functions
 
-Lang has several built-in named functions that shouldn't be described to be used. Their behaviour is the same as the behaviour of ordinary lambdas.
+Lang has several built-in named functions that needn't be described to be used. Their behaviour is the same as the behaviour of ordinary lambdas.
 
 |Name|Arguments|Return value|
 |--|--|--|
-|_write|A single value to be write on the console of any type. If the value is variable then its name is used. If the variable is the None value, built-in, or a lambda then error occurs|Returns the printed value|
+|_write|The single value to be write on the console of any type. If the value is variable then its name is used. If the variable is the *None* value, built-in, or a lambda then error occurs|Returns the printed value|
 |_read|No arguments|Returns the string that is an input line from the console|
-|_writeFile|A value to be writed into the given file and the file path. The value restriction is the same as for *_write*|The written value|
+|_writeFile|The value to be writed into the given file and the file path. The value restriction is the same as for *_write*|The written value|
 |_readFile|The file path|The full content of the file as a string value|
 |_rnd|No arguments|A random float between 0.0 and 1.0|
 |_length|A string|The length of the string|
@@ -94,8 +94,8 @@ Expression is the main concept of Lang. It is a set of operations over data that
 1. **Usual expression**: operands linked by binary and unary operations (e.g. arithmetic operations, assignment, etc.)
 2. **Expression group**: several expressions grouped together. The value of such an expression is the value of the last expression of the group.
 3. **Lambda**: expression that can be evaluated only after substitution certain values as parameters.
-4. **If-expression**: expression that evaluates or not according to some condition. Can have else-part (*if-else-expression*) that is evaluated if the consition is false. If has only if-part (*if-only-expression*) and the condition is false, then returns the special *None* value that cannot be used in any expressions.
-5. **Cycle-expression**: expression that evaluates several times while some consition is true. Its value is a value of its last iteration. If none iteration is performed, returns the special *None* value that cannot be used in any expressions.
+4. **If-expression**: expression that evaluates or not according to some condition. Can have else-part (*if-else-expression*) that is evaluated if the condition is false. If has only if-part (*if-only-expression*) and the condition is false, then returns the special *None* value that cannot be used in any operations.
+5. **Cycle-expression**: expression that evaluates several times while some consition is true. Its value is a value of its last iteration. If none iteration is performed, returns the special *None* value that cannot be used in any operations.
 
 ## Operations
 
@@ -165,3 +165,4 @@ a["0"];
 1. Lang has one-line comments only. Every comment starts with the *#* character and ends when the line ends.
 2. The None value that is the result of non-performed actions (e.g. the cycle that hasn't done any iterations) cannot be used in any expressions. So, expressions that use if-only-expressions or cycles as operands are not suggested to be use.
 3. All variables except lambda parameters are global.
+4. Semicolon can be thought as value ignoring unary postfix operation, that just flushes its operand from the stack.
