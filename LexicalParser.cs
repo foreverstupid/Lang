@@ -9,7 +9,7 @@ namespace Lang
     /// </summary>
     public sealed class LexicalParser
     {
-        private static readonly string Separators = ";,=$+-*/%><!|&~()[]{}:";
+        private static readonly string Separators = ";,=$.+-*/%><!|&~()[]{}:";
         private readonly Dictionary<State, Func<char, Token>> stateHandlers;
 
         private readonly StringBuilder tokenValue = new StringBuilder();
@@ -34,6 +34,7 @@ namespace Lang
                 [State.Comment] = Comment,
                 [State.RightAssign] = RightAssign,
                 [State.Apply] = Apply,
+                [State.Field] = Field,
             };
         }
 
@@ -51,6 +52,7 @@ namespace Lang
             Identifier,
             RightAssign,
             Apply,
+            Field,
         }
 
         /// <summary>
@@ -131,6 +133,13 @@ namespace Lang
             {
                 state = State.Apply;
                 tokenValue.Append(character);
+            }
+            else if (character == '.')
+            {
+                tokenValue.Append(character);
+                var token = OnNewToken(Token.Type.Separator);
+                state = State.Field;
+                return token;
             }
             else if (Separators.Contains(character))
             {
@@ -294,6 +303,27 @@ namespace Lang
             }
         }
 
+        private Token Field(char character)
+        {
+            if (char.IsWhiteSpace(character))
+            {
+                return OnNewToken(Token.Type.String);
+            }
+            else if (char.IsLetterOrDigit(character) || character == '_')
+            {
+                tokenValue.Append(character);
+                return null;
+            }
+            else if (Separators.Contains(character))
+            {
+                return OnExtraToken(character, Token.Type.String);
+            }
+            else
+            {
+                throw new ArgumentException($"Identifier contains unexpected character: '{character}'");
+            }
+        }
+
         /// <summary>
         /// Returns the token of the given type, using the current token info.
         /// </summary>
@@ -321,7 +351,7 @@ namespace Lang
         /// <param name="currentTokenType">The current token type.</param>
         /// <returns>The current token.</returns>
         /// <remarks>It is used when a new character is a separator and breaks the last token. In this case,
-        /// one character produces two tokens, but we can return only one token a time.null So, we should
+        /// one character produces two tokens, but we can return only one token a time. So, we should
         /// keep an extra token and return it on the next invocation.</remarks>
         private Token OnExtraToken(char character, Token.Type currentTokenType)
         {

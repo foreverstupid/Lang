@@ -160,6 +160,13 @@ a[0.0];
 a["0"];
 ```
 
+The way the Lang release indexing makes arrays similar to dictionaries. Moreover, Lang supports some kind of a syntaxic sugar that is called as **pseudo-fields**. A special operator **.** (dot) can be used instead of indexing by a string. For example, the following code are equivalent:
+```
+array["length"];
+array.length;
+```
+Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to have arbitrary characters.
+
 ## Other features
 
 1. Lang has one-line comments only. Every comment starts with the *#* character and ends when the line ends.

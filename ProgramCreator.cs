@@ -87,7 +87,7 @@ namespace Lang
         }
 
         /// <summary>
-        /// creates an indexator.
+        /// Creates an indexator.
         /// </summary>
         public void Indexator(Token token)
         {
@@ -170,6 +170,7 @@ namespace Lang
                 "<" => new RpnLess(token),
                 ":" => new RpnCast(token),
                 "->" => new RpnRightAssign(token, variables),
+                "." => new RpnIndexator(token),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 
