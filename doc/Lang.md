@@ -16,7 +16,7 @@
 
 **\<operand\>** ::= **(** **\<expression\>** **)** | **\<if_expression\>** | **\<while_expression\>** | **\<literal\>** | **\<lambda\>**
 
-**\<literal\>** ::= **\<string\>** | **\<int\>** | **\<float\>** | **\<variable\>**
+**\<literal\>** ::= **\<string\>** | **\<int\>** | **\<float\>** | **\<variable\>** | **loc** **\<variable\>**
 
 **\<lambda\>** ::= **\<params\>** **=>** **\<expression\>**
 
@@ -28,7 +28,7 @@
 
 **\<unar\>** ::= **-** | **!** | **$**
 
-**\<binar\>** ::= **+** | **-** | **\*** | **/** | **%** | **>** | **<** | **~** | **&** | **|** | **=** | **->** | **:**
+**\<binar\>** ::= **+** | **-** | **\*** | **/** | **%** | **>** | **<** | **~** | **&** | **|** | **=** | **->** | **:** | **.**
 
 **\<variable\>** ::= **\<letter\>**{ **\<letter_or_digit\>** }
 
@@ -166,6 +166,51 @@ array["length"];
 array.length;
 ```
 Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to have arbitrary characters.
+
+## Variable visibility
+
+By default all variables are defined in the global namespace, i.e. they are visible and can be used from every lambda (doesn't matter from outer or from inner one). It can lead to collisions. So, the special keyword **loc** is introduced for preventing such problems. All variables that are defined with this keyword are visible only from the inner lambdas.
+Let's consider the following program:
+```
+{
+    func = [] =>
+    {
+        a = 1;
+        loc b = 2;
+
+        f = [] =>
+        {
+            ...
+        }
+    };
+
+    b = 100
+}
+```
+
+Here the variable `a` is a global one. It can be used in functions `func`, `f`, or even in the outer program block. The variable `b` is a local one. It can be used only in functions `func`, `f` and all their inner lambdas. The expression `b = 100` will create another variable without changing the local variable `b` of the function `func`. Thus, the next code is invalid:
+```
+{
+    func = [] => loc a = "abracadabra";
+    _write($a)
+}
+```
+It will raise an error because the value of the variable `a`cannot be gotten as far it is a local variable of the function `func`.
+
+Note, that **loc** keyword should be used only once at the variable definition (i.e. the first assignment). Nevertheless, you can define local variable without assignment. For example, the following code is valid:
+```
+loc a;
+a = 10;
+```
+But note, that you cannot use the variable before the first assignment, because local definition doesn't create the variable, but just mark its name as the local one. Such a kind of a hack can be used for simplifying localisation of a complex variables (arrays or dictionaries). E.g. the following code is correct:
+```
+loc a;
+a.length = 3;
+a[0] = "a";
+a[1] = "b";
+a[2] = "c";
+```
+Here every variable that relates to the `a` name is local.
 
 ## Other features
 

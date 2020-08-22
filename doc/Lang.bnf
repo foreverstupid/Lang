@@ -13,7 +13,7 @@
 
 <operand> ::= ( <expression> ) | <if_expression> | <while_expression> | <literal> | <lambda>
 
-<literal> ::= <string> | <int> | <float> | <variable>
+<literal> ::= <string> | <int> | <float> | <variable> | loc <variable>
 
 <lambda> ::= <params> => <expression>
 
@@ -25,7 +25,7 @@
 
 <unar> ::= - | ! | $
 
-<binar> ::= + | - | * | / | % | > | < | ~ | & | \| | = | -> | :
+<binar> ::= + | - | * | / | % | > | < | ~ | & | \| | = | -> | : | .
 
 <variable> ::= -//-
 

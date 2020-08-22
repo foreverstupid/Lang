@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Lang.RpnItems;
 
 namespace Lang
@@ -18,12 +19,10 @@ namespace Lang
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
-        private readonly Stack<int> lambdaIdxStack = new Stack<int>();
-        private readonly Stack<List<string>> parametersStack = new Stack<List<string>>();
+        private readonly Stack<LambdaContext> contextsStack = new Stack<LambdaContext>();
 
         private int ifCount = 0;
         private int lambdaCount = 0;
-        private string lambdaContext = "";
 
         // creating program information
         private LinkedList<Rpn> program;
@@ -44,8 +43,7 @@ namespace Lang
             labelsForNextRpn.Clear();
             expressionStack.Clear();
             ifIdxStack.Clear();
-            lambdaIdxStack.Clear();
-            parametersStack.Clear();
+            contextsStack.Clear();
         }
 
         /// <summary>
@@ -61,10 +59,10 @@ namespace Lang
                 );
             }
 
-            if (parametersStack.Count > 0)
+            if (contextsStack.Count > 0)
             {
                 throw new RpnCreationException(
-                    "Invalid expression, lambda parameters stack is not empty"
+                    "Invalid expression, lambda context stack is not empty"
                 );
             }
 
@@ -72,13 +70,6 @@ namespace Lang
             {
                 throw new RpnCreationException(
                     "Invalid expression, 'if' stack is not empty"
-                );
-            }
-
-            if (lambdaIdxStack.Count > 0)
-            {
-                throw new RpnCreationException(
-                    "Invalid expression, lambda stack is not empty"
                 );
             }
 
@@ -110,9 +101,13 @@ namespace Lang
                 else
                 {
                     var name = token.Value;
-                    if (parametersStack.TryPeek(out var ps) && ps.Contains(name))
+                    foreach (var ctx in contextsStack.Reverse())
                     {
-                        name = lambdaContext + name;
+                        if (ctx.LocalVariables.Contains(name))
+                        {
+                            name = ctx.LambdaName + name;
+                            break;
+                        }
                     }
 
                     rpn = new RpnVar(token, name);
@@ -182,19 +177,17 @@ namespace Lang
         /// </summary>
         public void LambdaStart()
         {
-            parametersStack.Push(new List<string>());
-            OpenBracket();
+            var context = new LambdaContext(lambdaCount);
             lambdaCount++;
-            lambdaIdxStack.Push(lambdaCount);
-            var lambdaName = lambdaContext = LambdaPrefix + lambdaCount;
-            var lambdaEndLabel = LambdaEndPrefix + lambdaCount;
+            contextsStack.Push(context);
+            OpenBracket();
 
             // add jump to the end of the code block
-            Label(lambdaEndLabel);
+            Label(context.EndLabel);
             AddRpn(new RpnGoto(labels));
 
             AddRpn(new RpnNop());
-            lambdas.Add(lambdaName, program.Last);
+            lambdas.Add(context.LambdaName, program.Last);
         }
 
         /// <summary>
@@ -202,27 +195,14 @@ namespace Lang
         /// </summary>
         public void LambdaFinish()
         {
-            parametersStack.Pop();
+            var context = contextsStack.Pop();
             CloseBracket();
 
-            var lambdaIdx = lambdaIdxStack.Pop();
-            var lambdaEndLabel = LambdaEndPrefix + lambdaIdx;
-            var lambdaName = LambdaPrefix + lambdaIdx;
-
-            Label(ReturnLabelPrefix, lambdaName);
+            Label(ReturnLabelPrefix, context.LambdaName);
             AddRpn(new RpnGoto(labels));
 
-            AddLabelForNextRpn(lambdaEndLabel);
-            AddRpn(new RpnFunc(lambdaName));
-
-            if (lambdaIdxStack.TryPeek(out var idx))
-            {
-                lambdaContext = LambdaPrefix + idx;
-            }
-            else
-            {
-                lambdaContext = "";
-            }
+            AddLabelForNextRpn(context.EndLabel);
+            AddRpn(new RpnFunc(context.LambdaName));
         }
 
         /// <summary>
@@ -230,10 +210,24 @@ namespace Lang
         /// </summary>
         public void Parameter(Token token)
         {
-            parametersStack.Peek().Add(token.Value);
-            AddRpn(new RpnVar(token, lambdaContext + token.Value));
+            LocalVariable(token);
             AddRpn(new RpnRightAssign(token, variables));
             AddRpn(new RpnIgnore());
+        }
+
+        /// <summary>
+        /// Adds a new local variable.
+        /// </summary>
+        public void LocalVariable(Token token)
+        {
+            string prefix = "";
+            if (contextsStack.TryPeek(out var ctx))
+            {
+                ctx.LocalVariables.Add(token.Value);
+                prefix = ctx.LambdaName;
+            }
+
+            AddRpn(new RpnVar(token, prefix + token.Value));
         }
 
         /// <summary>
@@ -427,6 +421,23 @@ namespace Lang
             {
                 LabelLastRpn();
             }
+        }
+
+        /// <summary>
+        /// Contains all context of the current lambda.
+        /// </summary>
+        private class LambdaContext
+        {
+            public LambdaContext(int lambdaIdx)
+            {
+                LambdaName = LambdaPrefix + lambdaIdx;
+                EndLabel = LambdaEndPrefix + lambdaIdx;
+            }
+
+            public string LambdaName { get; }
+            public string EndLabel { get; }
+            public List<string> LocalVariables { get; } =
+                new List<string>();
         }
     }
 }

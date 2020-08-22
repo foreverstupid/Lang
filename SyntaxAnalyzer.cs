@@ -318,6 +318,21 @@ namespace Lang
         {
             Enter(nameof(Literal));
 
+            if (tokens.CurrentTokenTypeIs(Token.Type.Identifier) &&
+                tokens.CurrentTokenValueIs(KeyWords.Let))
+            {
+                tokens.MoveNext();
+                if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+                {
+                    throw new SyntaxException(
+                        $"Variable identifier is expected after '{KeyWords.Let}' keyword");
+                }
+
+                creator.LocalVariable(tokens.CurrentOrLast);
+                tokens.MoveNext();
+                return Leave(true);
+            }
+
             if (tokens.CurrentTokenTypeIs(Token.Type.Integer) ||
                 tokens.CurrentTokenTypeIs(Token.Type.Float) ||
                 tokens.CurrentTokenTypeIs(Token.Type.String) ||
