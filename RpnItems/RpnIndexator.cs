@@ -34,14 +34,21 @@ namespace Lang.RpnItems
                 throw new InterpretationException("Cannot index not a variable");
             }
 
-            var indexedName = ConstructName(array.GetString(), index);
-            return new RpnVar(indexedName);
+            if (index.ValueType == RpnConst.Type.String ||
+                index.ValueType == RpnConst.Type.Integer ||
+                index.ValueType == RpnConst.Type.Float)
+            {
+                var indexedName = ConstructName(array.GetString(), index);
+                return new RpnVar(indexedName);
+            }
+
+            throw new InterpretationException("Index type should be a number or a string");
         }
 
         /// <summary>
         /// Constructs the name of the array item by the collection name and its index.
         /// </summary>
         private string ConstructName(string arrayName, RpnConst index)
-            => arrayName + "#" + index.ValueType.ToString() + index.GetString();
+            => $"{arrayName}#{index.ValueType.ToString()[0]}#{index.GetString()}";
     }
 }
