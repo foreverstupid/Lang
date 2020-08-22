@@ -74,6 +74,21 @@ namespace Lang
         }
 
         /// <summary>
+        /// Checks whether the current token is the separator of the given value.
+        /// </summary>
+        /// <param name="value">The string value of the expected separator.</param>
+        public bool CurrentTokenIsSeparator(string value)
+        {
+            if (IsFinished)
+            {
+                return false;
+            }
+
+            return CurrentOrLast.TokenType == Token.Type.Separator &&
+                   CurrentOrLast.Value == value;
+        }
+
+        /// <summary>
         /// Checks whether the current token is an unary operation.
         /// </summary>
         public bool CurrentTokenIsUnaryOperation()

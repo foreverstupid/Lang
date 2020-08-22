@@ -159,7 +159,7 @@ namespace Lang
         {
             Enter(nameof(Group));
 
-            if (!tokens.CurrentTokenValueIs("{"))
+            if (!tokens.CurrentTokenIsSeparator("{"))
             {
                 return Leave(false);
             }
@@ -172,7 +172,7 @@ namespace Lang
             }
 
             creator.CloseBracket();
-            while (tokens.CurrentTokenValueIs(";"))
+            while (tokens.CurrentTokenIsSeparator(";"))
             {
                 creator.Ignore(tokens.CurrentOrLast);
                 creator.OpenBracket();
@@ -185,7 +185,7 @@ namespace Lang
                 creator.CloseBracket();
             }
 
-            if (!tokens.CurrentTokenValueIs("}"))
+            if (!tokens.CurrentTokenIsSeparator("}"))
             {
                 SetError("'}' is expected at the end of the expression group");
             }
@@ -210,7 +210,7 @@ namespace Lang
         {
             Enter(nameof(Indexator));
 
-            if (!tokens.CurrentTokenValueIs("["))
+            if (!tokens.CurrentTokenIsSeparator("["))
             {
                 return Leave(false);
             }
@@ -223,7 +223,7 @@ namespace Lang
                 SetError("Expression in the indexator is expected");
             }
 
-            if (!tokens.CurrentTokenValueIs("]"))
+            if (!tokens.CurrentTokenIsSeparator("]"))
             {
                 SetError("']' at the end of the indexator is expected");
             }
@@ -237,7 +237,7 @@ namespace Lang
         {
             Enter(nameof(Arguments));
 
-            if (!tokens.CurrentTokenValueIs("("))
+            if (!tokens.CurrentTokenIsSeparator("("))
             {
                 return Leave(false);
             }
@@ -247,7 +247,7 @@ namespace Lang
             creator.OpenBracket();
             MoveNext();
 
-            if (tokens.CurrentTokenValueIs(")"))
+            if (tokens.CurrentTokenIsSeparator(")"))
             {
                 creator.CloseBracket();
                 creator.Eval(evalToken, paramCount);
@@ -264,9 +264,9 @@ namespace Lang
             }
 
             paramCount++;
-            while (!tokens.CurrentTokenValueIs(")"))
+            while (!tokens.CurrentTokenIsSeparator(")"))
             {
-                if (!tokens.CurrentTokenValueIs(","))
+                if (!tokens.CurrentTokenIsSeparator(","))
                 {
                     SetError("Comma between arguments is expected");
                 }
@@ -292,7 +292,7 @@ namespace Lang
         {
             Enter(nameof(Operand));
 
-            if (tokens.CurrentTokenValueIs("("))
+            if (tokens.CurrentTokenIsSeparator("("))
             {
                 creator.OpenBracket();
                 MoveNext();
@@ -301,7 +301,7 @@ namespace Lang
                     SetError("Expression after an opening paranthesis is expected");
                 }
 
-                if (!tokens.CurrentTokenValueIs(")"))
+                if (!tokens.CurrentTokenIsSeparator(")"))
                 {
                     SetError("Closing paranthesis in the expression is expected");
                 }
@@ -355,7 +355,7 @@ namespace Lang
                 return Leave(false);
             }
 
-            if (!tokens.CurrentTokenValueIs("=>"))
+            if (!tokens.CurrentTokenIsSeparator("=>"))
             {
                 SetError("'=>' after lambda parameter list is expected");
             }
@@ -375,7 +375,7 @@ namespace Lang
         {
             Enter(nameof(Parameters));
 
-            if (!tokens.CurrentTokenValueIs("["))
+            if (!tokens.CurrentTokenIsSeparator("["))
             {
                 return Leave(false);
             }
@@ -383,7 +383,7 @@ namespace Lang
             MoveNext();
             creator.LambdaStart();
 
-            if (tokens.CurrentTokenValueIs("]"))
+            if (tokens.CurrentTokenIsSeparator("]"))
             {
                 MoveNext();
                 return Leave(true);
@@ -396,9 +396,9 @@ namespace Lang
 
             creator.Parameter(tokens.CurrentOrLast);
             MoveNext();
-            while (!tokens.CurrentTokenValueIs("]"))
+            while (!tokens.CurrentTokenIsSeparator("]"))
             {
-                if (!tokens.CurrentTokenValueIs(","))
+                if (!tokens.CurrentTokenIsSeparator(","))
                 {
                     SetError("Comma in parameter enumeration is expected");
                 }
@@ -430,7 +430,7 @@ namespace Lang
             creator.IfStart();
             MoveNext();
 
-            if (!tokens.CurrentTokenValueIs("("))
+            if (!tokens.CurrentTokenIsSeparator("("))
             {
                 SetError("Openning paranthesis at the beggining of the condition is expected");
             }
@@ -442,7 +442,7 @@ namespace Lang
                 SetError("Invalid condition expression");
             }
 
-            if (!tokens.CurrentTokenValueIs(")"))
+            if (!tokens.CurrentTokenIsSeparator(")"))
             {
                 SetError("Closing paranthesis at the end of the condition is expected");
             }
@@ -493,7 +493,7 @@ namespace Lang
             var whileToken = tokens.CurrentOrLast;
             MoveNext();
 
-            if (!tokens.CurrentTokenValueIs("("))
+            if (!tokens.CurrentTokenIsSeparator("("))
             {
                 SetError(
                     "Opening paranthesis at the beginning " +
@@ -509,7 +509,7 @@ namespace Lang
                 SetError("Invalid condition expression");
             }
 
-            if (!tokens.CurrentTokenValueIs(")"))
+            if (!tokens.CurrentTokenIsSeparator(")"))
             {
                 SetError(
                     "Closing paranthesis at the end " +
