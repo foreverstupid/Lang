@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CommandLine;
 using Lang.RpnItems;
 
 namespace Lang
@@ -9,29 +10,37 @@ namespace Lang
     {
         public static void Main(string[] args)
         {
+            Parser.Default
+                .ParseArguments<Arguments>(args)
+                .WithParsed<Arguments>(
+                    arguments => MainCore(arguments)
+                );
+        }
+
+        private static void MainCore(Arguments args)
+        {
             using var reader = GetReader(args);
-            bool isDebug = args.Length > 1 && args[1] == "-d";
 
             try
             {
                 var parser = new LexicalParser();
                 var tokens = Parse(reader, parser);
 
-                if (isDebug)
+                if (args.IsDebugMode)
                 {
                     LogTokens(tokens);
                 }
 
                 var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
-                var program = syntaxer.Analyse(tokens, isDebug);
+                var program = syntaxer.Analyse(tokens, args.IsDebugMode);
 
-                if (isDebug)
+                if (args.IsDebugMode)
                 {
                     LogRpns(program);
                 }
 
                 var interpreter = new Interpreter();
-                var exitValue = interpreter.Run(program, isDebug);
+                var exitValue = interpreter.Run(program, args.IsDebugMode);
                 Console.WriteLine(
                     "\n=============================================\n" +
                     "Program finished with exit value: " + exitValue
@@ -69,15 +78,14 @@ namespace Lang
         /// Gets the source code reader.
         /// </summary>
         /// <param name="args">CMD arguments.</param>
-        static private StreamReader GetReader(string[] args)
+        static private StreamReader GetReader(Arguments args)
         {
-            var filePath = args[0];
-            if (!File.Exists(filePath))
+            if (!File.Exists(args.FilePath))
             {
-                throw new ArgumentException($"File \"{filePath}\" doesn't exist!");
+                throw new ArgumentException($"File \"{args.FilePath}\" doesn't exist!");
             }
 
-            return new StreamReader(filePath);
+            return new StreamReader(args.FilePath);
         }
 
         /// <summary>

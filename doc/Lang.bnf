@@ -17,7 +17,9 @@
 
 <lambda> ::= <params> => <expression>
 
-<params> ::= \[ [ <variable> { ,<variable> } ] \]
+<params> ::= \[ [ <parameter> { , <parameter> } ] \]
+
+<parameter> ::= [ & ] <variable>
 
 <if_expression> ::= if ( <expression> ) <expression> [ or <expression> ]
 

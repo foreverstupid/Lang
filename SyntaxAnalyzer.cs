@@ -389,13 +389,7 @@ namespace Lang
                 return Leave(true);
             }
 
-            if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
-            {
-                SetError("Parameter definition is expected");
-            }
-
-            creator.Parameter(tokens.CurrentOrLast);
-            MoveNext();
+            Parameter();
             while (!tokens.CurrentTokenIsSeparator("]"))
             {
                 if (!tokens.CurrentTokenIsSeparator(","))
@@ -404,17 +398,31 @@ namespace Lang
                 }
 
                 MoveNext();
-                if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
-                {
-                    SetError("Parameter definition is expected");
-                }
-
-                creator.Parameter(tokens.CurrentOrLast);
-                MoveNext();
+                Parameter();
             }
 
             MoveNext();
             return Leave(true);
+        }
+
+        private bool Parameter()
+        {
+            bool isRef = false;
+            if (tokens.CurrentTokenIsSeparator("&"))
+            {
+                isRef = true;
+                tokens.MoveNext();
+            }
+
+            if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+            {
+                SetError("Parameter definition is expected");
+            }
+
+            creator.Parameter(tokens.CurrentOrLast, isRef);
+            MoveNext();
+
+            return true;
         }
 
         private bool IfExpression()

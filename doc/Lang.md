@@ -20,7 +20,9 @@
 
 **\<lambda\>** ::= **\<params\>** **=>** **\<expression\>**
 
-**\<params\>** ::= **[** [ **\<variable\>** { ,**\<variable\>** } ] **]**
+**\<params\>** ::= **[** [ **\<parameter\>** { , [**\<parameter\>** } ] **]**
+
+**\<parameter\>** ::= [ **&** ] **\<variable\>**
 
 **\<if_expression\>** ::= **if** **(** **\<expression\>** **)** **\<expression\>** [ **or** **\<expression\>** ]
 
@@ -212,9 +214,37 @@ a[2] = "c";
 ```
 Here every variable that relates to the `a` name is local.
 
+## Reference parameters
+
+As it was said previously, you can pass the variable itself as a parameter to a lambda. In this case you have to dereference such a parameter before performing any operation over it. That can be annoying. That's why a special syntaxic construction is introduced. If you want to mark some parameter as a reference one and then not to dereference it every time, you can define it in the following way: `&parameter`. Thus the following versions of the code are equivalent:
+```
+# First version
+func = [a] =>
+{
+    ($a).length = 2;
+    $($a).length
+};
+
+array.length = 0;
+func(array);
+```
+
+```
+# Second version
+func = [&a] =>
+{
+    a.length = 2;
+    $a.length
+};
+
+array.length = 0;
+func(array);
+```
+
+Note, that the `&` is note a prefix of the parameter name and can be written separately from the parameter.
+
 ## Other features
 
 1. Lang has one-line comments only. Every comment starts with the *#* character and ends when the line ends.
 2. The None value that is the result of non-performed actions (e.g. the cycle that hasn't done any iterations) cannot be used in any expressions. So, expressions that use if-only-expressions or cycles as operands are not suggested to be use.
-3. All variables except lambda parameters are global.
-4. Semicolon can be thought as value ignoring unary postfix operation, that just flushes its operand from the stack.
+3. Semicolon can be thought as value ignoring unary postfix operation, that just flushes its operand from the stack.

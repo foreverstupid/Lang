@@ -100,17 +100,26 @@ namespace Lang
                 }
                 else
                 {
-                    var name = token.Value;
                     foreach (var ctx in contextsStack.Reverse())
                     {
-                        if (ctx.LocalVariables.Contains(name))
+                        if (ctx.HasLocalVariable(token.Value))
                         {
-                            name = ctx.LambdaName + name;
-                            break;
+                            var name = ctx.LambdaName + token.Value;
+                            if (ctx.IsVariableRef(token.Value))
+                            {
+                                OpenBracket();
+                                AddRpn(new RpnVar(token, name));
+                                AddRpn(new RpnGetValue(token, variables));
+                                CloseBracket();
+                                return;
+                            }
+
+                            AddRpn(new RpnVar(token, name));
+                            return;
                         }
                     }
 
-                    rpn = new RpnVar(token, name);
+                    rpn = new RpnVar(token, token.Value);
                 }
             }
             else
@@ -208,9 +217,9 @@ namespace Lang
         /// <summary>
         /// Creates an initializer of a lambda parameter.
         /// </summary>
-        public void Parameter(Token token)
+        public void Parameter(Token token, bool isRef = false)
         {
-            LocalVariable(token);
+            LocalVariable(token, isRef);
             AddRpn(new RpnRightAssign(token, variables));
             AddRpn(new RpnIgnore());
         }
@@ -218,12 +227,12 @@ namespace Lang
         /// <summary>
         /// Adds a new local variable.
         /// </summary>
-        public void LocalVariable(Token token)
+        public void LocalVariable(Token token, bool isRef = false)
         {
             string prefix = "";
             if (contextsStack.TryPeek(out var ctx))
             {
-                ctx.LocalVariables.Add(token.Value);
+                ctx.AddLocalVariable(token.Value, isRef);
                 prefix = ctx.LambdaName;
             }
 
@@ -428,6 +437,9 @@ namespace Lang
         /// </summary>
         private class LambdaContext
         {
+            private readonly List<string> localVariables = new List<string>();
+            private readonly List<string> refVariables = new List<string>();
+
             public LambdaContext(int lambdaIdx)
             {
                 LambdaName = LambdaPrefix + lambdaIdx;
@@ -436,8 +448,21 @@ namespace Lang
 
             public string LambdaName { get; }
             public string EndLabel { get; }
-            public List<string> LocalVariables { get; } =
-                new List<string>();
+
+            public void AddLocalVariable(string name, bool isRef = false)
+            {
+                localVariables.Add(name);
+                if (isRef)
+                {
+                    refVariables.Add(name);
+                }
+            }
+
+            public bool HasLocalVariable(string name)
+                => localVariables.Contains(name);
+
+            public bool IsVariableRef(string name)
+                => refVariables.Contains(name);
         }
     }
 }
