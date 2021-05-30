@@ -61,7 +61,7 @@ The main data types (integer, float, and string) can be automatically casted to 
 |Casting type|Integer|Float|String|
 |--|--|--|--|
 |Integer|Cast is not needed|Trivial cast|String representation of the number|
-|Float|Round to integer|Cast is not needed|String representation og the number|
+|Float|Round to integer|Cast is not needed|String representation of the number|
 |String|Parse string as integer or error|Parse string as float or error|Cast is not needed|
 
 #### Bool
