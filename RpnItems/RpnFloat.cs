@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Lang.RpnItems
 {
@@ -19,11 +20,11 @@ namespace Lang.RpnItems
                 throw new ArgumentException("Token has not a type of a float number");
             }
 
-            if (double.TryParse(token.Value, out double value))
-            {
-                this.value = value;
-            }
-            else
+            if (!double.TryParse(
+                    token.Value,
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out value))
             {
                 throw new ArgumentException("Float token has an invalid value: " + token.Value);
             }
