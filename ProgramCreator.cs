@@ -173,6 +173,7 @@ namespace Lang
                 ">" => new RpnGreater(token),
                 "<" => new RpnLess(token),
                 ":" => new RpnCast(token),
+                "?" => new RpnCheckCast(token),
                 "->" => new RpnRightAssign(token, variables),
                 "." => new RpnIndexator(token),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)

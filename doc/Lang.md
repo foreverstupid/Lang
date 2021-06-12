@@ -30,7 +30,7 @@
 
 **\<unar\>** ::= **-** | **!** | **$**
 
-**\<binar\>** ::= **+** | **-** | **\*** | **/** | **%** | **>** | **<** | **~** | **&** | **|** | **=** | **->** | **:** | **.**
+**\<binar\>** ::= **+** | **-** | **\*** | **/** | **%** | **>** | **<** | **~** | **&** | **|** | **=** | **->** | **:** | **?** | **.**
 
 **\<variable\>** ::= **\<letter\>**{ **\<letter_or_digit\>** }
 
@@ -56,7 +56,7 @@ Lang has three the main data types: integer number, float point number, and stri
 
 #### Casting
 
-The main data types (integer, float, and string) can be automatically casted to each other in some situations. Thus, in every binary operation the right operand will be casted to the type of the left one. If such a transformation is not possible then the programm finishes with an error. Moreover there exists the special cast operator (**:**). Here is the cast table:
+The main data types (integer, float, and string) can be automatically casted to each other in some situations. Thus, in every binary operation the right operand will be casted to the type of the left one. If such a transformation is not possible then the programm finishes with an error. Moreover there exists the special cast operator (**:**). To check whether the cast is possible or not you can use another special cast-checking operator **?**. Here is the cast table:
 
 |Casting type|Integer|Float|String|
 |--|--|--|--|
@@ -117,6 +117,7 @@ All the following operations can be applied only for main data types: integers, 
 |/|Can be applied only to numbers, returning their division|
 |%|Can be applied only to numbers, returning their modulo division|
 |:|Casts the left operand to the type of the right one (see [casting](####Casting))|
+|?|Returns bool-like value that determines whether the left operand can be casted to the type of the right one ((see [casting](####Casting))|
 
 #### Comparision operations
 
