@@ -1,0 +1,126 @@
+# A sample of the program in Lang. The simple one-operation calculator.
+{
+    # array of allowed operations as a map between strings and
+    # two-argument lambdas
+    operations["+"] = [a, b] => $a + $b;
+    operations["-"] = [a, b] => $a - $b;
+    operations["*"] = [a, b] => $a * $b;
+    operations["/"] = [a, b] => $a / $b;
+
+    # checks that the given operation is allowed
+    isAllowedOperation = [&op] =>   # we can declare parameter with & to avoid $ usage everywhere
+        op ~ "+" | op ~ "-" | op ~ "*" | op ~ "/";
+
+    # parsing function that takes an input line and returns
+    # the following object:
+    #   {
+    #       "left"    - the first operand as a number
+    #       "right"   - the second operand as a number
+    #       "op"      - the required operation as a string
+    #       "error"   - string that describes an error of parsing or is empty
+    #   }
+    parse = [str] =>
+    {
+        loc input = $str + " ";
+        loc len = _length($input);
+        loc tokenCount = 0;
+        loc token = "";
+
+        # help inner function that handles a new token adding
+        # (note, that it can see any variable of the parent function)
+        loc handleToken = [] =>
+            if ($token)
+            {
+                tokens[$tokenCount] = $token;
+                tokenCount = $tokenCount + 1;
+                token = ""
+            };
+
+        loc i = -1;
+        loc ch;
+        as ((i = $i + 1) < $len)
+        {
+            ch = ($input)[$i];
+            if ($ch ~ " ")
+            {
+                handleToken()
+            }
+            or
+            {
+                isOperation = isAllowedOperation($ch);
+                if ($isOperation)
+                {
+                    handleToken()
+                };
+
+                token = $token + $ch;
+
+                if ($isOperation)
+                {
+                    handleToken()
+                }
+            }
+        };
+
+        loc result;
+        if (!($tokenCount ~ 3))
+        {
+            result.error = "Invalid expression. It should contain two operands and operation"
+        }
+        or if (!(isAllowedOperation($tokens[1])))
+        {
+            result.error = "Invalid operation. Allowed operations are +, -, *, and /"
+        }
+        or if (!($tokens[0] ? 0.0))
+        {
+            result.error = "The first operand is not a number"
+        }
+        or if (!($tokens[2] ? 0.0))
+        {
+            result.error = "The second operand is not a number"
+        }
+        or
+        {
+            result.left = $tokens[0] : 0.0;
+            result.right = $tokens[2] : 0.0;
+            result.op = $tokens[1];
+            result.error = ""
+        };
+
+        # we can return a dictionary that is actually not a real variable
+        # then we can assign this returning value to some variable "a" and
+        # use it like the following:
+        #   $(a).left
+        # or
+        #   tmp = $($a).right
+        result
+    };
+
+
+
+    #===============================================================
+    #-------------------------- MAIN ALGORITHM ---------------------
+    #===============================================================
+    prompt = "\nInput binary expression. Allowed operations are +, -, *, /.\n" +
+             "Hit Enter to exit. \n" +
+             "=> ";
+
+    _write($prompt);
+    as (input = _read())
+    {
+        args = parse($input);
+        if ($($args).error)
+        {
+            _write("  " + $($args).error + "\n")
+        }
+        or
+        {
+            operation = $operations[$($args).op];
+            _write("   = " + (operation($($args).left, $($args).right)) + "\n")
+        };
+
+        _write($prompt)
+    };
+
+    0    # this value will be returned as an exit value of the program
+}
