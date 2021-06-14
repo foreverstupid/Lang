@@ -117,7 +117,7 @@ All the following operations can be applied only for main data types: integers, 
 |/|Can be applied only to numbers, returning their division|
 |%|Can be applied only to numbers, returning their modulo division|
 |:|Casts the left operand to the type of the right one (see [casting](####Casting))|
-|?|Returns bool-like value that determines whether the left operand can be casted to the type of the right one ((see [casting](####Casting))|
+|?|Returns bool-like value that determines whether the left operand can be casted to the type of the right one (see [casting](####Casting))|
 
 #### Comparision operations
 
@@ -163,12 +163,12 @@ a[0.0];
 a["0"];
 ```
 
-The way the Lang release indexing makes arrays similar to dictionaries. Moreover, Lang supports some kind of a syntaxic sugar that is called as **pseudo-fields**. A special operator **.** (dot) can be used instead of indexing by a string. For example, the following code are equivalent:
+The way the Lang release indexing makes arrays similar to dictionaries. Moreover, Lang supports some kind of a syntaxic sugar that is called as **pseudo-fields**. A special operator **.** (dot) can be used instead of indexing by a string. For example, the following code lines are equivalent:
 ```
 array["length"];
 array.length;
 ```
-Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to have arbitrary characters.
+Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to include arbitrary characters.
 
 ## Variable visibility
 
@@ -191,14 +191,14 @@ Let's consider the following program:
 }
 ```
 
-Here the variable `a` is a global one. It can be used in functions `func`, `f`, or even in the outer program block. The variable `b` is a local one. It can be used only in functions `func`, `f` and all their inner lambdas. The expression `b = 100` will create another variable without changing the local variable `b` of the function `func`. Thus, the next code is invalid:
+Here the variable `a` is a global one. It can be used in functions `func`, `f`, or even in the outer program block. The variable `b` is a local one. It can be used only in functions `func`, `f` and all their inner lambdas. The expression `b = 100` will create another variable without changing the local variable `b` of the function `func`. Thus, the following code is invalid:
 ```
 {
     func = [] => loc a = "abracadabra";
     _write($a)
 }
 ```
-It will raise an error because the value of the variable `a`cannot be gotten as far it is a local variable of the function `func`.
+It will raise an error because the value of the variable `a`cannot be gotten as far as it is a local variable of the function `func`.
 
 Note, that **loc** keyword should be used only once at the variable definition (i.e. the first assignment). Nevertheless, you can define local variable without assignment. For example, the following code is valid:
 ```
@@ -242,7 +242,7 @@ array.length = 0;
 func(array);
 ```
 
-Note, that the `&` is note a prefix of the parameter name and can be written separately from the parameter.
+Note, that the `&` is not a prefix of the parameter name and can be written separately from the parameter.
 
 ## Other features
 
