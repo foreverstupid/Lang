@@ -324,7 +324,8 @@ namespace Lang
                 tokens.MoveNext();
 
                 bool isRef = false;
-                if (tokens.CurrentTokenIsSeparator("&"))
+                if (tokens.CurrentTokenTypeIs(Token.Type.Identifier) &&
+                    tokens.CurrentTokenValueIs(KeyWords.Ref))
                 {
                     isRef = true;
                     tokens.MoveNext();
@@ -332,7 +333,9 @@ namespace Lang
 
                 if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
                 {
-                    SetError($"Variable is expected after '{KeyWords.Let}' keyword");
+                    SetError(
+                        "Variable is expected after " +
+                        $"'{(isRef ? KeyWords.Ref : KeyWords.Let)}' keyword");
                 }
 
                 creator.LocalVariable(tokens.CurrentOrLast, isRef);
@@ -340,12 +343,13 @@ namespace Lang
                 return Leave(true);
             }
 
-            if (tokens.CurrentTokenIsSeparator("&"))
+            if (tokens.CurrentTokenTypeIs(Token.Type.Identifier) &&
+                tokens.CurrentTokenValueIs(KeyWords.Ref))
             {
                 tokens.MoveNext();
                 if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
                 {
-                    SetError("Variable name is expected after '&'");
+                    SetError($"Variable name is expected after '{KeyWords.Ref}' keyword");
                 }
 
                 creator.GlobalRefVariable(tokens.CurrentOrLast);
@@ -428,7 +432,8 @@ namespace Lang
         private bool Parameter()
         {
             bool isRef = false;
-            if (tokens.CurrentTokenIsSeparator("&"))
+            if (tokens.CurrentTokenTypeIs(Token.Type.Identifier) &&
+                tokens.CurrentTokenValueIs(KeyWords.Ref))
             {
                 isRef = true;
                 tokens.MoveNext();

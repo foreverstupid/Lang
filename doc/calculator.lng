@@ -8,7 +8,7 @@
     operations["/"] = [a, b] => $a / $b;
 
     # checks that the given operation is allowed
-    isAllowedOperation = [&op] =>   # we can declare parameter with & to avoid $ usage everywhere
+    isAllowedOperation = [ref op] =>   # we can declare parameter with 'ref' to avoid $ usage everywhere
         op ~ "+" | op ~ "-" | op ~ "*" | op ~ "/";
 
     # parsing function that takes an input line and returns
@@ -108,7 +108,7 @@
     _write($prompt);
     as (input = _read())
     {
-        &args = parse($input);
+        ref args = parse($input);   # usage reference variable to avoid additional dereferencing
         if ($args.error)
         {
             _write("  " + $args.error + "\n")

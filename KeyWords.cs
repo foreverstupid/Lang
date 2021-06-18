@@ -9,5 +9,6 @@ namespace Lang
         public const string Else = "or";
         public const string While = "as";
         public const string Let = "loc";
+        public const string Ref = "ref";
     }
 }
