@@ -249,3 +249,9 @@ Note, that the `&` is not a prefix of the parameter name and can be written sepa
 1. Lang has one-line comments only. Every comment starts with the *#* character and ends when the line ends.
 2. The None value that is the result of non-performed actions (e.g. the cycle that hasn't done any iterations) cannot be used in any expressions. So, expressions that use if-only-expressions or cycles as operands are not suggested to be use.
 3. Semicolon can be thought as value ignoring unary postfix operation, that just flushes its operand from the stack.
+4. You can cast any named entity to a string. In that case you will get a string containig the name of the entity. E.g.
+   ```
+   a = 12;
+   aName = a : "";           # aName variable has a value "a"
+   funcName = _write : "";   # funcName variable has a value "_write"
+   ```
