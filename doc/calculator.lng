@@ -108,15 +108,15 @@
     _write($prompt);
     as (input = _read())
     {
-        args = parse($input);
-        if ($($args).error)
+        &args = parse($input);
+        if ($args.error)
         {
-            _write("  " + $($args).error + "\n")
+            _write("  " + $args.error + "\n")
         }
         or
         {
-            operation = $operations[$($args).op];
-            _write("   = " + (operation($($args).left, $($args).right)) + "\n")
+            operation = $operations[$args.op];
+            _write("   = " + (operation($args.left, $args.right)) + "\n")
         };
 
         _write($prompt)

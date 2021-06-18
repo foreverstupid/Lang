@@ -322,13 +322,33 @@ namespace Lang
                 tokens.CurrentTokenValueIs(KeyWords.Let))
             {
                 tokens.MoveNext();
-                if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+
+                bool isRef = false;
+                if (tokens.CurrentTokenIsSeparator("&"))
                 {
-                    throw new SyntaxException(
-                        $"Variable identifier is expected after '{KeyWords.Let}' keyword");
+                    isRef = true;
+                    tokens.MoveNext();
                 }
 
-                creator.LocalVariable(tokens.CurrentOrLast);
+                if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+                {
+                    SetError($"Variable is expected after '{KeyWords.Let}' keyword");
+                }
+
+                creator.LocalVariable(tokens.CurrentOrLast, isRef);
+                tokens.MoveNext();
+                return Leave(true);
+            }
+
+            if (tokens.CurrentTokenIsSeparator("&"))
+            {
+                tokens.MoveNext();
+                if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+                {
+                    SetError("Variable name is expected after '&'");
+                }
+
+                creator.GlobalRefVariable(tokens.CurrentOrLast);
                 tokens.MoveNext();
                 return Leave(true);
             }

@@ -12,7 +12,7 @@
 
 **\<indexator\>** ::= **[** **\<expression\>** **]**
 
-**\<args\>** ::= **(** [ **\<expression\>** {, **\<expression\>** } ] **)**
+**\<args\>** ::= **(** [ **\<expression\>** {**,** **\<expression\>** } ] **)**
 
 **\<operand\>** ::= **(** **\<expression\>** **)** | **\<if_expression\>** | **\<while_expression\>** | **\<literal\>** | **\<lambda\>**
 
@@ -20,9 +20,7 @@
 
 **\<lambda\>** ::= **\<params\>** **=>** **\<expression\>**
 
-**\<params\>** ::= **[** [ **\<parameter\>** { , [**\<parameter\>** } ] **]**
-
-**\<parameter\>** ::= [ **&** ] **\<variable\>**
+**\<params\>** ::= **[** [ **\<variable\>** {**,** **\<variable\>** } ] **]**
 
 **\<if_expression\>** ::= **if** **(** **\<expression\>** **)** **\<expression\>** [ **or** **\<expression\>** ]
 
@@ -32,7 +30,9 @@
 
 **\<binar\>** ::= **+** | **-** | **\*** | **/** | **%** | **>** | **<** | **~** | **&** | **|** | **=** | **->** | **:** | **?** | **.**
 
-**\<variable\>** ::= **\<letter\>**{ **\<letter_or_digit\>** }
+**\<variable\>** ::= [ **&** ] **\<identifier\>**
+
+**\<identifier\>** ::= **\<letter\>**{ **\<letter_or_digit\>** }
 
 **\<int\>** ::= **\<digit\>**{ **\<digit_or_underscore\>** }
 
@@ -215,9 +215,9 @@ a[2] = "c";
 ```
 Here every variable that relates to the `a` name is local.
 
-## Reference parameters
+## Reference parameters and variables
 
-As it was said previously, you can pass the variable itself as a parameter to a lambda. In this case you have to dereference such a parameter before performing any operation over it. That can be annoying. That's why a special syntaxic construction is introduced. If you want to mark some parameter as a reference one and then not to dereference it every time, you can define it in the following way: `&parameter`. Thus the following versions of the code are equivalent:
+As it was said previously, you can pass the variable itself as a parameter to a lambda. In this case you have to dereference such a parameter before performing any operation over it. That can be annoying. That's why a special syntaxic construction is introduced. If you want to mark some parameter as a reference one and then not to dereference it every time, you can define it in the following way: `&parameter` Note, that the `&` is not a prefix of the parameter name and can be written separately from it. Thus, the following versions of the code are equivalent:
 ```
 # First version
 func = [a] =>
@@ -242,7 +242,35 @@ array.length = 0;
 func(array);
 ```
 
-Note, that the `&` is not a prefix of the parameter name and can be written separately from the parameter.
+You also can mark a usual variables (not parameters) with `&` too. This should be done only once and only on the first variable usage. If the variable is the local one, then `&` should follow the keyword `loc`. This scenario is usefull in the case when the lambda returns a dictionary. Then you can assign its returning value to a reference variable and avoid a vast ammount of dereferencing during usage such a return value. Compare the following equivalent code parts:
+```
+fun = [] =>
+{
+    loc result;
+    result.num = 10;
+    result.str = "ten";
+    result                  # thus we return a dictionary
+};
+
+loc &res = fun();
+_write($res.num);
+_write($res.str);
+
+```
+
+```
+fun = [] =>
+{
+    loc result;
+    result.num = 10;
+    result.str = "ten";
+    result                  # thus we return a dictionary
+};
+
+loc res = fun();
+_write($($res).num);        # first dereference to get a variable, then get a field, and
+_write($($res).str);        # then dereference to get a field value
+```
 
 ## Other features
 

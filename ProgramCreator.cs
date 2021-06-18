@@ -29,6 +29,7 @@ namespace Lang
         private Dictionary<string, RpnConst> variables;
         private Dictionary<string, LinkedListNode<Rpn>> labels;
         private Dictionary<string, LinkedListNode<Rpn>> lambdas;
+        private List<string> globalRefVars;
 
         /// <summary>
         /// Starts a new program creation.
@@ -39,6 +40,7 @@ namespace Lang
             variables = new Dictionary<string, RpnConst>();
             labels = new Dictionary<string, LinkedListNode<Rpn>>();
             lambdas = new Dictionary<string, LinkedListNode<Rpn>>();
+            globalRefVars = new List<string>();
 
             labelsForNextRpn.Clear();
             expressionStack.Clear();
@@ -117,6 +119,15 @@ namespace Lang
                             AddRpn(new RpnVar(token, name));
                             return;
                         }
+                    }
+
+                    if (globalRefVars.Contains(token.Value))
+                    {
+                        OpenBracket();
+                        AddRpn(new RpnVar(token, token.Value));
+                        AddRpn(new RpnGetValue(token, variables));
+                        CloseBracket();
+                        return;
                     }
 
                     rpn = new RpnVar(token, token.Value);
@@ -238,6 +249,15 @@ namespace Lang
             }
 
             AddRpn(new RpnVar(token, prefix + token.Value));
+        }
+
+        /// <summary>
+        /// Adds a new global ref variable.
+        /// </summary>
+        public void GlobalRefVariable(Token token)
+        {
+            globalRefVars.Add(token.Value);
+            AddRpn(new RpnVar(token, token.Value));
         }
 
         /// <summary>
