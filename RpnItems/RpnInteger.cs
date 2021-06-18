@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Lang.RpnItems
 {
@@ -21,11 +22,11 @@ namespace Lang.RpnItems
                 throw new ArgumentException("Token has not a type of an integer number");
             }
 
-            if (int.TryParse(token.Value, out int value))
-            {
-                this.value = value;
-            }
-            else
+            if (!int.TryParse(
+                    token.Value,
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out value))
             {
                 throw new ArgumentException("Integer token has an invalid value: " + token.Value);
             }

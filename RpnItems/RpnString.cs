@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Lang.RpnItems
 {
@@ -27,13 +28,21 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override double GetFloat() =>
-            double.TryParse(value, out var res)
+            double.TryParse(
+                value,
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out var res)
             ? res
             : throw new InterpretationException("Cannot convert string into a float");
 
         /// <inheritdoc/>
         public override int GetInt() =>
-            int.TryParse(value, out var res)
+            int.TryParse(
+                value,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var res)
             ? res
             : throw new InterpretationException("Cannot convert string into an integer");
 
