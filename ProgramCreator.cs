@@ -13,7 +13,7 @@ namespace Lang
         private const string ElseLabelPrefix = "#else#";
         private const string LambdaPrefix = "#f#";
         private const string LambdaEndPrefix = "#f#end#";
-        private const string ReturnLabelPrefix = "#return#";
+        private const string ReturnLabelPostfix = "#return#";
 
         // help variables
         private readonly List<string> labelsForNextRpn = new List<string>();
@@ -30,6 +30,7 @@ namespace Lang
         private Dictionary<string, LinkedListNode<Rpn>> labels;
         private Dictionary<string, LinkedListNode<Rpn>> lambdas;
         private List<string> globalRefVars;
+        private BuiltInLibrary funcLibrary;
 
         /// <summary>
         /// Starts a new program creation.
@@ -41,6 +42,7 @@ namespace Lang
             labels = new Dictionary<string, LinkedListNode<Rpn>>();
             lambdas = new Dictionary<string, LinkedListNode<Rpn>>();
             globalRefVars = new List<string>();
+            funcLibrary = new BuiltInLibrary(variables);
 
             labelsForNextRpn.Clear();
             expressionStack.Clear();
@@ -96,7 +98,7 @@ namespace Lang
 
             if (token.TokenType == Token.Type.Identifier)
             {
-                if (BuiltIns.Funcs.ContainsKey(token.Value))
+                if (funcLibrary.Functions.ContainsKey(token.Value))
                 {
                     rpn = new RpnBuiltIn(token, token.Value);
                 }
@@ -219,7 +221,7 @@ namespace Lang
             var context = contextsStack.Pop();
             CloseBracket();
 
-            Label(ReturnLabelPrefix, context.LambdaName);
+            Label(ReturnLabelPostfix, context.LambdaName);
             AddRpn(new RpnGoto(labels));
 
             AddLabelForNextRpn(context.EndLabel);
@@ -378,9 +380,10 @@ namespace Lang
             AddRpn(new RpnEval(
                 token,
                 paramCount,
+                funcLibrary.Functions,
                 lambdas,
                 variables,
-                (funcName, ret) => labels[funcName + ReturnLabelPrefix] = ret
+                (funcName, ret) => labels[funcName + ReturnLabelPostfix] = ret
             ));
         }
 

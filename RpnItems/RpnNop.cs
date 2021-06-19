@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Lang.RpnItems
 {
     /// <summary>
-    /// Help RPN item that do nothing.
+    /// Help RPN item that does nothing.
     /// </summary>
     public class RpnNop : Rpn
     {

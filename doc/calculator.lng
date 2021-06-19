@@ -62,7 +62,9 @@
             }
         };
 
-        loc result;
+        loc ref result = _alloc();  # allocating dynamic variable that will contain parsing info
+                                    # (we use reference variable holder to prevent additional dereferencing)
+
         if (!($tokenCount ~ 3))
         {
             result.error = "Invalid expression. It should contain two operands and operation"
@@ -87,12 +89,18 @@
             result.error = ""
         };
 
-        # we can return a dictionary that is actually not a real variable
-        # then we can assign this returning value to some variable "a" and
-        # use it like the following:
+        # We can return a whole dictionary, then we can assign this returning value
+        # to some variable "a" and use it like the following:
         #   $(a).left
         # or
         #   tmp = $($a).right
+        #
+        # Note, that we would able to return even static dictionary. In that
+        # case all invocations of this function would use and return the same dictionary.
+        # Using dynamic variable we prevent it, because now any "parse" invocation
+        # operates and returns its own dynamic variable. Anyway if you are sure that you will
+        # never use results of several invocations simultaneously, you can operate static
+        # variables only.
         result
     };
 
@@ -108,7 +116,7 @@
     _write($prompt);
     as (input = _read())
     {
-        ref args = parse($input);   # usage reference variable to avoid additional dereferencing
+        ref args = parse($input);   # using reference variable to avoid additional dereferencing
         if ($args.error)
         {
             _write("  " + $args.error + "\n")
@@ -119,6 +127,7 @@
             _write("   = " + (operation($args.left, $args.right)) + "\n")
         };
 
+        _free(args);        # deallocating dynamic variable (that is contained in "args")
         _write($prompt)
     };
 

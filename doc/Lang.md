@@ -88,6 +88,8 @@ Lang has several built-in named functions that needn't be described to be used. 
 |_readFile|The file path|The full content of the file as a string value|
 |_rnd|No arguments|A random float between 0.0 and 1.0|
 |_length|A string|The length of the string|
+|_alloc|No arguments|Allocates a new dynamic variable (see ##Dynamic variables)|
+|_free|Dynamic variable|Frees an allocated dynamic variable (see ###Dynamic variables)|
 
 ### Expression
 
@@ -271,6 +273,87 @@ _write($res.num);           # no additional dereferencing anymore
 _write($res.str);
 
 ```
+
+## Dynamic variables
+
+Let's see the following example of a function that splits a given string by spaces, returning the result in a form of a dictionary:
+```
+split = [str] =>
+{
+    loc result;
+
+    loc wordCount = 0;
+    loc word = "";
+    loc len = _length($str);
+
+    loc handleWord = [] =>
+        if ($word)
+        {
+            result.words[$wordCount] = $word;
+            word = "";
+            wordCount = $wordCount + 1
+        };
+
+    loc i = -1;
+    as ((i = $i + 1) < $len)
+    {
+        if (($str)[$i] ~ " ")
+            handleWord()
+        or
+            word = $word + ($str)[$i]
+    };
+
+    handleWord();                # check last word
+    result.count = $wordCount;
+    result
+};
+```
+Now suppose that we want to compare two lines word by word (spaces don't matter). We can do this via the following function that uses `split`:
+```
+compareByWords = [line1, line2] =>
+{
+    ref res1 = split($line1);
+    ref res2 = split($line2);
+
+    if ($res1.count ~ $res2.count)
+    {
+        i = -1;
+        eq = 1;
+        as (((i = $i + 1) < $res1.count) & $eq)
+        {
+            eq = $res1.words[$i] ~ $res2.words[$i]
+        };
+
+        $eq
+    }
+    or
+    {
+        0
+    }
+}
+```
+So, the above function is supposed to return `1` if lines are word-wise equivalent and `0` otherwise. But in fact the function will always return `1`. The problem is that in Lang all usual variables are _static_. It means that once they are created they are assigned to some lambda (or global) context and live forever. Thus, when `split` is firstly invoked it creates local `result` variable. Then this variable is filled with result information and returned to the outer code. But when `split` is called the second time, it fills the same static variable `result` with a new information. So, inside `compareByWords` variables `res1` and `res2` label the same portion of information (namely the variable `result` of the function `split`).
+
+To avoid such a collision there exist _dynamic_ variables. Such variables are created via the special built-in fucntion `_alloc`. It has no input parameters and returns a dynamic variable that by default has an integer value `0`. An example of usage:
+```
+ref var = _alloc();
+var = 2;
+_write($var);
+```
+Reference variables allow you to omit an additional dereferencing when using dynamic variable that they are labeled. So, this is a suggested way of dynamic variables usage, but you can also use them like this:
+```
+var = _alloc();
+$var = 2;           # the value of "var" is a dynamic variable itself
+_write($$var);      # the 1-st $ gets the variable and the 2-nd $ gets its value
+```
+
+As dynamic variables are created in runtime their count is potentially infinite. To prevent memory loss you should deallocate dynamic variables once they are not using anymore. For this purpose there exists another built-in function `_free`. It takes a dynamic variable as an input parameter, returning `None`. Note, that usage of the deallocated dynamic variable leads to an error:
+```
+ref var = _alloc();
+_free(var);
+var = 2;        # RUNTIME ERROR
+```
+Perfectly, all created dynamic variables should be deallocated by the end of the program. But it's at your discretion.
 
 ## Other features
 

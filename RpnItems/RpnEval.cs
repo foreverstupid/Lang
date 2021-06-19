@@ -9,6 +9,7 @@ namespace Lang.RpnItems
     public class RpnEval : Rpn
     {
         private readonly Action<string, LinkedListNode<Rpn>> setReturnCommand;
+        private readonly IReadOnlyDictionary<string, BuiltInLibrary.Func> builtIns;
         private readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions;
         private readonly IReadOnlyDictionary<string, RpnConst> variables;
         private readonly int paramCount;
@@ -16,6 +17,7 @@ namespace Lang.RpnItems
         public RpnEval(
             Token token,
             int paramCount,
+            IReadOnlyDictionary<string, BuiltInLibrary.Func> builtIns,
             IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions,
             IReadOnlyDictionary<string, RpnConst> variables,
             Action<string, LinkedListNode<Rpn>> setReturnCommand
@@ -23,6 +25,7 @@ namespace Lang.RpnItems
             : base(token)
         {
             this.paramCount = paramCount;
+            this.builtIns = builtIns;
             this.functions = functions;
             this.variables = variables;
             this.setReturnCommand = setReturnCommand;
@@ -42,7 +45,7 @@ namespace Lang.RpnItems
             var func = stack.Pop();
             if (func.ValueType == RpnConst.Type.BuiltIn)
             {
-                if (BuiltIns.Funcs.TryGetValue(func.GetString(), out var builtIn))
+                if (builtIns.TryGetValue(func.GetString(), out var builtIn))
                 {
                     OnBuiltIn(stack, builtIn);
                     return currentCmd.Next;
@@ -88,7 +91,7 @@ namespace Lang.RpnItems
                 );
             }
 
-            void OnBuiltIn(Stack<RpnConst> stack, BuiltIns.BuiltinFunc builtIn)
+            void OnBuiltIn(Stack<RpnConst> stack, BuiltInLibrary.Func builtIn)
             {
                 if (paramCount != builtIn.ParamCount)
                 {
@@ -98,7 +101,7 @@ namespace Lang.RpnItems
                     );
                 }
 
-                var result = builtIn.Func(parameters);
+                var result = builtIn.Main(parameters);
                 stack.Push(result);
             }
 
