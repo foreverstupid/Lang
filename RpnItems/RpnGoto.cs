@@ -8,7 +8,7 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnGoto : Rpn
     {
-        private readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels;
+        protected readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels;
 
         public RpnGoto(IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
         {

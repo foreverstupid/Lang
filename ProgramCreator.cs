@@ -13,7 +13,7 @@ namespace Lang
         private const string ElseLabelPrefix = "#else#";
         private const string LambdaPrefix = "#f#";
         private const string LambdaEndPrefix = "#f#end#";
-        private const string ReturnLabelPostfix = "#return#";
+        private const string ReturnLabelPrefix = "#return#";
 
         // help variables
         private readonly List<string> labelsForNextRpn = new List<string>();
@@ -23,6 +23,7 @@ namespace Lang
 
         private int ifCount = 0;
         private int lambdaCount = 0;
+        private int returnCount = 0;
 
         // creating program information
         private LinkedList<Rpn> program;
@@ -48,6 +49,8 @@ namespace Lang
             expressionStack.Clear();
             ifIdxStack.Clear();
             contextsStack.Clear();
+
+            ifCount = lambdaCount = returnCount = 0;
         }
 
         /// <summary>
@@ -221,9 +224,7 @@ namespace Lang
             var context = contextsStack.Pop();
             CloseBracket();
 
-            Label(ReturnLabelPostfix, context.LambdaName);
-            AddRpn(new RpnGoto(labels));
-
+            AddRpn(new RpnReturn(labels));
             AddLabelForNextRpn(context.EndLabel);
             AddRpn(new RpnFunc(context.LambdaName));
         }
@@ -377,14 +378,20 @@ namespace Lang
         /// </summary>
         public void Eval(Token token, int paramCount)
         {
+            string retLabelName = $"{ReturnLabelPrefix}{returnCount}";
+            var returnLabel = new RpnLabel(retLabelName);
             AddRpn(new RpnEval(
                 token,
                 paramCount,
+                returnLabel,
                 funcLibrary.Functions,
                 lambdas,
-                variables,
-                (funcName, ret) => labels[funcName + ReturnLabelPostfix] = ret
+                variables
             ));
+
+            AddLabelForNextRpn(retLabelName);
+            AddRpn(new RpnNop());
+            returnCount++;
         }
 
         /// <summary>

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Lang.RpnItems
@@ -8,27 +7,27 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnEval : Rpn
     {
-        private readonly Action<string, LinkedListNode<Rpn>> setReturnCommand;
+        private readonly int paramCount;
+        private readonly RpnLabel returnLabel;
         private readonly IReadOnlyDictionary<string, BuiltInLibrary.Func> builtIns;
         private readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions;
         private readonly IReadOnlyDictionary<string, RpnConst> variables;
-        private readonly int paramCount;
 
         public RpnEval(
             Token token,
             int paramCount,
+            RpnLabel returnLabel,
             IReadOnlyDictionary<string, BuiltInLibrary.Func> builtIns,
             IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions,
-            IReadOnlyDictionary<string, RpnConst> variables,
-            Action<string, LinkedListNode<Rpn>> setReturnCommand
+            IReadOnlyDictionary<string, RpnConst> variables
         )
             : base(token)
         {
             this.paramCount = paramCount;
+            this.returnLabel = returnLabel;
             this.builtIns = builtIns;
             this.functions = functions;
             this.variables = variables;
-            this.setReturnCommand = setReturnCommand;
         }
 
         /// <inheritdoc/>
@@ -107,12 +106,11 @@ namespace Lang.RpnItems
 
             void OnFunc(Stack<RpnConst> stack)
             {
+                stack.Push(returnLabel);
                 for (int i = parameters.Length - 1; i >= 0; i--)
                 {
                     stack.Push(parameters[i]);
                 }
-
-                setReturnCommand(funcName, currentCmd.Next);
             }
         }
     }
