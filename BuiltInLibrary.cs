@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Lang.RpnItems;
 
 namespace Lang
@@ -21,6 +22,7 @@ namespace Lang
         public const string Length = "_length";
         public const string New = "_alloc";
         public const string Free = "_free";
+        public const string Sleep = "_sleep";
 
         public BuiltInLibrary(IDictionary<string, RpnConst> variables)
         {
@@ -141,6 +143,26 @@ namespace Lang
 
                         variables.Remove(name);
                         return new RpnNone();
+                    }
+                ),
+                [Sleep] = new Func(
+                    1,
+                    ps =>
+                    {
+                        if (ps[0].ValueType != RpnConst.Type.Float &&
+                            ps[0].ValueType != RpnConst.Type.Integer)
+                        {
+                            throw new InterpretationException("Expected a number");
+                        }
+
+                        double ms = ps[0].GetFloat();
+                        if (ms < 0)
+                        {
+                            throw new InterpretationException("Delay should be positive");
+                        }
+
+                        Task.Delay(TimeSpan.FromMilliseconds(ms)).Wait();
+                        return new RpnInteger(1);
                     }
                 )
             };

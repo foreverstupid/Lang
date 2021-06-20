@@ -45,6 +45,7 @@ Lang has several built-in functions that needn't be described to be used. Their 
 |_length|A string|The length of the string|
 |_alloc|No arguments|A new allocated dynamic variable (see [dynamic variables](#dynamic-variables))|
 |_free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|The special `None` value that cannot be used in any operation|
+|_sleep|A number (float or integer) representing delay in milliseconds|Stops the program evaluation by the given interval, always returning bool-like TRUE value|
 
 ### Expression
 
