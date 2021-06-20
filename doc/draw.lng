@@ -1,0 +1,104 @@
+# Sample program in Lang. ASCII interactive paint programm.
+{
+    #====================================================================
+    # Constants
+    #====================================================================
+    # ESC-sequences for terminal cursor position control
+    LEFT = "\x1b[1D";
+    RIGHT = "\x1b[1C";
+    UP = "\x1b[1A";
+    DOWN = "\x1b[1B";
+
+    # ESC-sequences for text color definition
+    BLACK = "\x1b[30m";
+    RED = "\x1b[31m";
+    GREEN = "\x1b[32m";
+    YELLOW = "\x1b[33m";
+    BLUE = "\x1b[34m";
+    PURPLE = "\x1b[35m";
+    CYAN = "\x1b[36m";
+    GREY = "\x1b[37m";
+    RESET = "\x1b[0m";
+    COLORS["1"] = $BLACK;
+    COLORS["2"] = $RED;
+    COLORS["3"] = $GREEN;
+    COLORS["4"] = $YELLOW;
+    COLORS["5"] = $BLUE;
+    COLORS["6"] = $PURPLE;
+    COLORS["7"] = $CYAN;
+    COLORS["8"] = $GREY;
+
+    # key bindings
+    allowedKeys = "adws trec12345678";
+    left = ($allowedKeys)[0];
+    right = ($allowedKeys)[1];
+    up = ($allowedKeys)[2];
+    down = ($allowedKeys)[3];
+    mark = ($allowedKeys)[4];
+    space = ($allowedKeys)[5];
+    remove = ($allowedKeys)[6];
+    delete = ($allowedKeys)[7];
+    swap = ($allowedKeys)[8];
+
+    #====================================================================
+    # Help functions
+    #====================================================================
+    # Checks whether the given string contains the given symbol
+    contains = [ref str, ch] =>
+    {
+        loc len = _length(str);
+        loc eq = 0;
+        loc i = -1;
+        as ((i = $i + 1) < $len & !$eq)
+        {
+            eq = $ch ~ str[$i]
+        };
+
+        $eq
+    };
+
+
+    #====================================================================
+    # Main algorithm
+    #====================================================================
+    prompt = "\nASCII DRAWER\n" +
+             "wasd - move the brush, SPACE - put brush, 1..8 - change color,\n" +
+             "e - remove back, r - remove current, t - remove forward,\n" +
+             "c - change brush symbol, ESC - exit\n";
+
+    # brush settings
+    color = $GREEN;
+    markSymbol = "#";
+    brush = [] => $color + $markSymbol;
+
+    # action definitions
+    actions[$left] = [] => _write($LEFT);
+    actions[$right] = [] => _write($RIGHT);
+    actions[$up] = [] => _write($UP);
+    actions[$down] = [] => _write($DOWN);
+    actions[$mark] = [] => _write(brush());
+    actions[$space] = [] => _write(" ");
+    actions[$remove] = [] => _write(" " + $LEFT);
+    actions[$delete] = [] => _write($LEFT + " " + $LEFT);
+    actions[$swap] = [] => markSymbol = _readKey(0);
+
+    height = 15;
+    _write($prompt);
+    _write("\n" * $height);
+    _write($UP * ($height - 1));
+
+    as (!((ch = _readKey(0)) ~ "\x1b"))
+        if (contains($allowedKeys, $ch))
+        {
+            if ($ch ? 0)
+            {
+                color = $COLORS[$ch]
+            }
+            or
+            {
+                (actions[$ch])()
+            }
+        };
+
+    _write($RESET)
+}
