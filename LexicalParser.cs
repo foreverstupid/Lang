@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace Lang
@@ -19,6 +20,7 @@ namespace Lang
         private State state = State.None;
 
         private Token extraToken = null;
+        private string hexSymbol = "";
 
         public LexicalParser()
         {
@@ -31,6 +33,7 @@ namespace Lang
                 [State.Identifier] = Identifier,
                 [State.String] = String,
                 [State.Slash] = Slash,
+                [State.HexSymbol] = HexSymbol,
                 [State.Comment] = Comment,
                 [State.RightAssign] = RightAssign,
                 [State.Apply] = Apply,
@@ -48,6 +51,7 @@ namespace Lang
             Float,
             String,
             Slash,
+            HexSymbol,
             Comment,
             Identifier,
             RightAssign,
@@ -236,11 +240,48 @@ namespace Lang
             {
                 tokenValue.Append('\n');
             }
+            else if (character == 't')
+            {
+                tokenValue.Append('\t');
+            }
+            else if (character == 'x')
+            {
+                state = State.HexSymbol;
+                return null;
+            }
             else
             {
                 tokenValue.Append(character);
             }
 
+            state = State.String;
+            return null;
+        }
+
+        private Token HexSymbol(char character)
+        {
+            if (char.IsDigit(character) || "abcdefABCDEF".Contains(character))
+            {
+                hexSymbol += character;
+            }
+            else
+            {
+                throw new ArgumentException("Expected 2 digit hexadecimal number");
+            }
+
+            if (hexSymbol.Length < 2)
+            {
+                return null;
+            }
+
+            var hexChar = (char)(
+                int.Parse(
+                    hexSymbol,
+                    NumberStyles.HexNumber,
+                    CultureInfo.InvariantCulture));
+
+            tokenValue.Append(hexChar);
+            hexSymbol = "";
             state = State.String;
             return null;
         }

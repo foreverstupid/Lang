@@ -350,3 +350,7 @@ Perfectly, all created dynamic variables should be deallocated by the end of the
            # "factorial" changes it, so everything is correct
            $n * factorial($n - 1);
    ```
+6. String literals can contain the following escape characters:
+   - `\n` - new line
+   - `\t` - tabulation
+   - `\x` - interpretating the following two-digit hexadecimal number as the code of a character (e.g. `"\x1b"` is a string containing ESC symbol)
