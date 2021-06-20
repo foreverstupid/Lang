@@ -14,6 +14,7 @@ namespace Lang
 
         public const string Write = "_write";
         public const string Read = "_read";
+        public const string ReadKey = "_readKey";
         public const string Rand = "_rnd";
         public const string GetFileContent = "_readFile";
         public const string WriteToFile = "_writeFile";
@@ -52,6 +53,15 @@ namespace Lang
                 [Read] = new Func(
                     0,
                     _ => new RpnString(Console.ReadLine())
+                ),
+                [ReadKey] = new Func(
+                    1,
+                    ps =>
+                    {
+                        var intercept = !ps[0].GetBool();
+                        var info = Console.ReadKey(intercept);
+                        return new RpnString(info.KeyChar.ToString());
+                    }
                 ),
                 [Rand] = new Func(
                     0,

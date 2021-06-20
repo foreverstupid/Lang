@@ -38,6 +38,7 @@ Lang has several built-in functions that needn't be described to be used. Their 
 |--|--|--|
 |_write|The single value to be write on the console of any type. If the value is variable then its name is used. If the variable is the *None* value, built-in, or a lambda then error occurs|Returns the printed value|
 |_read|No arguments|Returns the string that is an input line from the console|
+|_readKey|Bool-like value that determines should the pressed key character be displayed or not|Returns a key that was pressed by a user as a one-symboled string. Works only with keys that have a character representation|
 |_writeFile|The value to be writed into the given file and the file path. The value restriction is the same as for *_write*|The written value|
 |_readFile|The file path|The full content of the file as a string value|
 |_rnd|No arguments|A random float between 0.0 and 1.0|
