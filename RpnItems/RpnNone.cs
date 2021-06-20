@@ -11,19 +11,19 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override bool GetBool() =>
-            throw new InterpretationException("Cannot cast none value to bool");
+            throw new InterpretationException("Cannot cast None value to bool");
 
         /// <inheritdoc/>
         public override double GetFloat() =>
-            throw new InterpretationException("Cannot cast none value to bool");
+            throw new InterpretationException("Cannot cast None value to bool");
 
         /// <inheritdoc/>
         public override int GetInt() =>
-            throw new InterpretationException("Cannot cast none value to bool");
+            throw new InterpretationException("Cannot cast None value to bool");
 
         /// <inheritdoc/>
         public override string GetString() =>
-            throw new InterpretationException("Cannot cast none value to bool");
+            throw new InterpretationException("Cannot cast None value to bool");
 
         /// <inheritdoc/>
         public override string ToString() =>

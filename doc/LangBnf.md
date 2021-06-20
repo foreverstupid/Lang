@@ -2,7 +2,7 @@
 
 Here `this text style` is used for the grammar terms and literal symbols. Special symbols of the BNF are written in **this style**.
 
-`<expression>` **::=** `<group>` **|** **[** `<unar>` **]** `<operand>` **[** `<tail>` **]** **{** `<binar>` `<expression>` **}**
+`<expression>` **::=** `<group>` **|** **{** `<unar>` **}** `<operand>` **[** `<tail>` **]** **{** `<binar>` `<expression>` **}**
 
 `<group>` **::=** `{` `<expression>` **{** `;` `<expression>` **}** `}`
 

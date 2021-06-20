@@ -116,7 +116,7 @@ namespace Lang
             }
 
             Token unaryOperationToken = null;
-            if (tokens.CurrentTokenIsUnaryOperation())
+            while (tokens.CurrentTokenIsUnaryOperation())
             {
                 creator.UnaryOperation(tokens.CurrentOrLast);
                 unaryOperationToken = tokens.CurrentOrLast;
