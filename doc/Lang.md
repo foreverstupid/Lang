@@ -332,3 +332,21 @@ Perfectly, all created dynamic variables should be deallocated by the end of the
    aName = a : "";           # aName variable has a value "a"
    funcName = _write : "";   # funcName variable has a value "_write"
    ```
+5. Be careful with recursion. Lang supports it, but as far as all usual variables are static, you should use tail recursion only. E.g. the following factorial realisation is incorrect:
+   ```
+   factorial = [n] =>
+       if ($n < 3)
+           $n
+       or
+           factorial($n - 1) * $n;
+   ```
+   As the recursion reashes its basis (the if-part) and starts to evaluating backward, all the instances of `factorial` will have the variable `n` equal to `2` (that is the recursion basis). So, in all else-parts we will multiply returning value by `2` and instead of `n` factorial we will get `2` to the power of `n - 1`. The proper realisation is
+   ```
+   factorial = [n] =>
+       if ($n < 3)
+           $n
+       or
+           # tail recursion allows us extracting the value of "n" before the follwoing instance of
+           # "factorial" changes it, so everything is correct
+           $n * factorial($n - 1);
+   ```
