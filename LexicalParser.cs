@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Lang
@@ -11,7 +12,7 @@ namespace Lang
     public sealed class LexicalParser
     {
         private static readonly string Separators = ";,=$.+-*/%><!|&~()[]{}:?";
-        private readonly Dictionary<State, Func<char, Token>> stateHandlers;
+        private readonly Dictionary<State, Func<char, IEnumerable<Token>>> stateHandlers;
 
         private readonly StringBuilder tokenValue = new StringBuilder();
         private int tokenStartPosition;
@@ -19,13 +20,12 @@ namespace Lang
         private int currentLine = 1;
         private State state = State.None;
 
-        private Token extraToken = null;
         private string hexSymbol = "";
 
         public LexicalParser()
         {
             // every handler returns the new token if it was constructed, or null otherwise
-            stateHandlers = new Dictionary<State, Func<char, Token>>()
+            stateHandlers = new Dictionary<State, Func<char, IEnumerable<Token>>>()
             {
                 [State.None] = None,
                 [State.Integer] = Integer,
@@ -60,40 +60,33 @@ namespace Lang
         }
 
         /// <summary>
-        /// Reads a new character of the source and if the token is generated returns it,
-        /// otherwise returns null.
+        /// Parses a given source code into the collection of sequential tokens.
         /// </summary>
-        /// <param name="character">The current character of the source code.</param>
-        /// <returns>The new token if it has been generated or null otherwise.</returns>
-        public Token GetNextToken(int character)
+        /// <param name="src">The program source code.</param>
+        /// <returns>The tokens that was generated from the given source code.</returns>
+        public IEnumerable<Token> Parse(string src)
         {
-            var newToken = extraToken;  // the last extra token should be returned on the current invocation
+            // helps in cases when the source code ends with a separator
+            src += " ";
 
-            // TODO: check string ending
-
-            // process the current character
-            char nextChar = character == -1 ? ' ' : (char)character;
-            var currentToken = stateHandlers[state](nextChar);
-
-            // if we had an extra token then we return it on the current invocation
-            // and the current token becomes the extra one (if it is presented).
-            // Otherwise we just return the current token
-            if (!(newToken is null))
+            var result = new List<Token>();
+            foreach (var ch in src)
             {
-                extraToken = currentToken;
-            }
-            else
-            {
-                newToken = currentToken;
+                var newTokens = stateHandlers[state](ch);
+                if (newTokens != null)
+                {
+                    result.AddRange(newTokens);
+                }
+
+                ChangePositionInfo(ch);   // renew position information
             }
 
-            ChangePositionInfo();   // renew position information
-            return newToken;
+            return result;
 
             /// <summary>
             /// Changes the current position information.
             /// </summary>
-            void ChangePositionInfo()
+            void ChangePositionInfo(char nextChar)
             {
                 if (nextChar == '\n')
                 {
@@ -107,7 +100,7 @@ namespace Lang
             }
         }
 
-        private Token None(char character)
+        private IEnumerable<Token> None(char character)
         {
             tokenStartPosition = currentPosition;
             if (char.IsDigit(character))
@@ -143,12 +136,12 @@ namespace Lang
                 tokenValue.Append(character);
                 var token = OnNewToken(Token.Type.Separator);
                 state = State.Field;
-                return token;
+                return new[] { token };
             }
             else if (Separators.Contains(character))
             {
                 tokenValue.Append(character);
-                return OnNewToken(Token.Type.Separator);
+                return new[] { OnNewToken(Token.Type.Separator) };
             }
             else if (char.IsWhiteSpace(character))
             {
@@ -161,7 +154,7 @@ namespace Lang
             return null;
         }
 
-        private Token Integer(char character)
+        private IEnumerable<Token> Integer(char character)
         {
             if (character == '.')
             {
@@ -170,11 +163,11 @@ namespace Lang
             }
             else if (char.IsWhiteSpace(character))
             {
-                return OnNewToken(Token.Type.Integer);
+                return new[] { OnNewToken(Token.Type.Integer) };
             }
             else if (Separators.Contains(character))
             {
-                return OnExtraToken(character, Token.Type.Integer);
+                return OnExtraToken(Token.Type.Integer, character);
             }
             else if (char.IsDigit(character))
             {
@@ -191,15 +184,15 @@ namespace Lang
             return null;
         }
 
-        private Token Float(char character)
+        private IEnumerable<Token> Float(char character)
         {
             if (char.IsWhiteSpace(character))
             {
-                return OnNewToken(Token.Type.Float);
+                return new[] { OnNewToken(Token.Type.Float) };
             }
             else if (Separators.Contains(character))
             {
-                return OnExtraToken(character, Token.Type.Float);
+                return OnExtraToken(Token.Type.Float, character);
             }
             else if (char.IsDigit(character))
             {
@@ -216,7 +209,7 @@ namespace Lang
             return null;
         }
 
-        private Token String(char character)
+        private IEnumerable<Token> String(char character)
         {
             if (character == '\\')
             {
@@ -224,7 +217,7 @@ namespace Lang
             }
             else if (character == '\"')
             {
-                return OnNewToken(Token.Type.String);
+                return new[] { OnNewToken(Token.Type.String) };
             }
             else
             {
@@ -234,7 +227,7 @@ namespace Lang
             return null;
         }
 
-        private Token Slash(char character)
+        private IEnumerable<Token> Slash(char character)
         {
             if (character == 'n')
             {
@@ -258,7 +251,7 @@ namespace Lang
             return null;
         }
 
-        private Token HexSymbol(char character)
+        private IEnumerable<Token> HexSymbol(char character)
         {
             if (char.IsDigit(character) || "abcdefABCDEF".Contains(character))
             {
@@ -286,7 +279,7 @@ namespace Lang
             return null;
         }
 
-        private Token Comment(char character)
+        private IEnumerable<Token> Comment(char character)
         {
             if (character == '\n')
             {
@@ -296,15 +289,15 @@ namespace Lang
             return null;
         }
 
-        private Token Identifier(char character)
+        private IEnumerable<Token> Identifier(char character)
         {
             if (char.IsWhiteSpace(character))
             {
-                return OnNewToken(Token.Type.Identifier);
+                return new[] { OnNewToken(Token.Type.Identifier) };
             }
             else if (Separators.Contains(character))
             {
-                return OnExtraToken(character, Token.Type.Identifier);
+                return OnExtraToken(Token.Type.Identifier, character);
             }
             else if (char.IsLetterOrDigit(character) || character == '_')
             {
@@ -318,37 +311,37 @@ namespace Lang
             return null;
         }
 
-        private Token RightAssign(char character)
+        private IEnumerable<Token> RightAssign(char character)
         {
             if (character == '>')
             {
                 tokenValue.Append(character);
-                return OnNewToken(Token.Type.Separator);
+                return new[] { OnNewToken(Token.Type.Separator) };
             }
             else
             {
-                return OnExtraToken(character, Token.Type.Separator);
+                return OnExtraToken(Token.Type.Separator, character);
             }
         }
 
-        private Token Apply(char character)
+        private IEnumerable<Token> Apply(char character)
         {
             if (character == '>')
             {
                 tokenValue.Append(character);
-                return OnNewToken(Token.Type.Separator);
+                return new[] { OnNewToken(Token.Type.Separator) };
             }
             else
             {
-                return OnExtraToken(character, Token.Type.Separator);
+                return OnExtraToken(Token.Type.Separator, character);
             }
         }
 
-        private Token Field(char character)
+        private IEnumerable<Token> Field(char character)
         {
             if (char.IsWhiteSpace(character))
             {
-                return OnNewToken(Token.Type.String);
+                return new[] { OnNewToken(Token.Type.String) };
             }
             else if (char.IsLetterOrDigit(character) || character == '_')
             {
@@ -357,7 +350,7 @@ namespace Lang
             }
             else if (Separators.Contains(character))
             {
-                return OnExtraToken(character, Token.Type.String);
+                return OnExtraToken(Token.Type.String, character);
             }
             else
             {
@@ -366,39 +359,32 @@ namespace Lang
         }
 
         /// <summary>
-        /// Returns the token of the given type, using the current token info.
-        /// </summary>
-        private Token GetNewToken(Token.Type type)
-        {
-            var value = tokenValue.ToString();
-            tokenValue.Clear();
-            return new Token(value, type, tokenStartPosition, currentLine);
-        }
-
-        /// <summary>
-        /// Actions on a new token creating.
+        /// Performs actions on a new token creating.
         /// </summary>
         /// <returns>A new created token.</returns>
         private Token OnNewToken(Token.Type tokenType)
         {
             state = State.None;
-            return GetNewToken(tokenType);
+            var value = tokenValue.ToString();
+            tokenValue.Clear();
+
+            return new Token(value, tokenType, tokenStartPosition, currentLine);
         }
 
         /// <summary>
-        /// Actions on the extra token case.
+        /// Handles a situation when the given character bounds the previous token.
         /// </summary>
-        /// <param name="character">The current character.</param>
-        /// <param name="currentTokenType">The current token type.</param>
-        /// <returns>The current token.</returns>
-        /// <remarks>It is used when a new character is a separator and breaks the last token. In this case,
-        /// one character produces two tokens, but we can return only one token a time. So, we should
-        /// keep an extra token and return it on the next invocation.</remarks>
-        private Token OnExtraToken(char character, Token.Type currentTokenType)
+        /// <param name="prevTokenType">Previous token type.</param>
+        /// <param name="character">Current character that bounds the previous token.</param>
+        /// <returns>All created tokens.</returns>
+        private IEnumerable<Token> OnExtraToken(Token.Type prevTokenType, char character)
         {
-            var token = OnNewToken(currentTokenType);
-            extraToken = stateHandlers[state](character);
-            return token;
+            var prevToken = OnNewToken(prevTokenType);
+            var followingTokens = stateHandlers[state](character);
+            return
+                followingTokens == null
+                ? new[] { prevToken }
+                : followingTokens.Prepend(prevToken);
         }
     }
 }

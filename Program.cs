@@ -19,12 +19,12 @@ namespace Lang
 
         private static void MainCore(Arguments args)
         {
-            using var reader = GetReader(args);
+            string src = GetSourceCode(args);
 
             try
             {
                 var parser = new LexicalParser();
-                var tokens = Parse(reader, parser);
+                var tokens = parser.Parse(src);
 
                 if (args.IsDebugMode)
                 {
@@ -75,47 +75,17 @@ namespace Lang
         }
 
         /// <summary>
-        /// Gets the source code reader.
+        /// Gets the source code.
         /// </summary>
         /// <param name="args">CMD arguments.</param>
-        static private StreamReader GetReader(Arguments args)
+        static private string GetSourceCode(Arguments args)
         {
             if (!File.Exists(args.FilePath))
             {
                 throw new ArgumentException($"File \"{args.FilePath}\" doesn't exist!");
             }
 
-            return new StreamReader(args.FilePath);
-        }
-
-        /// <summary>
-        /// Transforms the source code into the token list.
-        /// </summary>
-        static private IEnumerable<Token> Parse(StreamReader reader, LexicalParser parser)
-        {
-            var tokens = new List<Token>();
-            int nextChar;
-
-            do
-            {
-                nextChar = reader.Read();   // returns -1 on the stream end
-                NextToken(nextChar);
-            }
-            while (nextChar >= 0);
-
-            return tokens;
-
-            /// <summary>
-            /// Appends the token to the token list if the token is constructed.
-            /// </summary>
-            void NextToken(int character)
-            {
-                var token = parser.GetNextToken(character);
-                if (!(token is null))
-                {
-                    tokens.Add(token);
-                }
-            }
+            return File.ReadAllText(args.FilePath);
         }
     }
 }
