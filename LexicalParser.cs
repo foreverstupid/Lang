@@ -21,6 +21,7 @@ namespace Lang
         private State state = State.None;
 
         private string hexSymbol = "";
+        private bool isInterpolation = false;
 
         public LexicalParser()
         {
@@ -138,6 +139,16 @@ namespace Lang
                 state = State.Field;
                 return new[] { token };
             }
+            else if (character == '}' && isInterpolation)
+            {
+                isInterpolation = false;
+                state = State.String;
+                return new[]
+                {
+                    new Token(")", Token.Type.Separator, currentPosition, currentLine),
+                    new Token("+", Token.Type.Separator, currentPosition, currentLine),
+                };
+            }
             else if (Separators.Contains(character))
             {
                 tokenValue.Append(character);
@@ -218,6 +229,17 @@ namespace Lang
             else if (character == '\"')
             {
                 return new[] { OnNewToken(Token.Type.String) };
+            }
+            else if (character == '{')
+            {
+                isInterpolation = true;
+                state = State.None;
+                return new[]
+                {
+                    OnNewToken(Token.Type.String),
+                    new Token("+", Token.Type.Separator, currentPosition, currentLine),
+                    new Token("(", Token.Type.Separator, currentPosition, currentLine),
+                };
             }
             else
             {

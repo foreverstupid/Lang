@@ -71,15 +71,15 @@
         }
         or if (!(isAllowedOperation($tokens[1])))
         {
-            result.error = "Invalid operation. Allowed operations are +, -, *, and /"
+            result.error = "Invalid operation \"{$tokens[1]}\". Allowed operations are +, -, *, and /"
         }
         or if (!($tokens[0] ? 0.0))
         {
-            result.error = "The first operand is not a number"
+            result.error = "The first operand \"{$tokens[0]}\" is not a number"
         }
         or if (!($tokens[2] ? 0.0))
         {
-            result.error = "The second operand is not a number"
+            result.error = "The second operand \"{$tokens[2]}\" is not a number"
         }
         or
         {

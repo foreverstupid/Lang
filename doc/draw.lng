@@ -3,6 +3,9 @@
     #====================================================================
     # Constants
     #====================================================================
+    # program exit character
+    ESC = "\x1b";
+
     # ESC-sequences for terminal cursor position control
     LEFT = "\x1b[1D";
     RIGHT = "\x1b[1C";
@@ -61,22 +64,28 @@
     #====================================================================
     # Main algorithm
     #====================================================================
-    prompt = "\nASCII DRAWER\n" +
-             "wasd - move the brush, SPACE - put brush, 1..8 - change color,\n" +
-             "e - remove back, r - remove current, t - remove forward,\n" +
-             "c - change brush symbol, ESC - exit\n";
+    prompt = "\n{$PURPLE}A{$GREEN}S{$BLUE}C{$CYAN}I{$YELLOW}I {$RESET}DRAWER\n" +
+             "{$RED}wasd{$RESET} - move the brush, " +
+             "{$RED}SPACE{$RESET} - put/take brush, " +
+             "{$RED}1..8{$RESET} - change color,\n" +
+             "{$RED}e{$RESET} - remove back, " +
+             "{$RED}r{$RESET} - remove current, " +
+             "{$RED}t{$RESET} - remove forward,\n" +
+             "{$RED}c{$RESET} - change brush symbol, " +
+             "{$RED}ESC{$RESET} - exit\n";
 
     # brush settings
+    isPut = 0;
     color = $GREEN;
     markSymbol = "#";
     brush = [] => $color + $markSymbol;
 
     # action definitions
-    actions[$left] = [] => _write($LEFT);
-    actions[$right] = [] => _write($RIGHT);
-    actions[$up] = [] => _write($UP);
-    actions[$down] = [] => _write($DOWN);
-    actions[$mark] = [] => _write(brush());
+    actions[$left] = [] => if ($isPut) _write($LEFT + brush() + $LEFT) or _write($LEFT);
+    actions[$right] = [] => if ($isPut) _write($RIGHT + brush() + $LEFT) or _write($RIGHT);
+    actions[$up] = [] => if ($isPut) _write($UP + brush() + $LEFT) or _write($UP);
+    actions[$down] = [] => if ($isPut) _write($DOWN + brush() + $LEFT) or _write($DOWN);
+    actions[$mark] = [] => if (isPut = !$isPut) _write(brush() + $LEFT);
     actions[$space] = [] => _write(" ");
     actions[$remove] = [] => _write(" " + $LEFT);
     actions[$delete] = [] => _write($LEFT + " " + $LEFT);
@@ -87,7 +96,7 @@
     _write("\n" * $height);
     _write($UP * ($height - 1));
 
-    as (!((ch = _readKey(0)) ~ "\x1b"))
+    as (!((ch = _readKey(0)) ~ $ESC))
         if (contains($allowedKeys, $ch))
         {
             if ($ch ? 0)
@@ -100,5 +109,6 @@
             }
         };
 
+    _write("\n" * $height);
     _write($RESET)
 }

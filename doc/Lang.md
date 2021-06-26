@@ -57,6 +57,20 @@ Expression is the main concept of Lang. It is a set of operations over data that
 4. **If-expression**: expression that evaluates or not according to some condition. Can have else-part (*if-else-expression*) that is evaluated if the condition is false. If has only if-part (*if-only-expression*) and the condition is false, then returns the special `None` value that cannot be used in any operation.
 5. **Cycle-expression**: expression that evaluates several times while some condition is true. Its value is a value of its last iteration. If none iteration is performed, returns the special `None` value that cannot be used in any operation.
 
+#### String interpolation
+
+Lang supports string interpolation. That means that you can insert any expression into the string via a specail syntaxis, substituting a string representation of teh expression result into corresponding string literal part. Interpolating expression should be betwee curly brackets. For example,
+```
+a = "interpolation";
+b = 2;
+_write("This is {$a}. This is {$a + $b}");
+```
+The given code will write the following text:
+```
+This is interpolation. This is interpolation2.
+```
+So, everything inside a string literal that is between curly brackets is interpreted as an expression whose value string representation should be substituted.
+
 ## Operations
 
 ### Binary operations
@@ -356,3 +370,4 @@ Perfectly, all created dynamic variables should be deallocated by the end of the
    - `\n` - new line
    - `\t` - tabulation
    - `\x` - interpretating the following two-digit hexadecimal number as the code of a character (e.g. `"\x1b"` is a string containing ESC symbol)
+   Back slash also allows to insert any symbol into the string. E.g. to insert open curly bracket without starting interpolation you can use `\{`.
