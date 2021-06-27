@@ -83,10 +83,12 @@
         }
         or
         {
-            result.left = $tokens[0] : 0.0;
-            result.right = $tokens[2] : 0.0;
-            result.op = $tokens[1];
-            result.error = ""
+            result {
+                .left = $tokens[0] : 0.0,
+                .right = $tokens[2] : 0.0,
+                .op = $tokens[1],
+                .error = ""
+            }
         };
 
         # We can return a whole dictionary, then we can assign this returning value

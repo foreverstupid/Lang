@@ -61,7 +61,8 @@ namespace Lang
         {
             if (isDebug)
             {
-                logger.ForContext(context).Information("Entered");
+                var t = tokens.CurrentOrLast;
+                logger.ForContext(context).Information($"Entered ({t.Line}:{t.StartPosition})");
                 contexts.Push(context);
             }
         }
@@ -98,7 +99,7 @@ namespace Lang
         {
             if (isDebug)
             {
-                logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.Value);
+                logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.ToString());
             }
 
             tokens.MoveNext();
@@ -210,27 +211,41 @@ namespace Lang
         {
             Enter(nameof(Indexator));
 
-            if (!tokens.CurrentTokenIsSeparator("["))
+            if (tokens.CurrentTokenIsSeparator("["))
             {
-                return Leave(false);
+                creator.Indexator(tokens.CurrentOrLast);
+                creator.OpenBracket();
+                MoveNext();
+                if (!Expression())
+                {
+                    SetError("Expression in the indexator is expected");
+                }
+
+                if (!tokens.CurrentTokenIsSeparator("]"))
+                {
+                    SetError("']' at the end of the indexator is expected");
+                }
+
+                creator.CloseBracket();
+                MoveNext();
+                return Leave(true);
             }
 
-            creator.Indexator(tokens.CurrentOrLast);
-            creator.OpenBracket();
-            MoveNext();
-            if (!Expression())
+            if (tokens.CurrentTokenIsSeparator("."))
             {
-                SetError("Expression in the indexator is expected");
+                creator.Indexator(tokens.CurrentOrLast);
+                MoveNext();
+                if (!tokens.CurrentTokenTypeIs(Token.Type.String))
+                {
+                    SetError("Pseudo-field name identifier is expected after dot");
+                }
+
+                creator.Literal(tokens.CurrentOrLast);
+                MoveNext();
+                return Leave(true);
             }
 
-            if (!tokens.CurrentTokenIsSeparator("]"))
-            {
-                SetError("']' at the end of the indexator is expected");
-            }
-
-            creator.CloseBracket();
-            MoveNext();
-            return Leave(true);
+            return Leave(false);
         }
 
         private bool Arguments()
@@ -318,17 +333,39 @@ namespace Lang
         {
             Enter(nameof(Literal));
 
-            if (tokens.CurrentTokenTypeIs(Token.Type.Identifier) &&
-                tokens.CurrentTokenValueIs(KeyWords.Let))
+            if (tokens.CurrentTokenTypeIs(Token.Type.Integer) ||
+                tokens.CurrentTokenTypeIs(Token.Type.Float) ||
+                tokens.CurrentTokenTypeIs(Token.Type.String))
             {
-                tokens.MoveNext();
+                creator.Literal(tokens.CurrentOrLast);
+                MoveNext();
+                return Leave(true);
+            }
+
+            return Leave(Variable());
+        }
+
+        private bool Variable()
+        {
+            Enter(nameof(Variable));
+
+            Token variableToken = null;
+            if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+            {
+                return Leave(false);
+            }
+
+            creator.OpenBracket();
+            if (tokens.CurrentTokenValueIs(KeyWords.Let))
+            {
+                MoveNext();
 
                 bool isRef = false;
                 if (tokens.CurrentTokenTypeIs(Token.Type.Identifier) &&
                     tokens.CurrentTokenValueIs(KeyWords.Ref))
                 {
                     isRef = true;
-                    tokens.MoveNext();
+                    MoveNext();
                 }
 
                 if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
@@ -338,36 +375,32 @@ namespace Lang
                         $"'{(isRef ? KeyWords.Ref : KeyWords.Let)}' keyword");
                 }
 
+                variableToken = tokens.CurrentOrLast;
                 creator.LocalVariable(tokens.CurrentOrLast, isRef);
-                tokens.MoveNext();
-                return Leave(true);
+                MoveNext();
             }
-
-            if (tokens.CurrentTokenTypeIs(Token.Type.Identifier) &&
-                tokens.CurrentTokenValueIs(KeyWords.Ref))
+            else if (tokens.CurrentTokenValueIs(KeyWords.Ref))
             {
-                tokens.MoveNext();
+                MoveNext();
                 if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
                 {
                     SetError($"Variable name is expected after '{KeyWords.Ref}' keyword");
                 }
 
+                variableToken = tokens.CurrentOrLast;
                 creator.GlobalRefVariable(tokens.CurrentOrLast);
-                tokens.MoveNext();
-                return Leave(true);
+                MoveNext();
             }
-
-            if (tokens.CurrentTokenTypeIs(Token.Type.Integer) ||
-                tokens.CurrentTokenTypeIs(Token.Type.Float) ||
-                tokens.CurrentTokenTypeIs(Token.Type.String) ||
-                tokens.CurrentTokenTypeIs(Token.Type.Identifier))
+            else
             {
+                variableToken = tokens.CurrentOrLast;
                 creator.Literal(tokens.CurrentOrLast);
                 MoveNext();
-                return Leave(true);
             }
 
-            return Leave(false);
+            Initializer(variableToken);      // can or can not be
+            creator.CloseBracket();
+            return Leave(true);
         }
 
         private bool Lambda()
@@ -436,7 +469,7 @@ namespace Lang
                 tokens.CurrentTokenValueIs(KeyWords.Ref))
             {
                 isRef = true;
-                tokens.MoveNext();
+                MoveNext();
             }
 
             if (!tokens.CurrentTokenTypeIs(Token.Type.Identifier))
@@ -563,6 +596,98 @@ namespace Lang
             creator.CloseBracket();
             creator.CycleEnd();
             return Leave(true);
+        }
+
+        private bool Initializer(Token variableToken)
+        {
+            Enter(nameof(Initializer));
+
+            int valueIdx = 0;
+            if (!tokens.CurrentTokenIsSeparator("{"))
+            {
+                return Leave(false);
+            }
+
+            MoveNext();
+            creator.OpenBracket();
+            if (!InitAtom(variableToken, ref valueIdx))
+            {
+                SetError("Expected at least one initializer item");
+            }
+
+            creator.Ignore(tokens.CurrentOrLast);
+            creator.CloseBracket();
+
+            while (tokens.CurrentTokenIsSeparator(","))
+            {
+                MoveNext();
+                creator.OpenBracket();
+                if (!InitAtom(variableToken, ref valueIdx))
+                {
+                    SetError("Expected initializer item after a comma");
+                }
+
+                creator.CloseBracket();
+                creator.Ignore(tokens.CurrentOrLast);
+            }
+
+            if (!tokens.CurrentTokenIsSeparator("}"))
+            {
+                SetError("'}' at the end of an initializer expected");
+            }
+
+            MoveNext();
+            return Leave(true);
+        }
+
+        private bool InitAtom(Token variableToken, ref int idx)
+        {
+            Enter(nameof(InitAtom));
+
+            creator.OpenBracket();
+            creator.Literal(variableToken);
+
+            if (Indexator())
+            {
+                InitAtomTail();
+                creator.CloseBracket();
+                return Leave(true);
+            }
+
+            var t = tokens.CurrentOrLast;
+            creator.Indexator(t);
+            creator.Literal(new Token(idx.ToString(), Token.Type.Integer, t.StartPosition, t.Line));
+            creator.BinaryOperation(new Token("=", Token.Type.Separator, t.StartPosition, t.Line));
+            creator.OpenBracket();
+
+            if (!Expression())
+            {
+                SetError("Expression expected as the initializer item");
+            }
+
+            idx++;
+            creator.CloseBracket();
+            creator.CloseBracket();
+
+            return Leave(true);
+
+            void InitAtomTail()
+            {
+                if (!tokens.CurrentTokenIsSeparator("="))
+                {
+                    SetError("'=' is expected in the initializer item");
+                }
+
+                creator.BinaryOperation(tokens.CurrentOrLast);
+                MoveNext();
+                creator.OpenBracket();
+                if (!Expression())
+                {
+                    SetError("Expected assigning expression after '=' in the initializer item");
+                }
+
+                creator.CloseBracket();
+            }
         }
     }
 }

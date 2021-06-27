@@ -22,14 +22,16 @@
     CYAN = "\x1b[36m";
     GREY = "\x1b[37m";
     RESET = "\x1b[0m";
-    COLORS["1"] = $BLACK;
-    COLORS["2"] = $RED;
-    COLORS["3"] = $GREEN;
-    COLORS["4"] = $YELLOW;
-    COLORS["5"] = $BLUE;
-    COLORS["6"] = $PURPLE;
-    COLORS["7"] = $CYAN;
-    COLORS["8"] = $GREY;
+    COLORS {
+        $BLACK,
+        $RED,
+        $GREEN,
+        $YELLOW,
+        $BLUE,
+        $PURPLE,
+        $CYAN,
+        $GREY
+    };
 
     # key bindings
     allowedKeys = "adws trec12345678";
@@ -60,7 +62,6 @@
         $eq
     };
 
-
     #====================================================================
     # Main algorithm
     #====================================================================
@@ -81,15 +82,17 @@
     brush = [] => $color + $markSymbol;
 
     # action definitions
-    actions[$left] = [] => if ($isPut) _write($LEFT + brush() + $LEFT) or _write($LEFT);
-    actions[$right] = [] => if ($isPut) _write($RIGHT + brush() + $LEFT) or _write($RIGHT);
-    actions[$up] = [] => if ($isPut) _write($UP + brush() + $LEFT) or _write($UP);
-    actions[$down] = [] => if ($isPut) _write($DOWN + brush() + $LEFT) or _write($DOWN);
-    actions[$mark] = [] => if (isPut = !$isPut) _write(brush() + $LEFT);
-    actions[$space] = [] => _write(" ");
-    actions[$remove] = [] => _write(" " + $LEFT);
-    actions[$delete] = [] => _write($LEFT + " " + $LEFT);
-    actions[$swap] = [] => markSymbol = _readKey(0);
+    actions {
+        [$left] = [] => if ($isPut) _write($LEFT + brush() + $LEFT) or _write($LEFT),
+        [$right] = [] => if ($isPut) _write($RIGHT + brush() + $LEFT) or _write($RIGHT),
+        [$up] = [] => if ($isPut) _write($UP + brush() + $LEFT) or _write($UP),
+        [$down] = [] => if ($isPut) _write($DOWN + brush() + $LEFT) or _write($DOWN),
+        [$mark] = [] => if (isPut = !$isPut) _write(brush() + $LEFT),
+        [$space] = [] => _write(" "),
+        [$remove] = [] => _write(" " + $LEFT),
+        [$delete] = [] => _write($LEFT + " " + $LEFT),
+        [$swap] = [] => markSymbol = _readKey(0)
+    };
 
     height = 15;
     _write($prompt);
@@ -101,7 +104,7 @@
         {
             if ($ch ? 0)
             {
-                color = $COLORS[$ch]
+                color = $COLORS[$ch : 0]
             }
             or
             {

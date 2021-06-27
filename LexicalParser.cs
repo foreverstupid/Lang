@@ -82,6 +82,16 @@ namespace Lang
                 ChangePositionInfo(ch);   // renew position information
             }
 
+            if (state == State.String)
+            {
+                throw new ArgumentException("String literal end is not reached");
+            }
+
+            if (isInterpolation)
+            {
+                throw new ArgumentException("Interpolation string literal end is not reached");
+            }
+
             return result;
 
             /// <summary>

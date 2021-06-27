@@ -8,7 +8,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<tail>` **::=** `<indexator>` `<tail>` **|** `<args>` `<tail>` **|**
 
-`<indexator>` **::=** `[` `<expression>` `]`
+`<indexator>` **::=** `[` `<expression>` `]` **|** `.` `<identifier>`
 
 `<args>` **::=** `(` **[** `<expression>` **{**`,` `<expression>` **}** **]** `)`
 
@@ -26,9 +26,15 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<unar>` **::=** `-` **|** `!` **|** `$`
 
-`<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?` **|** `.`
+`<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?`
 
-`<variable>` **::=** **[** `ref` **]** `<identifier>`
+`<variable>` **::=** **[** `ref` **]** `<identifier>` **[** `<initializer>` **]**
+
+`<initializer>` **::=** `{` `<init_atom>` **{**`,` `<init_atom>` **}** `}`
+
+`<init_atom>` **::=** `<init_atom_head>` `=` `<expression>`
+
+`<init_atom_head>` **::=** `.` `<identifier>` **|** `[` `<expression>` `]` **|** `<expression>`
 
 `<identifier>` **::=** `<letter>`**{**`<letter_or_digit>`**}**
 
