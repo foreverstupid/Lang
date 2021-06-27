@@ -152,7 +152,7 @@ array.length;
 ```
 Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to include arbitrary characters.
 
-#### Initializer
+### Initializer
 
 Quite often you want to set multiple pseudo-fields of the same variable or initialize an array with the given collection of elements. Then you have to write something like this:
 ```
@@ -170,25 +170,21 @@ object.field3 = "value3";
 ```
 It is not very convenient. And it gets worse when your array has a pretty long name or you want to initialize a lot of subfields of a deep-hierarchy field of a variable (e.g. `object.subobject.another.also.object`). That's why Lang provides a more simple way for initilaization arrays or dictionaries: *initializers*. This is a syntaxic sugar that allows you to write initialization expressions for multiple fields (or items) of a single variable.
 
-Initializer follows a variable and is bounded by curly brackets. It contains at least one initializer item that can be pseudo-field, indexator, or simple-array initialization. The mentioned types of initializer items have the following forms respectively:
+Initializer follows a variable and is bounded by curly brackets. It contains at least one initializer item that can be indexator or simple-array initialization. Initializer items are separated by commas. Let's see an example:
 ```
-.<pseudo-field name> = <expression>
-[<expression>] = <expression>
-<expression>
-```
-Initializer items are separated by commas. Let's see an example:
-```
-object {
-    .name = "Some name",
+objectWithQuiteLongName {
     .length = 10 * 23,
-    ["indexing property"] = 13.0
+    .name.short = "Some name",
+    [10] = 0,
+    ["indexing property"].float = 13.0
 };
 ```
-Here we see initializer items for pseudo-fields and indexator. This code is completely equivalent to:
+This code is completely equivalent to:
 ```
-object.name = "Some name";
-object.length = 10 * 23;
-object["indexing property"] = 13.0;
+objectWithQuiteLongName.length = 10 * 23;
+objectWithQuiteLongName.name.short = "Some name";
+objectWithQuiteLongName[10] = 0;
+objectWithQuiteLongName["indexing property"].float = 13.0;
 ```
 Simple-array initializer items stand for initialization of arrays. Their indecies are created automatically starting from `0` with incrementing. E.g. the following code
 ```
@@ -201,23 +197,23 @@ arr[1] = 10;
 arr[2] = 100 + 34;
 arr[3] = "abra" + "cadabra";
 ```
-You can mix initializer items of all types together, but note, that for simple-array initializer items indecies only count of simple-array items matters. That means that the following code:
+You can mix initializer items of all types together, but note, that for simple-array initializer items indecies only count of simple-array items matters. That means that the code:
 ```
-obj {
-    .size = 11,
+obj.inner.inner.and.even.inner {
+    .size.integer["simple"] = 11,
     "Hello",
     .name = "Name",
-    ["indexing"] = 1,
+    [10][0] = 1,
     "world"
 };
 ```
 is completely equivalent to the following one:
 ```
-obj.size = 11;
-obj[0] = "Hello";       # first simple-array element
-obj.name = "Name";
-obj["indexing"] = 1;
-obj[1] = "world";       # second simple-array element
+obj.inner.inner.and.even.inner.size.integer["simple"] = 11;
+obj.inner.inner.and.even.inner[0] = "Hello";       # first simple-array element
+obj.inner.inner.and.even.inner.name = "Name";
+obj.inner.inner.and.even.inner[10][0] = 1;
+obj.inner.inner.and.even.inner[1] = "world";       # second simple-array element
 ```
 
 ## Variable visibility

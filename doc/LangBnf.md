@@ -32,9 +32,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<initializer>` **::=** `{` `<init_atom>` **{**`,` `<init_atom>` **}** `}`
 
-`<init_atom>` **::=** `<init_atom_head>` `=` `<expression>`
-
-`<init_atom_head>` **::=** `.` `<identifier>` **|** `[` `<expression>` `]` **|** `<expression>`
+`<init_atom>` **::=** `<indexator>`**{ `<indexator>` }** `=` `<expression>` **|** `<expression>`
 
 `<identifier>` **::=** `<letter>`**{**`<letter_or_digit>`**}**
 

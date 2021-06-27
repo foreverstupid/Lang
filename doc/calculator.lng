@@ -1,11 +1,12 @@
 # A sample of the program in Lang. The simple one-operation calculator.
 {
-    # array of allowed operations as a map between strings and
-    # two-argument lambdas
-    operations["+"] = [a, b] => $a + $b;
-    operations["-"] = [a, b] => $a - $b;
-    operations["*"] = [a, b] => $a * $b;
-    operations["/"] = [a, b] => $a / $b;
+    # allowed operations as a map between strings and two-argument lambdas
+    operations {
+        ["+"] = [a, b] => $a + $b,
+        ["-"] = [a, b] => $a - $b,
+        ["*"] = [a, b] => $a * $b,
+        ["/"] = [a, b] => $a / $b
+    };
 
     # checks that the given operation is allowed
     isAllowedOperation = [ref op] =>   # we can declare parameter with 'ref' to avoid $ usage everywhere

@@ -649,6 +649,10 @@ namespace Lang
 
             if (Indexator())
             {
+                while (Indexator())
+                {
+                }
+
                 InitAtomTail();
                 creator.CloseBracket();
                 return Leave(true);
