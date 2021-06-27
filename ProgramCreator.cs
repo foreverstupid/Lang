@@ -62,7 +62,8 @@ namespace Lang
             if (expressionStack.Count > 0)
             {
                 throw new RpnCreationException(
-                    "Invalid expression, expression stack is not empty"
+                    "Invalid expression, expression stack is not empty. Stack:\n    " +
+                    string.Join("\n    ", expressionStack.Select(rpn => rpn?.ToString() ?? "OB"))
                 );
             }
 
@@ -191,7 +192,6 @@ namespace Lang
                 ":" => new RpnCast(token),
                 "?" => new RpnCheckCast(token),
                 "->" => new RpnRightAssign(token, variables),
-                "." => new RpnIndexator(token),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 

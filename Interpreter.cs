@@ -34,13 +34,8 @@ namespace Lang
                 {
                     if (isDebug)
                     {
-                        var positionInfo =
-                            currentCommand.Value.Token is null
-                            ? ""
-                            : $" ({currentCommand.Value.Token.Line}:{currentCommand.Value.Token.StartPosition})";
-
                         Console.WriteLine("Stack: " + string.Join(" | ", stack));
-                        Console.WriteLine("=> " + currentCommand.Value + positionInfo + "\n");
+                        Console.WriteLine($"=> {currentCommand.Value}\n");
                     }
 
                     currentCommand = currentCommand.Value.Eval(stack, currentCommand);

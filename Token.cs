@@ -29,5 +29,9 @@ namespace Lang
         public int Line { get; }
 
         public int StartPosition { get; }
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => $"[{TokenType}] {Value} ({Line}:{StartPosition})";
     }
 }

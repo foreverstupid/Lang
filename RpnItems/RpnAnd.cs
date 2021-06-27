@@ -9,7 +9,7 @@ namespace Lang.RpnItems
     {
         public RpnAnd(Token token)
             : base(token)
-        {   
+        {
         }
 
         /// <inheritdoc/>

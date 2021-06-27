@@ -7,7 +7,7 @@ namespace Lang.RpnItems
     {
         public RpnDivide(Token token)
             : base(token)
-        { 
+        {
         }
 
         /// <inheritdoc/>

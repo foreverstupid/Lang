@@ -27,6 +27,7 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string ToString()
-            => this.GetType().Name + (Token is null ? "" : $": {Token.Value}");
+            => this.GetType().Name +
+               (Token is null ? "" : $": {Token.Value} ({Token.Line}:{Token.StartPosition})");
     }
 }
