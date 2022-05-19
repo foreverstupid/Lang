@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Lang.RpnItems;
@@ -23,6 +24,7 @@ namespace Lang
         public const string New = "_alloc";
         public const string Free = "_free";
         public const string Sleep = "_sleep";
+        public const string Exec = "_exec";
 
         public BuiltInLibrary(IDictionary<string, RpnConst> variables)
         {
@@ -152,7 +154,8 @@ namespace Lang
                         if (ps[0].ValueType != RpnConst.Type.Float &&
                             ps[0].ValueType != RpnConst.Type.Integer)
                         {
-                            throw new InterpretationException("Expected a number");
+                            throw new InterpretationException(
+                                "Expected a number as a delay in milliseconds");
                         }
 
                         double ms = ps[0].GetFloat();
@@ -163,6 +166,74 @@ namespace Lang
 
                         Task.Delay(TimeSpan.FromMilliseconds(ms)).Wait();
                         return new RpnInteger(1);
+                    }
+                ),
+                [Exec] = new Func(
+                    4,
+                    ps =>
+                    {
+                        if (ps[0].ValueType != RpnConst.Type.String)
+                        {
+                            throw new InterpretationException(
+                                "Expected a string as a program path");
+                        }
+
+                        if (ps[1].ValueType != RpnConst.Type.String)
+                        {
+                            throw new InterpretationException(
+                                "Expected a string as a program arguments");
+                        }
+
+                        if (ps[2].ValueType != RpnConst.Type.Variable)
+                        {
+                            throw new InterpretationException(
+                                "Expected a variable as an output parameter for" +
+                                "the execution output");
+                        }
+
+                        if (!variables.ContainsKey(ps[2].GetString()))
+                        {
+                            throw new InterpretationException("Given output variable doesn't exist");
+                        }
+
+                        if (ps[3].ValueType != RpnConst.Type.Variable)
+                        {
+                            throw new InterpretationException(
+                                "Expected a variable as an error output parameter for" +
+                                "the execution output");
+                        }
+
+                        if (!variables.ContainsKey(ps[3].GetString()))
+                        {
+                            throw new InterpretationException("Given error output variable doesn't exist");
+                        }
+
+                        var processStartInfo = new ProcessStartInfo()
+                        {
+                            FileName = ps[0].GetString(),
+                            Arguments = ps[1].GetString(),
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                        };
+
+                        Process process;
+                        try
+                        {
+                            process = Process.Start(processStartInfo);
+                            process.WaitForExit();
+                        }
+                        catch (Exception e)
+                        {
+                            variables[ps[3].GetString()] = new RpnString(e.Message);
+                            return new RpnInteger(e.HResult);
+                        }
+
+                        variables[ps[2].GetString()] = new RpnString(process.StandardOutput.ReadToEnd());
+                        variables[ps[3].GetString()] = new RpnString(process.StandardError.ReadToEnd());
+
+                        return new RpnInteger(process.ExitCode);
                     }
                 )
             };

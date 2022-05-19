@@ -44,8 +44,19 @@ Lang has several built-in functions that needn't be described to be used. Their 
 |_rnd|No arguments|A random float between 0.0 and 1.0|
 |_length|A string|The length of the string|
 |_alloc|No arguments|A new allocated dynamic variable (see [dynamic variables](#dynamic-variables))|
-|_free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|The special `None` value that cannot be used in any operation|
+|_free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|Bool-like TRUE value|
 |_sleep|A number (float or integer) representing delay in milliseconds|Stops the program evaluation by the given interval, always returning bool-like TRUE value|
+|_exec|Program path as a string, execution command-line arguments as a string, a string variable that will be used as an output parameter for the command execution output, and a string variable that will be used as an output parameter for the command execution error output|Executes the given program with the given arguments, returning its exit-code. It also fills the last given parameters with the program's output and error output respectively|
+
+Example of `_exec` built-in function usage:
+```
+out = "";                                       # will contain the output of the execution
+err = "";                                       # will contain the error output of the execution
+args = "ls -l";
+exitCode = _exec("/bin/bash", $args, out, err); # we pass out variable as itself, not its value
+_write($out);                                   # here we use the value of the out variable
+_write($err);                                   # here we use the value of the err variable
+```
 
 ### Expression
 
@@ -291,7 +302,7 @@ func(array);
 
 You can also declare a usual variable (not a lambda parameter) as a reference one. This should be done only once and only on the first variable usage. If the variable is also the local one, then the keyword `ref` should follow the keyword `loc`. This scenario is usefull when the lambda returns a dictionary. Then you can assign its returning value to a reference variable and avoid a vast ammount of dereferencing during usage such a return value. Compare the following equivalent code parts:
 ```
-# First vesion
+# First version
 fun = [] =>
 {
     loc result;
