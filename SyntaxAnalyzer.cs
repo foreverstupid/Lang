@@ -199,6 +199,12 @@ namespace Lang
         {
             Enter(nameof(Tail));
 
+            if (tokens.CurrentTokenIsSeparator("?"))
+            {
+                MoveNext();
+                return Leave(Indexator(isChecking: true));
+            }
+
             if (Indexator() || Arguments())
             {
                 return Leave(Tail());
@@ -207,15 +213,37 @@ namespace Lang
             return Leave(true);
         }
 
-        private bool Indexator()
+        private bool Indexator(bool isChecking = false)
         {
             Enter(nameof(Indexator));
 
             if (tokens.CurrentTokenIsSeparator("["))
             {
-                creator.Indexator(tokens.CurrentOrLast);
-                creator.OpenBracket();
                 MoveNext();
+                if (!isChecking && tokens.CurrentTokenIsSeparator("]"))
+                {
+                    MoveNext();
+                    if (!tokens.CurrentTokenIsSeparator("?"))
+                    {
+                        SetError("'?' expected in the index value checking operator");
+                    }
+
+                    creator.IndexValueCheck(tokens.CurrentOrLast);
+                    creator.OpenBracket();
+
+                    MoveNext();
+                    if (!Expression())
+                    {
+                        SetError("Expression in the index value check operator is expected");
+                    }
+
+                    creator.CloseBracket();
+                    return Leave(true);
+                }
+
+                creator.Indexator(tokens.CurrentOrLast, isChecking);
+                creator.OpenBracket();
+
                 if (!Expression())
                 {
                     SetError("Expression in the indexator is expected");
@@ -233,7 +261,7 @@ namespace Lang
 
             if (tokens.CurrentTokenIsSeparator("."))
             {
-                creator.Indexator(tokens.CurrentOrLast);
+                creator.Indexator(tokens.CurrentOrLast, isChecking);
                 MoveNext();
                 if (!tokens.CurrentTokenTypeIs(Token.Type.String))
                 {
@@ -659,7 +687,7 @@ namespace Lang
             }
 
             var t = tokens.CurrentOrLast;
-            creator.Indexator(t);
+            creator.Indexator(t, isChecking: false);
             creator.Literal(new Token(idx.ToString(), Token.Type.Integer, t.StartPosition, t.Line));
             creator.BinaryOperation(new Token("=", Token.Type.Separator, t.StartPosition, t.Line));
             creator.OpenBracket();

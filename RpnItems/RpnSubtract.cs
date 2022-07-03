@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents subtraction.
     /// </summary>
-    public class RpnSubtract : RpnBinaryOperation
+    public sealed class RpnSubtract : RpnBinaryOperation
     {
         public RpnSubtract(Token token)
             : base(token)

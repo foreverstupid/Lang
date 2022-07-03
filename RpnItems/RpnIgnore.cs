@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that ignores the last stack value, removing it from stack.
     /// </summary>
-    public class RpnIgnore : RpnSuccessive
+    public sealed class RpnIgnore : RpnSuccessive
     {
         public RpnIgnore()
         {

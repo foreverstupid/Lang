@@ -6,7 +6,7 @@ namespace Lang.RpnItems
     /// RPN item that represents assignment some value to the variable.
     /// Returns assigning value to the stack.
     /// </summary>
-    public class RpnAssign : RpnBinaryOperation
+    public sealed class RpnAssign : RpnBinaryOperation
     {
         private readonly IDictionary<string, RpnConst> variables;
 

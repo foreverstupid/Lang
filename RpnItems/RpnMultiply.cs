@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents multiplication.
     /// </summary>
-    public class RpnMultiply : RpnBinaryOperation
+    public sealed class RpnMultiply : RpnBinaryOperation
     {
         public RpnMultiply(Token token)
             : base(token)

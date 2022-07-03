@@ -163,6 +163,44 @@ array.length;
 ```
 Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to include arbitrary characters.
 
+### Index checking operation: `?[]`
+
+It is used for checking whether an array contains the given index. It has a special form for pseudo-fields: `?.`. This operator returns true-like value, if the given array has the given index (or similar, the given dictionary contains the given pseudo-field). Otherwise it returns false-like value. Example of usage:
+```
+arr[0] = 42;
+arr.length = 1;
+
+if (arr?[0])
+    _write("a[0] exists");      # this code will run
+
+if (arr?[1])
+    _write("a[1] exists");      # this code will not run
+
+if (arr?.length)
+    _write("a has a property 'length'");    # this code will run
+
+if (arr?.size)
+    _write("a has a property 'size'");      # this code will not run
+```
+
+### Index value checking operation: `[]?`
+
+It is used for checking whether an array contains the given value. Example of usage:
+```
+a[0] = 42;
+a[1] = 11;
+a.capacity = 11;
+
+if (a []? 42)
+    _write("a contains 42");    # this code will run
+
+if (a[  ]  ? 13)                # you can place any count of spaces between parts of '[]?'
+    _write("a contains 13");    # this code will not run
+
+if (a []? 11)
+    _write("a contains 11")     # this code will run
+```
+
 ### Initializer
 
 Quite often you want to set multiple pseudo-fields of the same variable or initialize an array with the given collection of elements. Then you have to write something like this:
@@ -254,7 +292,7 @@ Here the variable `a` is a global one. It can be used in functions `func`, `f`, 
     _write($a)
 }
 ```
-It will raise an error because the value of the variable `a`cannot be gotten as far as it is a local variable of the function `func`, and the global variable `a` doesn't exist.
+It will raise an error because the value of the variable `a` cannot be gotten as far as it is a local variable of the function `func`, and the global variable `a` doesn't exist.
 
 Note, that **loc** keyword should be used only once at the variable definition (i.e., the first assignment). Nevertheless, you can define local variable without assignment. For example, the following code is valid:
 ```
@@ -431,7 +469,7 @@ Perfectly, all created dynamic variables should be deallocated by the end of the
        or
            factorial($n - 1) * $n;
    ```
-   As the recursion reashes its basis (the if-part) and starts to evaluating backward, all the instances of `factorial` will have the variable `n` equal to `2` (that is the recursion basis). So, in all else-parts we will multiply returning value by `2` and instead of `n` factorial we will get `2` to the power of `n - 1`. The proper realisation is
+   As the recursion reaсhes its basis (the if-part) and starts to evaluating backward, all the instances of `factorial` will have the variable `n` equal to `2` (that is the recursion basis). So, in all else-parts we will multiply returning value by `2` and instead of `n` factorial we will get `2` to the power of `n - 1`. The proper realisation is
    ```
    factorial = [n] =>
        if ($n < 3)

@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents division.
     /// </summary>
-    public class RpnDivide : RpnBinaryOperation
+    public sealed class RpnDivide : RpnBinaryOperation
     {
         public RpnDivide(Token token)
             : base(token)

@@ -6,7 +6,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents a float point number.
     /// </summary>
-    public class RpnFloat : RpnConst
+    public sealed class RpnFloat : RpnConst
     {
         private readonly double value;
 
@@ -47,6 +47,10 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string ToString()
-            => this.GetType().Name + ": " + value;
+            => nameof(RpnFloat) + ": " + value;
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => other.GetFloat() == this.GetFloat();
     }
 }

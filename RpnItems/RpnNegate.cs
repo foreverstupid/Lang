@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents negation.
     /// </summary>
-    public class RpnNegate : RpnUnaryOperation
+    public sealed class RpnNegate : RpnUnaryOperation
     {
         public RpnNegate(Token token)
             : base(token)

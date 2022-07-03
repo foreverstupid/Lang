@@ -13,7 +13,7 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
+        protected override sealed RpnConst GetResult(Stack<RpnConst> stack)
         {
             var operand = stack.Pop();
             if (operand.ValueType == RpnConst.Type.None)

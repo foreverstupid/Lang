@@ -17,7 +17,7 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        public override LinkedListNode<Rpn> Eval(
+        public override sealed LinkedListNode<Rpn> Eval(
             Stack<RpnConst> stack,
             LinkedListNode<Rpn> currentCmd)
         {

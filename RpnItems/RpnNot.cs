@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents logical NOT operation.
     /// </summary>
-    public class RpnNot : RpnUnaryOperation
+    public sealed class RpnNot : RpnUnaryOperation
     {
         public RpnNot(Token token)
             : base(token)
@@ -15,6 +15,6 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst operand)
-            => new RpnInteger(!operand.GetBool());
+            => RpnConst.Bool(!operand.GetBool());
     }
 }

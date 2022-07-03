@@ -4,7 +4,7 @@ namespace Lang.RpnItems
     /// RPN item that performs casting of the left operand to the type of the
     /// right one.
     /// </summary>
-    public class RpnCast : RpnBinaryOperation
+    public sealed class RpnCast : RpnBinaryOperation
     {
         public RpnCast(Token token)
             : base(token)

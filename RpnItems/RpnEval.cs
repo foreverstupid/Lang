@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that applies the given function to the given args.
     /// </summary>
-    public class RpnEval : Rpn
+    public sealed class RpnEval : Rpn
     {
         private readonly int paramCount;
         private readonly RpnLabel returnLabel;

@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents a built-in function.
     /// </summary>
-    public class RpnBuiltIn : RpnConst
+    public sealed class RpnBuiltIn : RpnConst
     {
         private readonly string name;
 
@@ -19,14 +19,12 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override double GetFloat() =>
             throw new InterpretationException(
-                "Built-in function cannot be casted to float"
-            );
+                "Built-in function cannot be casted to float");
 
         /// <inheritdoc/>
         public override int GetInt() =>
             throw new InterpretationException(
-                "Built-in function cannot be casted to int"
-            );
+                "Built-in function cannot be casted to int");
 
         /// <inheritdoc/>
         public override string GetString() => name;
@@ -34,7 +32,14 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override bool GetBool() =>
             throw new InterpretationException(
-                "Built-in function cannot be casted to bool"
-            );
+                "Built-in function cannot be casted to bool");
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => nameof(RpnBuiltIn) + ": " + name;
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => other.GetString() == this.GetString();
     }
 }

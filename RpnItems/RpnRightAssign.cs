@@ -6,7 +6,7 @@ namespace Lang.RpnItems
     /// RPN item that represents assignment when assignable value is right and
     /// assigning is left one. Returns assignable value to the stack.
     /// </summary>
-    public class RpnRightAssign : RpnBinaryOperation
+    public sealed class RpnRightAssign : RpnBinaryOperation
     {
         private readonly IDictionary<string, RpnConst> variables;
 

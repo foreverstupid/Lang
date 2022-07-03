@@ -6,13 +6,11 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents an integer number.
     /// </summary>
-    public class RpnInteger : RpnConst
+    public sealed class RpnInteger : RpnConst
     {
         private readonly int value;
 
         public RpnInteger(int val) => value = val;
-
-        public RpnInteger(bool val) => value = val ? 1 : 0;
 
         public RpnInteger(Token token)
             : base(token)
@@ -49,6 +47,10 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string ToString()
-            => this.GetType().Name + ": " + value;
+            => nameof(RpnInteger) + ": " + value;
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => other.GetInt() == this.GetInt();
     }
 }

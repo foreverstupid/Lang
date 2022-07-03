@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents addition.
     /// </summary>
-    public class RpnAdd : RpnBinaryOperation
+    public sealed class RpnAdd : RpnBinaryOperation
     {
         public RpnAdd(Token token)
             : base(token)

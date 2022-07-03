@@ -144,7 +144,7 @@ namespace Lang
                         }
 
                         variables.Remove(name);
-                        return new RpnNone();
+                        return RpnConst.True;
                     }
                 ),
                 [Sleep] = new Func(
@@ -165,7 +165,7 @@ namespace Lang
                         }
 
                         Task.Delay(TimeSpan.FromMilliseconds(ms)).Wait();
-                        return new RpnInteger(1);
+                        return RpnConst.True;
                     }
                 ),
                 [Exec] = new Func(

@@ -13,7 +13,7 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        protected override RpnConst GetResult(Stack<RpnConst> stack)
+        protected override sealed RpnConst GetResult(Stack<RpnConst> stack)
         {
             var right = stack.Pop();
             var left = stack.Pop();

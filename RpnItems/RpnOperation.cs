@@ -45,7 +45,7 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        protected override void EvalCore(Stack<RpnConst> stack)
+        protected override sealed void EvalCore(Stack<RpnConst> stack)
             => stack.Push(GetResult(stack));
 
         /// <summary>

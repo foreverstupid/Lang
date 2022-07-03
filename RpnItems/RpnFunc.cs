@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents a function.
     /// </summary>
-    public class RpnFunc : RpnConst
+    public sealed class RpnFunc : RpnConst
     {
         private readonly string name;
 
@@ -33,6 +33,10 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string ToString()
-            => this.GetType().Name + ": " + name;
+            => nameof(RpnFunc) + ": " + name;
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => other.GetString() == this.GetString();
     }
 }

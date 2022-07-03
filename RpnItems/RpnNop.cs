@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// Help RPN item that does nothing.
     /// </summary>
-    public class RpnNop : Rpn
+    public sealed class RpnNop : Rpn
     {
         /// <inheritdoc/>
         public override LinkedListNode<Rpn> Eval(

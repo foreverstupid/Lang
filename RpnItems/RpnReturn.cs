@@ -12,7 +12,7 @@ namespace Lang.RpnItems
     /// Lambda always returns some value, and before lambda start there is always
     /// a returning label in the stack.
     /// </remark>
-    public class RpnReturn : RpnGoto
+    public sealed class RpnReturn : RpnGoto
     {
         public RpnReturn(IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
             : base(labels)

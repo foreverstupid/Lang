@@ -33,6 +33,22 @@ namespace Lang.RpnItems
         }
 
         /// <summary>
+        /// Value representing true.
+        /// </summary>
+        public static RpnConst True { get; } = new RpnInteger(1);
+
+        /// <summary>
+        /// Value representing false.
+        /// </summary>
+        /// <returns></returns>
+        public static RpnConst False { get; } = new RpnInteger(0);
+
+        /// <summary>
+        /// Value representing None.
+        /// </summary>
+        public static RpnConst None { get; } = new RpnNone();
+
+        /// <summary>
         /// The type of the item value.
         /// </summary>
         public abstract Type ValueType { get; }
@@ -61,8 +77,41 @@ namespace Lang.RpnItems
         /// <remarks>Throws if the cast is not possible.</remarks>
         public abstract bool GetBool();
 
+        /// <summary>
+        /// Converts boolean value to pseudo-bool RPN representation.
+        /// </summary>
+        /// <param name="flag">Converting boolean value.</param>
+        /// <returns>Pseudo-bool RPN representation.</returns>
+        public static RpnConst Bool(bool flag)
+            => flag ? True : False;
+
         /// <inheritdoc/>
-        protected override void EvalCore(Stack<RpnConst> stack)
+        protected override sealed void EvalCore(Stack<RpnConst> stack)
             => stack.Push(this);
+
+        /// <inheritdoc/>
+        public abstract override string ToString();
+
+        /// <summary>
+        /// Checks whether the constant has the smae value as the given one.
+        /// </summary>
+        /// <param name="other">The given constant.</param>
+        /// <returns>A boolean value, that indicates, whether the constant
+        /// contains the same value as the given one.</returns>
+        public bool HasSameValue(RpnConst other)
+            => other != null &&
+               other.ValueType == this.ValueType &&
+               HasSameValueCore(other);
+
+        /// <summary>
+        /// Runs the core logic of the constant value comparision.
+        /// It is guaranteed, that <paramref name="other"/> is not
+        /// <see langword="null"/> and has the same type as the current
+        /// constant.
+        /// </summary>
+        /// <param name="other">The given constant.</param>
+        /// <returns>A boolean value, that indicates, whether the constant
+        /// contains the same value as the given one.</returns>
+        protected abstract bool HasSameValueCore(RpnConst other);
     }
 }

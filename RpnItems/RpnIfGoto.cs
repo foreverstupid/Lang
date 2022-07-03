@@ -6,9 +6,9 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN that represents conditional jump to the certain label.
     /// </summary>
-    public class RpnIfGoto : Rpn
+    public sealed class RpnIfGoto : Rpn
     {
-        private IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels;
+        private readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels;
 
         public RpnIfGoto(Token token, IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
             : base(token)

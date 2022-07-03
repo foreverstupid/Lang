@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents dereference (getting value of the variable).
     /// </summary>
-    public class RpnGetValue : RpnUnaryOperation
+    public sealed class RpnGetValue : RpnUnaryOperation
     {
         private readonly IReadOnlyDictionary<string, RpnConst> variables;
 

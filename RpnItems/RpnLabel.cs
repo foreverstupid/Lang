@@ -5,7 +5,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN that represents a command label.
     /// </summary>
-    public class RpnLabel : RpnConst
+    public sealed class RpnLabel : RpnConst
     {
         private readonly string name;
 
@@ -40,6 +40,10 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string ToString()
-            => this.GetType().Name + ": " + name;
+            => nameof(RpnLabel) + ": " + name;
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => other.GetString() == this.GetString();
     }
 }

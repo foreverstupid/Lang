@@ -4,7 +4,7 @@ namespace Lang.RpnItems
     /// RPN item that represents nonexistent value (using as return
     /// value of the cycle that hasn't performed any iteration)
     /// </summary>
-    public class RpnNone : RpnConst
+    public sealed class RpnNone : RpnConst
     {
         /// <inheritdoc/>
         public override Type ValueType => RpnConst.Type.None;
@@ -26,7 +26,11 @@ namespace Lang.RpnItems
             throw new InterpretationException("Cannot cast None value to bool");
 
         /// <inheritdoc/>
-        public override string ToString() =>
-            "None";
+        public override string ToString()
+            => "None";
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => true;
     }
 }

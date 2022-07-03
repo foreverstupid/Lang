@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents modulo division.
     /// </summary>
-    public class RpnMod : RpnBinaryOperation
+    public sealed class RpnMod : RpnBinaryOperation
     {
         public RpnMod(Token token)
             : base(token)

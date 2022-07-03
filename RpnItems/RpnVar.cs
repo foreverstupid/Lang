@@ -3,7 +3,7 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents a variable.
     /// </summary>
-    public class RpnVar : RpnConst
+    public sealed class RpnVar : RpnConst
     {
         private readonly string name;
 
@@ -24,14 +24,12 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override double GetFloat() =>
             throw new InterpretationException(
-                "Cannot direct get the variable value. Use dereference"
-            );
+                "Cannot direct get the variable value. Use dereference");
 
         /// <inheritdoc/>
         public override int GetInt() =>
             throw new InterpretationException(
-                "Cannot direct get the variable value. Use dereference"
-            );
+                "Cannot direct get the variable value. Use dereference");
 
         /// <inheritdoc/>
         public override string GetString() => name;
@@ -39,11 +37,14 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         public override bool GetBool() =>
             throw new InterpretationException(
-                "The variable itself cannot be casted to bool. Use dereference first"
-            );
+                "The variable itself cannot be casted to bool. Use dereference first");
 
         /// <inheritdoc/>
         public override string ToString()
-            => this.GetType().Name + ": " + name;
+            => nameof(RpnVar) + ": " + name;
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => other.GetString() == this.GetString();
     }
 }

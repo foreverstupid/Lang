@@ -6,11 +6,13 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents a string.
     /// </summary>
-    public class RpnString : RpnConst
+    public sealed class RpnString : RpnConst
     {
         public readonly string value;
 
         public RpnString(string val) => value = val;
+
+        public RpnString(char ch) => value = ch.ToString();
 
         public RpnString(Token token)
             : base(token)
@@ -54,6 +56,10 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string ToString()
-            => this.GetType().Name + ": " + value;
+            => nameof(RpnString) + ": " + value;
+
+        /// <inheritdoc/>
+        protected override bool HasSameValueCore(RpnConst other)
+            => other.GetString() == this.GetString();
     }
 }

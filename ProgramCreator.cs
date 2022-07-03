@@ -88,9 +88,24 @@ namespace Lang
         /// <summary>
         /// Creates an indexator.
         /// </summary>
-        public void Indexator(Token token)
+        public void Indexator(Token token, bool isChecking)
         {
-            NewOperation(new RpnIndexator(token));
+            if (isChecking)
+            {
+                NewOperation(new RpnHasIndex(token, variables));
+            }
+            else
+            {
+                NewOperation(new RpnIndexator(token));
+            }
+        }
+
+        /// <summary>
+        /// Creates an index value checking operator.
+        /// </summary>
+        public void IndexValueCheck(Token token)
+        {
+            NewOperation(new RpnHasValue(token, variables));
         }
 
         /// <summary>

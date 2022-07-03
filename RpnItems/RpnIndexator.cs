@@ -1,9 +1,9 @@
 namespace Lang.RpnItems
 {
     /// <summary>
-    /// RPN item that represents indexing.
+    /// RPN item that represents array or dictionary indexing.
     /// </summary>
-    public class RpnIndexator : RpnBinaryOperation
+    public sealed class RpnIndexator : RpnIndexKeyOperation
     {
         public RpnIndexator(Token token)
             : base(token)
@@ -11,44 +11,18 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        protected override int Priority => 1000;
-
-        /// <inheritdoc/>
-        protected override RpnConst GetResultCore(RpnConst array, RpnConst index)
+        protected override RpnConst GetIntIndexResultForString(string str, int index)
         {
-            if (array.ValueType == RpnConst.Type.String)
+            if (index < 0 || index >= str.Length)
             {
-                int idx = index.GetInt();
-                string str = array.GetString();
-
-                if (idx < 0 || idx >= str.Length)
-                {
-                    throw new InterpretationException("Index is out of range");
-                }
-
-                return new RpnString(str[idx].ToString());
+                throw new InterpretationException("Index was out of range");
             }
 
-            if (array.ValueType != RpnConst.Type.Variable)
-            {
-                throw new InterpretationException("Cannot index not a variable");
-            }
-
-            if (index.ValueType == RpnConst.Type.String ||
-                index.ValueType == RpnConst.Type.Integer ||
-                index.ValueType == RpnConst.Type.Float)
-            {
-                var indexedName = ConstructName(array.GetString(), index);
-                return new RpnVar(indexedName);
-            }
-
-            throw new InterpretationException("Index type should be a number or a string");
+            return new RpnString(str[index]);
         }
 
-        /// <summary>
-        /// Constructs the name of the array item by the collection name and its index.
-        /// </summary>
-        private string ConstructName(string arrayName, RpnConst index)
-            => $"{arrayName}#{index.ValueType.ToString()[0]}#{index.GetString()}";
+        /// <inheritdoc/>
+        protected override RpnConst GetResultForIndexedVariable(string indexedName)
+            => new RpnVar(indexedName);
     }
 }

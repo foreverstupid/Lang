@@ -6,7 +6,7 @@ namespace Lang.RpnItems
     /// RPN item that checks whether casting of the left operand to the type of the
     /// right one is possible.
     /// </summary>
-    public class RpnCheckCast : RpnBinaryOperation
+    public sealed class RpnCheckCast : RpnBinaryOperation
     {
         public RpnCheckCast(Token token)
             : base(token)
@@ -28,37 +28,35 @@ namespace Lang.RpnItems
                 left.ValueType != RpnConst.Type.Variable &&
                 left.ValueType != RpnConst.Type.BuiltIn)
             {
-                return new RpnInteger(0);
+                return RpnConst.False;
             }
 
             if (left.ValueType == RpnConst.Type.String)
             {
                 if (right.ValueType == RpnConst.Type.Integer)
                 {
-                    return
-                        int.TryParse(
-                            left.GetString(),
-                            NumberStyles.Integer,
-                            CultureInfo.InvariantCulture,
-                            out _)
-                        ? new RpnInteger(1)
-                        : new RpnInteger(0);
+                    bool canParse = int.TryParse(
+                        left.GetString(),
+                        NumberStyles.Integer,
+                        CultureInfo.InvariantCulture,
+                        out _);
+
+                    return RpnConst.Bool(canParse);
                 }
 
                 if (right.ValueType == RpnConst.Type.Float)
                 {
-                    return
-                        double.TryParse(
-                            left.GetString(),
-                            NumberStyles.Float,
-                            CultureInfo.InvariantCulture,
-                            out _)
-                        ? new RpnInteger(1)
-                        : new RpnInteger(0);
+                    bool canParse = double.TryParse(
+                        left.GetString(),
+                        NumberStyles.Float,
+                        CultureInfo.InvariantCulture,
+                        out _);
+
+                    return RpnConst.Bool(canParse);
                 }
             }
 
-            return new RpnInteger(1);
+            return RpnConst.True;
         }
     }
 }

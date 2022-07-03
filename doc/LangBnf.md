@@ -6,7 +6,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<group>` **::=** `{` `<expression>` **{** `;` `<expression>` **}** `}`
 
-`<tail>` **::=** `<indexator>` `<tail>` **|** `<args>` `<tail>` **|**
+`<tail>` **::=** `<indexator>` `<tail>` **|** `<args>` `<tail>` **|** `?` `<indexator>` **|** `?` `[` `]` **|**
 
 `<indexator>` **::=** `[` `<expression>` `]` **|** `.` `<identifier>`
 
@@ -26,7 +26,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<unar>` **::=** `-` **|** `!` **|** `$`
 
-`<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?`
+`<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?` **|** `[]?`
 
 `<variable>` **::=** **[** `ref` **]** `<identifier>` **[** `<initializer>` **]**
 
