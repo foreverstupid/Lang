@@ -31,7 +31,7 @@ namespace Lang
                     LogTokens(tokens);
                 }
 
-                var syntaxer = new SyntaxAnalyzer(new ConsoleLogger());
+                var syntaxer = new SyntaxAnalyzer(new ConsoleLogger(omitAdditionalInfo: true));
                 var program = syntaxer.Analyse(tokens, args.IsDebugMode);
 
                 if (args.IsDebugMode)

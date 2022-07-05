@@ -9,10 +9,10 @@ namespace Lang
     public class SyntaxAnalyzer
     {
         private readonly ILogger logger;
-        private TokenEnumerator tokens;
-        private Stack<string> contexts = new Stack<string>();
-        private ProgramCreator creator = new ProgramCreator();
+        private readonly ProgramCreator creator = new ProgramCreator();
 
+        private TreeView treeView;
+        private TokenEnumerator tokens;
         private bool isDebug;
 
         public SyntaxAnalyzer(ILogger logger)
@@ -31,7 +31,7 @@ namespace Lang
             this.isDebug = isDebug;
 
             creator.StartProgramCreation();
-            contexts.Clear();
+            treeView = new TreeView(logger);
 
             Expression();
 
@@ -62,8 +62,7 @@ namespace Lang
             if (isDebug)
             {
                 var t = tokens.CurrentOrLast;
-                logger.ForContext(context).Information($"Entered ({t.Line}:{t.StartPosition})");
-                contexts.Push(context);
+                treeView.AddNode(context);// + $" | {t.Value} ({t.Line}:{t.StartPosition})");
             }
         }
 
@@ -76,16 +75,13 @@ namespace Lang
         {
             if (isDebug)
             {
-                var context = contexts.Pop();
-                var logger = this.logger.ForContext(context);
-
                 if (isSuccessful)
                 {
-                    logger.Information("+");
+                    treeView.Commit();
                 }
                 else
                 {
-                    logger.Error("-");
+                    treeView.RejectLastNode();
                 }
             }
 
@@ -97,11 +93,6 @@ namespace Lang
         /// </summary>
         private void MoveNext()
         {
-            if (isDebug)
-            {
-                logger.ForContext(contexts.Peek()).Information(tokens.CurrentOrLast.ToString());
-            }
-
             tokens.MoveNext();
         }
 
