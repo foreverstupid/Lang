@@ -88,24 +88,9 @@ namespace Lang
         /// <summary>
         /// Creates an indexator.
         /// </summary>
-        public void Indexator(Token token, bool isChecking)
+        public void Indexator(Token token)
         {
-            if (isChecking)
-            {
-                NewOperation(new RpnHasIndex(token, variables));
-            }
-            else
-            {
-                NewOperation(new RpnIndexator(token));
-            }
-        }
-
-        /// <summary>
-        /// Creates an index value checking operator.
-        /// </summary>
-        public void IndexValueCheck(Token token)
-        {
-            NewOperation(new RpnHasValue(token, variables));
+            NewOperation(new RpnIndexator(token));
         }
 
         /// <summary>
@@ -180,6 +165,7 @@ namespace Lang
                 "!" => new RpnNot(token),
                 "-" => new RpnNegate(token),
                 "$" => new RpnGetValue(token, variables),
+                "?" => new RpnExists(token, variables),
                 var op => throw new RpnCreationException("Unknown unary operation: " + op)
             };
 
@@ -207,6 +193,7 @@ namespace Lang
                 ":" => new RpnCast(token),
                 "?" => new RpnCheckCast(token),
                 "->" => new RpnRightAssign(token, variables),
+                "in" => new RpnIn(token, variables),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 

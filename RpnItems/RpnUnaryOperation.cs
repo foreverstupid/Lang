@@ -13,6 +13,9 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
+        protected override int Priority => RpnOperation.UnarOperationPriority;
+
+        /// <inheritdoc/>
         protected override sealed RpnConst GetResult(Stack<RpnConst> stack)
         {
             var operand = stack.Pop();

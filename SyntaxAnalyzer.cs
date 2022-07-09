@@ -62,7 +62,7 @@ namespace Lang
             if (isDebug)
             {
                 var t = tokens.CurrentOrLast;
-                treeView.AddNode(context);// + $" | {t.Value} ({t.Line}:{t.StartPosition})");
+                treeView.AddNode(context + $" [{t.Value} ({t.Line}:{t.StartPosition})]");
             }
         }
 
@@ -190,12 +190,6 @@ namespace Lang
         {
             Enter(nameof(Tail));
 
-            if (tokens.CurrentTokenIsSeparator("?"))
-            {
-                MoveNext();
-                return Leave(Indexator(isChecking: true));
-            }
-
             if (Indexator() || Arguments())
             {
                 return Leave(Tail());
@@ -204,36 +198,15 @@ namespace Lang
             return Leave(true);
         }
 
-        private bool Indexator(bool isChecking = false)
+        private bool Indexator()
         {
             Enter(nameof(Indexator));
 
             if (tokens.CurrentTokenIsSeparator("["))
             {
-                MoveNext();
-                if (!isChecking && tokens.CurrentTokenIsSeparator("]"))
-                {
-                    MoveNext();
-                    if (!tokens.CurrentTokenIsSeparator("?"))
-                    {
-                        SetError("'?' expected in the index value checking operator");
-                    }
-
-                    creator.IndexValueCheck(tokens.CurrentOrLast);
-                    creator.OpenBracket();
-
-                    MoveNext();
-                    if (!Expression())
-                    {
-                        SetError("Expression in the index value check operator is expected");
-                    }
-
-                    creator.CloseBracket();
-                    return Leave(true);
-                }
-
-                creator.Indexator(tokens.CurrentOrLast, isChecking);
+                creator.Indexator(tokens.CurrentOrLast);
                 creator.OpenBracket();
+                MoveNext();
 
                 if (!Expression())
                 {
@@ -252,8 +225,9 @@ namespace Lang
 
             if (tokens.CurrentTokenIsSeparator("."))
             {
-                creator.Indexator(tokens.CurrentOrLast, isChecking);
+                creator.Indexator(tokens.CurrentOrLast);
                 MoveNext();
+
                 if (!tokens.CurrentTokenTypeIs(Token.Type.String))
                 {
                     SetError("Pseudo-field name identifier is expected after dot");
@@ -678,7 +652,7 @@ namespace Lang
             }
 
             var t = tokens.CurrentOrLast;
-            creator.Indexator(t, isChecking: false);
+            creator.Indexator(t);
             creator.Literal(new Token(idx.ToString(), Token.Type.Integer, t.StartPosition, t.Line));
             creator.BinaryOperation(new Token("=", Token.Type.Separator, t.StartPosition, t.Line));
             creator.OpenBracket();

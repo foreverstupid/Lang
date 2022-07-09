@@ -8,9 +8,9 @@ namespace Lang
     /// </summary>
     public class TokenEnumerator
     {
-        private static readonly string[] UnaryOperations = new[] { "-", "!", "$" };
+        private static readonly string[] UnaryOperations = new[] { "-", "!", "$", "?" };
         private static readonly string[] BinaryOperations =
-            new[] { "=", "+", "-", "/", "*", "&", "|", ">", "<", "~", "%", "->", ":", "?" };
+            new[] { "=", "+", "-", "/", "*", "&", "|", ">", "<", "~", "%", "->", ":", "?", KeyWords.In };
 
         private readonly IEnumerator<Token> tokens;
 

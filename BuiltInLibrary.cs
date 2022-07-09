@@ -87,8 +87,7 @@ namespace Lang
                             );
                         }
 
-                        using var reader = new StreamReader(path);
-                        var content = reader.ReadToEnd();
+                        var content = File.ReadAllText(path);
                         return new RpnString(content);
                     }
                 ),
@@ -97,16 +96,8 @@ namespace Lang
                     ps =>
                     {
                         var path = ps[0].GetString();
-                        if (!File.Exists(path))
-                        {
-                            throw new InterpretationException(
-                                $"File {path} doesn't exist"
-                            );
-                        }
-
-                        using var writer = new StreamWriter(path);
                         var content = ps[1].GetString();
-                        writer.Write(content);
+                        File.AppendAllText(path, content);
                         return new RpnString(content);
                     }
                 ),

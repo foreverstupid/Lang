@@ -11,9 +11,6 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
-        protected override int Priority => RpnOperation.UnarOperationPriority;
-
-        /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst operand)
             => RpnConst.Bool(!operand.GetBool());
     }

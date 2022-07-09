@@ -12,7 +12,6 @@ namespace Lang
         private readonly Stack<string> commitedNodes = new Stack<string>();
 
         private int indent = 0;
-        private int lastPrintedIndent = 0;
         private bool isLastPrintedClosing = false;
 
         public TreeView(ILogger logger)
@@ -57,13 +56,12 @@ namespace Lang
             var shift = indent == 0 ? "" : Enumerable.Repeat(Shift, indent).Aggregate((v, s) => v + s);
             var tag = closing ? $"</{node}>" : $"<{node}>";
 
-            if (lastPrintedIndent == indent && isLastPrintedClosing)
+            if (!closing && isLastPrintedClosing)
             {
                 logger.Information("");
             }
 
             logger.Information(shift + tag);
-            lastPrintedIndent = indent;
             isLastPrintedClosing = closing;
         }
 

@@ -325,11 +325,11 @@ namespace Lang
         {
             if (char.IsWhiteSpace(character))
             {
-                return new[] { OnNewToken(Token.Type.Identifier) };
+                return new[] { OnNewToken(GetTokenType()) };
             }
             else if (Separators.Contains(character))
             {
-                return OnExtraToken(Token.Type.Identifier, character);
+                return OnExtraToken(GetTokenType(), character);
             }
             else if (char.IsLetterOrDigit(character) || character == '_')
             {
@@ -341,6 +341,18 @@ namespace Lang
             }
 
             return null;
+
+            Token.Type GetTokenType()
+            {
+                if (tokenValue.Length == 2 && tokenValue.ToString() == KeyWords.In)
+                {
+                    return Token.Type.Separator;
+                }
+                else
+                {
+                    return Token.Type.Identifier;
+                }
+            }
         }
 
         private IEnumerable<Token> RightAssign(char character)

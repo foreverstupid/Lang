@@ -127,14 +127,6 @@ a = (b = (c = 3));
 
 If the variable doesn't exist then assignments create it.
 
-### Unary operations
-
-|Name|Description|
-|--|--|
-|-|Negation of number. Cannot be applied to not a number|
-|!|Logical NOT|
-|$|Returns the value of the variable. Cannot be applied to non-variable value|
-
 ### Indexator
 
 Indexator can be applied to any variable or a string value. Applying to the variable indexator returns a new variable that represents an indexed variable (that can not exist yet). Applying to a string value indexator returns a one-character string that contains the character in the string at the certain position. Note, that indexing has more priority than dereferencing, so the following code is invalid:
@@ -163,42 +155,44 @@ array.length;
 ```
 Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to include arbitrary characters.
 
-### Index checking operation: `?[]`
+### In-check operation
 
-It is used for checking whether an array contains the given index. It has a special form for pseudo-fields: `?.`. This operator returns true-like value, if the given array has the given index (or similar, the given dictionary contains the given pseudo-field). Otherwise it returns false-like value. Example of usage:
+Operation `in` checks whether a given value is contained in an array (or a dictioanry). If the right-hand operand is a string, then this operation checks whether the given string is a substring of the right operand. Examples of usage:
+```
+arr[0] = 12;
+arr.size = "small";
+
+if (43 in arr)
+    _write("arr contains 43);   # this code will not run
+
+if ("small" in arr)
+    _write("arr contains 'small' string");  # this code will run
+
+if ("s" in $arr.size)
+    _write("arr.size contains 's' substring");  # this code will run
+```
+
+### Unary operations
+
+|Name|Description|
+|--|--|
+|-|Negation of number. Cannot be applied to not a number|
+|!|Logical NOT|
+|$|Returns the value of the variable. Cannot be applied to non-variable value|
+|?|Checks, whether a given variable exists|
+
+Note, that `?` is extremely useful when you have to check, whether an array has the given index (or a dictionary has the given pseudo-field). For example:
 ```
 arr[0] = 42;
-arr.length = 1;
+arr[1] = 73;
+if (? arr[0])
+    _write("arr[0] exists");    # this code will run
 
-if (arr?[0])
-    _write("a[0] exists");      # this code will run
+if (? arr[12])
+    _write("arr[12] exists");   # this code will not run
 
-if (arr?[1])
-    _write("a[1] exists");      # this code will not run
-
-if (arr?.length)
-    _write("a has a property 'length'");    # this code will run
-
-if (arr?.size)
-    _write("a has a property 'size'");      # this code will not run
-```
-
-### Index value checking operation: `[]?`
-
-It is used for checking whether an array contains the given value. Example of usage:
-```
-a[0] = 42;
-a[1] = 11;
-a.capacity = 11;
-
-if (a []? 42)
-    _write("a contains 42");    # this code will run
-
-if (a[  ]  ? 13)                # you can place any count of spaces between parts of '[]?'
-    _write("a contains 13");    # this code will not run
-
-if (a []? 11)
-    _write("a contains 11")     # this code will run
+if (? arr.length)
+    _write("arr has a length property");    # this code will not run
 ```
 
 ### Initializer

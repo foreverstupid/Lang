@@ -2,11 +2,11 @@
 
 Here `this text style` is used for the grammar terms and literal symbols. Special symbols of the BNF are written in **this style**.
 
-`<expression>` **::=** `<group>` **|** **{** `<unar>` **}** `<operand>` **[** `<tail>` **]** **{** `<binar>` `<expression>` **}**
+`<expression>` **::=** `<group>` **|** **{** `<unar>` **}** `<operand>` `<tail>` **{** `<binar>` `<expression>` **}**
 
 `<group>` **::=** `{` `<expression>` **{** `;` `<expression>` **}** `}`
 
-`<tail>` **::=** `<indexator>` `<tail>` **|** `<args>` `<tail>` **|** `?` `<indexator>` **|** `?` `[` `]` **|**
+`<tail>` **::=** `<indexator>` `<tail>` **|** `<args>` `<tail>` **|**
 
 `<indexator>` **::=** `[` `<expression>` `]` **|** `.` `<identifier>`
 
@@ -24,9 +24,9 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<while_expression>` **::=** `as` `(` `<expression>` `)` `<expression>`
 
-`<unar>` **::=** `-` **|** `!` **|** `$`
+`<unar>` **::=** `-` **|** `!` **|** `$` **|** `?`
 
-`<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?` **|** `[]?`
+`<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?` **|** `in`
 
 `<variable>` **::=** **[** `ref` **]** `<identifier>` **[** `<initializer>` **]**
 

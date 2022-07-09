@@ -10,5 +10,6 @@ namespace Lang
         public const string While = "as";
         public const string Let = "loc";
         public const string Ref = "ref";
+        public const string In = "in";
     }
 }
