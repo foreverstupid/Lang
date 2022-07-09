@@ -1,4 +1,4 @@
-# Sample program in Lang. Lexical analyzer of mathematical expressions.
+# Sample program in Lang. "Towns" game.
 {
     # file that contains known towns
     DATA_FILE_NAME = "towns.lng.db.txt";
