@@ -20,6 +20,8 @@ namespace Lang
         public const string Rand = "_rnd";
         public const string GetFileContent = "_readFile";
         public const string WriteToFile = "_writeFile";
+        public const string DeleteFile = "_deleteFile";
+        public const string IsFileExist = "_existsFile";
         public const string Length = "_length";
         public const string New = "_alloc";
         public const string Free = "_free";
@@ -101,6 +103,28 @@ namespace Lang
                         return new RpnString(content);
                     }
                 ),
+                [DeleteFile] = new Func(
+                    1,
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        if (File.Exists(path))
+                        {
+                            File.Delete(path);
+                            return RpnConst.True;
+                        }
+
+                        return RpnConst.False;
+                    }
+                ),
+                [IsFileExist] = new Func(
+                    1,
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        return RpnConst.Bool(File.Exists(path));
+                    }
+                ),
                 [Length] = new Func(
                     1,
                     ps => new RpnInteger(ps[0].GetString().Length)
@@ -112,7 +136,7 @@ namespace Lang
                         var name = $"{DynamicVarPrefix}{counter}";
                         counter++;
                         variables.Add(name, new RpnInteger(0));
-                        return new RpnVar(name);
+                        return new RpnVar(name, variables);
                     }
                 ),
                 [Free] = new Func(

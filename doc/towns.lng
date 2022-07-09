@@ -1,0 +1,269 @@
+# Sample program in Lang. Lexical analyzer of mathematical expressions.
+{
+    # file that contains known towns
+    DATA_FILE_NAME = "towns.lng.db.txt";
+
+    # characters that a town name cannot contain
+    FORBIDDEN_CHARS = "0123456789_+=)(*&^%$#@!~\\|/?,:;'\"><";
+
+    # exit word of the program
+    EXIT_WORD = "stop";
+
+    # help value for town masking
+    NOT_TOWN = "$$$";
+
+    #=====================================================================
+    #------------------------- Helping functions -------------------------
+    #=====================================================================
+    # --------------------------------------------------------------------
+    # transforms a char to the upper case
+    # --------------------------------------------------------------------
+    toUpper = [ch] =>
+        if (($ch < "a") | ($ch > "z"))
+            $ch
+        or
+            $ch - 32;
+
+    # --------------------------------------------------------------------
+    # transforms a char to the lower case
+    # --------------------------------------------------------------------
+    toLower = [ch] =>
+        if (($ch < "A") | ($ch > "Z"))
+            $ch
+        or
+            $ch - (-32);    # a hack, because, e.g., "a" + 32 is "a32"
+
+    # --------------------------------------------------------------------
+    # formats the town name properly
+    # --------------------------------------------------------------------
+    formatTown = [town] =>
+    {
+        loc length = _length($town);
+        loc i = 0;
+
+        loc isLastSpace = 0;
+        loc result = toUpper(($town)[0]);
+
+        as ((i = $i + 1) < $length)
+        {
+            loc ch = ($town)[$i];
+            loc newCh;
+
+            if ($ch ~ " ")
+            {
+                newCh = if ($isLastSpace) "" or " ";
+                isLastSpace = 1
+            }
+            or
+            {
+                newCh = if ($isLastSpace) toUpper($ch) or toLower($ch);
+                isLastSpace = 0
+            };
+
+            result = $result + $newCh
+        };
+
+        $result
+    };
+
+    # --------------------------------------------------------------------
+    # copies array to another one
+    # --------------------------------------------------------------------
+    copyArray = [ref srcArr, ref dstArr] =>
+    {
+        loc i = -1;
+        as ((i = $i + 1) < $srcArr.length)
+        {
+            dstArr[$i] = $srcArr[$i]
+        };
+
+        dstArr.length = $srcArr.length
+    };
+
+    # --------------------------------------------------------------------
+    # initializes towns database
+    # --------------------------------------------------------------------
+    initializeTownsDb = [ref db] =>
+    {
+        # splits the given string by new lines
+        loc split = [str] =>
+        {
+            loc parts;
+            parts.length = 0;
+
+            loc length = _length($str);
+            loc i = -1;
+
+            loc part = "";
+            as ((i = $i + 1) < $length)
+            {
+                if ((($str)[$i] ~ "\n") & !($part ~ ""))
+                {
+                    parts[$parts.length] = $part;
+                    parts.length = $parts.length + 1;
+                    part = ""
+                }
+                or
+                {
+                    part = $part + ($str)[$i]
+                }
+            };
+
+            parts
+        };
+
+        if (_existsFile($DATA_FILE_NAME))
+        {
+            loc content = _readFile($DATA_FILE_NAME);
+            copyArray(split($content), db.towns);
+            copyArray(db.towns, db.sessionTowns)
+        }
+        or
+        {
+            db.towns.length = 0;
+            db.sessionTowns.length = 0
+        }
+    };
+
+    # --------------------------------------------------------------------
+    # adds a town to the town database
+    # --------------------------------------------------------------------
+    addTown = [ref knownTowns, town] =>
+    {
+        knownTowns[$knownTowns.length] = $town;
+        knownTowns.length = $knownTowns.length + 1;
+        _writeFile($DATA_FILE_NAME, $town + "\n")
+    };
+
+    # --------------------------------------------------------------------
+    # checks whether the town name is valid
+    # --------------------------------------------------------------------
+    isTownValid = [town] =>
+    {
+        loc length = _length($town);
+        loc i = -1;
+
+        loc isValid = $length > 0;
+        loc hasLetters = 0;
+
+        as (((i = $i + 1) < $length) & $isValid)
+        {
+            isValid = !(($town)[$i] in $FORBIDDEN_CHARS);
+            hasLetters = $hasLetters | !(($town)[$i] ~ " ")
+        };
+
+        $isValid & $hasLetters
+    };
+
+    # --------------------------------------------------------------------
+    # checks whether towns are chained
+    # --------------------------------------------------------------------
+    areChained = [town1, town2] =>
+    {
+        loc lastCharacter = toLower(($town1)[_length($town1) - 1]);
+        loc firstCharacter = toLower(($town2)[0]);
+        $lastCharacter ~ $firstCharacter
+    };
+
+    # --------------------------------------------------------------------
+    # finds a response to the given town
+    # --------------------------------------------------------------------
+    findResponse = [ref towns, town] =>
+    {
+        loc result = "";
+        loc i = -1;
+
+        as (((i = $i + 1) < $towns.length) & !$result)
+        {
+            if (areChained($town, $towns[$i]))
+            {
+                result = $towns[$i];
+                towns[$i] = $NOT_TOWN
+            }
+        };
+
+        $result
+    };
+
+
+
+    #=====================================================================
+    #--------------------------- Main logic ------------------------------
+    #=====================================================================
+
+    _write(
+        "\"Towns\" game. Each player tries to name the town, which name\n" +
+        "starts with the previous player's town last letter.\n");
+
+    loc db;
+    initializeTownsDb(db);
+
+    town = "";
+    response = "";
+    as (!($town ~ $EXIT_WORD))
+    {
+        _write("Your turn. Type \"{$EXIT_WORD}\" to stop the program\n-> ");
+        town = _read();
+
+        shouldAnswer = 1;
+        if (!($town ~ $EXIT_WORD))
+        {
+            if (isTownValid($town))
+            {
+                town = formatTown($town);
+
+                if ($response)  # Lang has no lazy condition evaluation, so we use nested if
+                if (!areChained($response, $town))
+                {
+                    _write(
+                        "Town \"{$town}\" doesn't start from the " +
+                        "last letter of \"{$response}\"\n");
+                    shouldAnswer = 0
+                };
+
+                if ($shouldAnswer)
+                {
+                    if ($town in db.towns)
+                    {
+                        townElement = $town in db.sessionTowns;
+                        if ($townElement)
+                        {
+                            # here we use a single $ to get a variable, that was
+                            # rturned by "in" operation to set its value to not a town
+                            $townElement = $NOT_TOWN
+                        }
+                        or
+                        {
+                            _write("Town \"{$town}\" has been already used in this round\n");
+                            shouldAnswer = 0
+                        }
+                    }
+                    or
+                    {
+                        addTown(db.towns, $town)
+                    }
+                };
+
+                if ($shouldAnswer)
+                {
+                    response = findResponse(db.sessionTowns, $town);
+                    if ($response)
+                    {
+                        _write("My answer is: {$response}\n")
+                    }
+                    or
+                    {
+                        _write("Well... I don't know. You won! Let's play again\n\n");
+                        copyArray(db.towns, db.sessionTowns)
+                    }
+                }
+            }
+            or
+            {
+                _write("\"{$town}\" is not a valid town name. Try again\n")
+            }
+        }
+    };
+
+    0
+}

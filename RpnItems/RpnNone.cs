@@ -15,15 +15,15 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override double GetFloat() =>
-            throw new InterpretationException("Cannot cast None value to bool");
+            throw new InterpretationException("Cannot cast None value to float");
 
         /// <inheritdoc/>
         public override int GetInt() =>
-            throw new InterpretationException("Cannot cast None value to bool");
+            throw new InterpretationException("Cannot cast None value to integer");
 
         /// <inheritdoc/>
         public override string GetString() =>
-            throw new InterpretationException("Cannot cast None value to bool");
+            throw new InterpretationException("Cannot cast None value to string");
 
         /// <inheritdoc/>
         public override string ToString()

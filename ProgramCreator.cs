@@ -90,7 +90,7 @@ namespace Lang
         /// </summary>
         public void Indexator(Token token)
         {
-            NewOperation(new RpnIndexator(token));
+            NewOperation(new RpnIndexator(token, variables));
         }
 
         /// <summary>
@@ -116,13 +116,13 @@ namespace Lang
                             if (ctx.IsVariableRef(token.Value))
                             {
                                 OpenBracket();
-                                AddRpn(new RpnVar(token, name));
+                                AddRpn(new RpnVar(token, name, variables));
                                 AddRpn(new RpnGetValue(token, variables));
                                 CloseBracket();
                                 return;
                             }
 
-                            AddRpn(new RpnVar(token, name));
+                            AddRpn(new RpnVar(token, name, variables));
                             return;
                         }
                     }
@@ -130,13 +130,13 @@ namespace Lang
                     if (globalRefVars.Contains(token.Value))
                     {
                         OpenBracket();
-                        AddRpn(new RpnVar(token, token.Value));
+                        AddRpn(new RpnVar(token, token.Value, variables));
                         AddRpn(new RpnGetValue(token, variables));
                         CloseBracket();
                         return;
                     }
 
-                    rpn = new RpnVar(token, token.Value);
+                    rpn = new RpnVar(token, token.Value, variables);
                 }
             }
             else
@@ -165,7 +165,6 @@ namespace Lang
                 "!" => new RpnNot(token),
                 "-" => new RpnNegate(token),
                 "$" => new RpnGetValue(token, variables),
-                "?" => new RpnExists(token, variables),
                 var op => throw new RpnCreationException("Unknown unary operation: " + op)
             };
 
@@ -253,7 +252,7 @@ namespace Lang
                 prefix = ctx.LambdaName;
             }
 
-            AddRpn(new RpnVar(token, prefix + token.Value));
+            AddRpn(new RpnVar(token, prefix + token.Value, variables));
         }
 
         /// <summary>
@@ -262,7 +261,7 @@ namespace Lang
         public void GlobalRefVariable(Token token)
         {
             globalRefVars.Add(token.Value);
-            AddRpn(new RpnVar(token, token.Value));
+            AddRpn(new RpnVar(token, token.Value, variables));
         }
 
         /// <summary>

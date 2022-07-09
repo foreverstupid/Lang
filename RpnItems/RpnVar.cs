@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Lang.RpnItems
 {
     /// <summary>
@@ -5,17 +7,20 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnVar : RpnConst
     {
+        private readonly IDictionary<string, RpnConst> variables;
         private readonly string name;
 
-        public RpnVar(string name)
+        public RpnVar(string name, IDictionary<string, RpnConst> variables)
         {
             this.name = name;
+            this.variables = variables;
         }
 
-        public RpnVar(Token token, string name)
+        public RpnVar(Token token, string name, IDictionary<string, RpnConst> variables)
             : base(token)
         {
             this.name = name;
+            this.variables = variables;
         }
 
         /// <inheritdoc/>
@@ -36,8 +41,7 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override bool GetBool() =>
-            throw new InterpretationException(
-                "The variable itself cannot be casted to bool. Use dereference first");
+            variables.ContainsKey(name);
 
         /// <inheritdoc/>
         public override string ToString()

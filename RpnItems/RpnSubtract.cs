@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace Lang.RpnItems
 {
     /// <summary>
@@ -20,11 +22,19 @@ namespace Lang.RpnItems
                 RpnConst.Type.Float => new RpnFloat(left.GetFloat() - right.GetFloat()),
                 RpnConst.Type.Integer => new RpnInteger(left.GetInt() - right.GetInt()),
                 RpnConst.Type.String =>
-                    throw new InterpretationException("Cannot apply subtraction to string"),
+                    right.ValueType == RpnConst.Type.Integer
+                    ? new RpnString(ShiftStringChars(left.GetString(), right.GetInt()))
+                    : throw new InterpretationException(
+                        "Cannot apply subtraction to string and not integer number"),
                 var type =>
                     throw new InterpretationException(
-                        $"Unexpected type of the left operand: {type}"
-                    )
+                        $"Unexpected type of the left operand: {type}")
             };
+
+        private static string ShiftStringChars(string str, int shift)
+        {
+            var result = new string(str.Select(ch => (char)(ch - shift)).ToArray());
+            return result;
+        }
     }
 }

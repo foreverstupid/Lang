@@ -20,11 +20,11 @@ The main data types (integer, float, and string) can be automatically casted to 
 
 #### Bool
 
-There isn't such a type as bool in Lang. Nevertheless, integer, float, and string could be used as bool in conditions. Thus, `0`, `0.0`, and `""` are used as **false**. All others values are used as **true**.
+There isn't such a type as bool in Lang. Nevertheless, integer, float, string could be used as bool in conditions. Thus, `0`, `0.0`, and `""` are used as **false**. All others values are used as **true**.
 
 ### Variables
 
-Variables in Lang are created on their first assignment from some values. They can change their values and types. In a sense variables are just labels for a data, to get the variable value a special dereference operation (**$**) is used. Thus, variables can be thought as pointers to a data that should be dereferenced. Variables could have another variables as their values. Variables of a functional type could be evaluated as functions.
+Variables in Lang are created on their first assignment from some values. They can change their values and types. In a sense variables are just labels for a data, to get the variable value a special dereference operation (**$**) is used. Thus, variables can be thought as pointers to a data that should be dereferenced. Variables could have another variables as their values. Variables of a functional type could be evaluated as functions. Variables also can be casted to bool-like values. Namely a variable is **true** if it exists and **false** otherwise. Using this feature you can check variable existence in runtime.
 
 ### Lambdas
 
@@ -39,13 +39,15 @@ Lang has several built-in functions that needn't be described to be used. Their 
 |_write|The single value to be write on the console of any type. If the value is variable then its name is used. If the variable is the *None* value, built-in, or a lambda then error occurs|Returns the printed value|
 |_read|No arguments|Returns the string that is an input line from the console|
 |_readKey|Bool-like value that determines should the pressed key character be displayed or not|Returns a key that was pressed by a user as a one-symboled string. Works only with keys that have a character representation|
-|_writeFile|The value to be writed into the given file and the file path. The value restriction is the same as for *_write*|The written value|
+|_writeFile|The value to be appended into the given file and the file path. The value restriction is the same as for *_write*. If file doesn't exist then this function creates it|The written value|
 |_readFile|The file path|The full content of the file as a string value|
+|_deleteFile|The file path|Deletes the given file. If the file doesn't exist then this function does nothing. Returns bool-like **true** value if file existed and bool-like **false** value otherwise|
+|_existsFile|The file path|**true** bool-like value if the file exists and **false** bool-like value otherwise|
 |_rnd|No arguments|A random float between 0.0 and 1.0|
 |_length|A string|The length of the string|
 |_alloc|No arguments|A new allocated dynamic variable (see [dynamic variables](#dynamic-variables))|
-|_free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|Bool-like TRUE value|
-|_sleep|A number (float or integer) representing delay in milliseconds|Stops the program evaluation by the given interval, always returning bool-like TRUE value|
+|_free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|Bool-like **true** value|
+|_sleep|A number (float or integer) representing delay in milliseconds|Stops the program evaluation by the given interval, always returning bool-like **true** value|
 |_exec|Program path as a string, execution command-line arguments as a string, a string variable that will be used as an output parameter for the command execution output, and a string variable that will be used as an output parameter for the command execution error output|Executes the given program with the given arguments, returning its exit-code. It also fills the last given parameters with the program's output and error output respectively|
 
 Example of `_exec` built-in function usage:
@@ -84,6 +86,14 @@ So, everything inside a string literal that is between curly brackets is interpr
 
 ## Operations
 
+### Unary operations
+
+|Name|Description|
+|--|--|
+|-|Negation of number. Cannot be applied to not a number|
+|!|Logical NOT|
+|$|Returns the value of the variable. Cannot be applied to non-variable value|
+
 ### Binary operations
 
 Note that the right operand is trying to be casted to the type of the left one, if it is possible.
@@ -95,7 +105,7 @@ All the following operations can be applied only to main data types: integers, f
 |Name|Description
 |--|--|
 |+|Adds numbers or concatenates strings|
-|-|Can be applied only to numbers, returning their subtraction|
+|-|Applying to numbers returns their subtraction. If the left operand is string and the right one is an integer, then returns a string which characters are shifted in codes by the given number (e.g., `"bb" - 33` is `"AA"`, because the code of the symbol 'A' is 65 and the code of the symbol 'b' is 98). All other operand types are not permited.|
 |*|Applying to numbers, returns their multiplication. If the left operand is string and the right one is a non-negative integer *n* then returns a string that is a concatenation of *n* copies of the given string. All other operand types are not permited.|
 |/|Can be applied only to numbers, returning their division|
 |%|Can be applied only to numbers, returning their modulo division|
@@ -155,44 +165,40 @@ array.length;
 ```
 Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to include arbitrary characters.
 
-### In-check operation
+### Operation `in`
 
-Operation `in` checks whether a given value is contained in an array (or a dictioanry). If the right-hand operand is a string, then this operation checks whether the given string is a substring of the right operand. Examples of usage:
+There is a special binary operation `in` that performs a search of the given value in the given array or a given substring in a given string.
+
+#### String case
+
+If the right operand of `in` is a string, then it checks whether this operand contains the left operand as a substring. Note, that in this case the left operand nust be a string (implicit conversion is not performed). Here is an example:
+```
+if ("ab" in "abracadabra")
+    _write("Yes!");         # this code will run
+
+if ("englishman" in "New York")
+    _write("alien");        # this code will not run
+
+if (123 in "12345")         # this code will fail in runtime
+    _write("Impossible!");
+```
+
+#### Array case
+
+If the right operand of `in` is an array (or more precisely a variable), then it tries to find an element of the array that contains the given value. In the case of success it returns the first found element with the given value. Note that thus the result of the operation is itself a variable, so you have to dereference it if you want to get its value. On the other hand, it allows you to perform the element value changing if it is necessary. If the value was not found, then `in` returns bool-like **false**. Note, that as far as a variable can be casted to bool, it is absolutely safe to use `in` operation as condition. Here is an example:
 ```
 arr[0] = 12;
 arr.size = "small";
 
-if (43 in arr)
+if (43 in arr)  # will return false
     _write("arr contains 43);   # this code will not run
 
-if ("small" in arr)
+if (12 in arr)  # here we use the result of 'in' (a variable) as true
     _write("arr contains 'small' string");  # this code will run
 
-if ("s" in $arr.size)
-    _write("arr.size contains 's' substring");  # this code will run
-```
-
-### Unary operations
-
-|Name|Description|
-|--|--|
-|-|Negation of number. Cannot be applied to not a number|
-|!|Logical NOT|
-|$|Returns the value of the variable. Cannot be applied to non-variable value|
-|?|Checks, whether a given variable exists|
-
-Note, that `?` is extremely useful when you have to check, whether an array has the given index (or a dictionary has the given pseudo-field). For example:
-```
-arr[0] = 42;
-arr[1] = 73;
-if (? arr[0])
-    _write("arr[0] exists");    # this code will run
-
-if (? arr[12])
-    _write("arr[12] exists");   # this code will not run
-
-if (? arr.length)
-    _write("arr has a length property");    # this code will not run
+("small" in arr) = "big";   # we use returning variable to set new value
+if ("big" in arr)
+    _write("now it's big"); # this code will run
 ```
 
 ### Initializer

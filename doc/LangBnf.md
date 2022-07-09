@@ -24,7 +24,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<while_expression>` **::=** `as` `(` `<expression>` `)` `<expression>`
 
-`<unar>` **::=** `-` **|** `!` **|** `$` **|** `?`
+`<unar>` **::=** `-` **|** `!` **|** `$`
 
 `<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?` **|** `in`
 

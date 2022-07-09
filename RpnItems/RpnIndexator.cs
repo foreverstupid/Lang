@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Lang.RpnItems
 {
     /// <summary>
@@ -5,9 +7,12 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnIndexator : RpnBinaryOperation
     {
-        public RpnIndexator(Token token)
+        private readonly IDictionary<string, RpnConst> variables;
+
+        public RpnIndexator(Token token, IDictionary<string, RpnConst> variables)
             : base(token)
         {
+            this.variables = variables;
         }
 
         /// <inheritdoc/>
@@ -66,7 +71,7 @@ namespace Lang.RpnItems
                 index.ValueType == RpnConst.Type.Float)
             {
                 var indexedName = GetIndexedName(array.GetString(), index);
-                return new RpnVar(indexedName);
+                return new RpnVar(indexedName, variables);
             }
 
             throw new InterpretationException(

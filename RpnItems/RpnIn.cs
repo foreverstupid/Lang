@@ -23,7 +23,7 @@ namespace Lang.RpnItems
         {
             if (complex.ValueType == RpnConst.Type.String)
             {
-                var str = item.GetString();
+                var str = complex.GetString();
                 return GetResultForString(item, str);
             }
 
@@ -58,7 +58,12 @@ namespace Lang.RpnItems
                     item.Value.HasSameValue(variable))
                 .ToArray();
 
-            return RpnConst.Bool(foundItems.Length > 0);
+            if (foundItems.Length == 0)
+            {
+                return RpnConst.False;
+            }
+
+            return new RpnVar(foundItems[0].Key, variables);
         }
     }
 }
