@@ -8,14 +8,14 @@ namespace Lang.RpnItems
     /// </summary>
     public class RpnGoto : Rpn
     {
-        protected readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels;
+        protected readonly IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> labels;
 
-        public RpnGoto(IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
+        public RpnGoto(IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> labels)
         {
             this.labels = labels;
         }
 
-        public RpnGoto(Token token, IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
+        public RpnGoto(Token token, IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> labels)
             : base(token)
         {
             this.labels = labels;
@@ -33,7 +33,7 @@ namespace Lang.RpnItems
                 throw new ArgumentException("Label expected");
             }
 
-            if (labels.TryGetValue(label.GetString(), out var command))
+            if (labels.TryGetValue(label.GetName(), out var command))
             {
                 return command;
             }

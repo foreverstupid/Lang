@@ -16,7 +16,7 @@ namespace Lang
         private const string ReturnLabelPrefix = "#return#";
 
         // help variables
-        private readonly List<string> labelsForNextRpn = new List<string>();
+        private readonly List<EntityName> labelsForNextRpn = new List<EntityName>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
         private readonly List<RpnOperation> reversedOperations = new List<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
@@ -28,9 +28,9 @@ namespace Lang
 
         // creating program information
         private LinkedList<Rpn> program;
-        private Dictionary<string, RpnConst> variables;
-        private Dictionary<string, LinkedListNode<Rpn>> labels;
-        private Dictionary<string, LinkedListNode<Rpn>> lambdas;
+        private Dictionary<EntityName, RpnConst> variables;
+        private Dictionary<EntityName, LinkedListNode<Rpn>> labels;
+        private Dictionary<EntityName, LinkedListNode<Rpn>> lambdas;
         private List<string> globalRefVars;
         private BuiltInLibrary funcLibrary;
 
@@ -40,9 +40,9 @@ namespace Lang
         public void StartProgramCreation()
         {
             program = new LinkedList<Rpn>();
-            variables = new Dictionary<string, RpnConst>();
-            labels = new Dictionary<string, LinkedListNode<Rpn>>();
-            lambdas = new Dictionary<string, LinkedListNode<Rpn>>();
+            variables = new Dictionary<EntityName, RpnConst>();
+            labels = new Dictionary<EntityName, LinkedListNode<Rpn>>();
+            lambdas = new Dictionary<EntityName, LinkedListNode<Rpn>>();
             globalRefVars = new List<string>();
             funcLibrary = new BuiltInLibrary(variables);
 
@@ -177,13 +177,13 @@ namespace Lang
                 "%" => new RpnMod(token),
                 "|" => new RpnOr(token),
                 "&" => new RpnAnd(token),
-                "~" => new RpnEqual(token),//
-                ">" => new RpnGreater(token),//
-                "<" => new RpnLess(token),//
+                "~" => new RpnEqual(token),
+                ">" => new RpnGreater(token),
+                "<" => new RpnLess(token),
                 ":" => new RpnCast(token),
-                "?" => new RpnCheckCast(token),//
+                "?" => new RpnCheckCast(token),
                 "->" => new RpnRightAssign(token, variables),
-                "in" => new RpnIn(token, variables),//
+                "in" => new RpnIn(token, variables),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 
@@ -209,7 +209,7 @@ namespace Lang
             AddRpn(new RpnGoto(labels));
 
             AddRpn(new RpnNop());
-            lambdas.Add(context.LambdaName, program.Last);
+            lambdas.Add(new EntityName(context.LambdaName), program.Last);
         }
 
         /// <summary>
@@ -392,8 +392,7 @@ namespace Lang
                 returnLabel,
                 funcLibrary.Functions,
                 lambdas,
-                variables
-            ));
+                variables));
 
             AddLabelForNextRpn(retLabelName);
             AddRpn(new RpnNop());
@@ -440,7 +439,7 @@ namespace Lang
 
         private void AddLabelForNextRpn(string labelName)
         {
-            labelsForNextRpn.Add(labelName);
+            labelsForNextRpn.Add(new EntityName(labelName));
         }
 
         private void Label(string labelName, string context = "")

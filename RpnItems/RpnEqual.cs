@@ -15,20 +15,23 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
-            => left.ValueType switch
+        {
+            if (left.ValueType == RpnConst.Type.Variable ||
+                left.ValueType == RpnConst.Type.Func ||
+                left.ValueType == RpnConst.Type.BuiltIn ||
+                left.ValueType == RpnConst.Type.Label)
+            {
+                bool equal = right.ValueType == left.ValueType && right.GetName() == left.GetName();
+                return RpnConst.Bool(equal);
+            }
+
+            return left.ValueType switch
             {
                 RpnConst.Type.Float => RpnConst.Bool(left.GetFloat() == right.GetFloat()),
                 RpnConst.Type.Integer => RpnConst.Bool(left.GetInt() == right.GetInt()),
                 RpnConst.Type.String => RpnConst.Bool(left.GetString() == right.GetString()),
-                RpnConst.Type.Func =>
-                    right.ValueType == RpnConst.Type.Func
-                    ? RpnConst.Bool(left.GetString() == right.GetString())
-                    : RpnConst.False,
-                RpnConst.Type.Variable =>
-                    right.ValueType == RpnConst.Type.Variable
-                    ? RpnConst.Bool(left.GetString() == right.GetString())
-                    : RpnConst.False,
                 _ => RpnConst.False
             };
+        }
     }
 }

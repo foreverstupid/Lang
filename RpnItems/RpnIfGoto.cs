@@ -8,9 +8,9 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnIfGoto : Rpn
     {
-        private readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels;
+        private readonly IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> labels;
 
-        public RpnIfGoto(Token token, IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
+        public RpnIfGoto(Token token, IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> labels)
             : base(token)
         {
             this.labels = labels;
@@ -29,7 +29,7 @@ namespace Lang.RpnItems
                 throw new ArgumentException("Label expected");
             }
 
-            if (labels.TryGetValue(label.GetString(), out var command))
+            if (labels.TryGetValue(label.GetName(), out var command))
             {
                 return !condition.GetBool() ? command : currentCmd.Next;
             }

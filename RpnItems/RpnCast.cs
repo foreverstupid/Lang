@@ -16,14 +16,22 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
-            => right.ValueType switch
+        {
+            if (left.ValueType != RpnConst.Type.Integer &&
+                left.ValueType != RpnConst.Type.Float &&
+                left.ValueType != RpnConst.Type.String)
+            {
+                throw new InterpretationException("Can cast only strings or numbers");
+            }
+
+            return right.ValueType switch
             {
                 RpnConst.Type.Integer => new RpnInteger(left.GetInt()),
                 RpnConst.Type.Float => new RpnFloat(left.GetFloat()),
                 RpnConst.Type.String => new RpnString(left.GetString()),
                 var type => throw new InterpretationException(
-                    $"Cannot cast to the type '{type}'"
-                )
+                    $"Cannot cast to the type '{type}'")
             };
+        }
     }
 }

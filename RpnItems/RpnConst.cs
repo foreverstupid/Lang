@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Lang.RpnItems
@@ -76,6 +77,16 @@ namespace Lang.RpnItems
         /// </summary>
         /// <remarks>Throws if the cast is not possible.</remarks>
         public abstract bool GetBool();
+
+        /// <summary>
+        /// The name of the item. It is allowed only for named constants
+        /// (e.g. variables).
+        /// </summary>
+        /// <remarks>Throws for unnamed constants.</remarks>
+        public virtual EntityName GetName()
+        {
+            throw new Exception($"Constant of type '{ValueType}' has no name");
+        }
 
         /// <summary>
         /// Converts boolean value to pseudo-bool RPN representation.

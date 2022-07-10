@@ -7,9 +7,9 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnGetValue : RpnUnaryOperation
     {
-        private readonly IReadOnlyDictionary<string, RpnConst> variables;
+        private readonly IReadOnlyDictionary<EntityName, RpnConst> variables;
 
-        public RpnGetValue(Token token, IReadOnlyDictionary<string, RpnConst> variables)
+        public RpnGetValue(Token token, IReadOnlyDictionary<EntityName, RpnConst> variables)
             : base(token)
         {
             this.variables = variables;
@@ -26,7 +26,7 @@ namespace Lang.RpnItems
                 throw new InterpretationException("Cannot get a value of a non-variable entity");
             }
 
-            if (variables.TryGetValue(operand.GetString(), out var value))
+            if (variables.TryGetValue(operand.GetName(), out var value))
             {
                 return value;
             }

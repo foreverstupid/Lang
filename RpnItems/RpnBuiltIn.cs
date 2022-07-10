@@ -5,9 +5,9 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnBuiltIn : RpnConst
     {
-        private readonly string name;
+        private readonly EntityName name;
 
-        public RpnBuiltIn(string name)
+        public RpnBuiltIn(EntityName name)
         {
             this.name = name;
         }
@@ -26,7 +26,9 @@ namespace Lang.RpnItems
                 "Built-in function realization cannot be casted to int");
 
         /// <inheritdoc/>
-        public override string GetString() => name;
+        public override string GetString() =>
+             throw new InterpretationException(
+                "Built-in function realization cannot be casted to string");
 
         /// <inheritdoc/>
         public override bool GetBool() =>
@@ -34,11 +36,14 @@ namespace Lang.RpnItems
                 "Built-in function realization cannot be casted to bool");
 
         /// <inheritdoc/>
+        public override EntityName GetName() => name;
+
+        /// <inheritdoc/>
         public override string ToString()
             => nameof(RpnBuiltIn) + ": " + name;
 
         /// <inheritdoc/>
         protected override bool HasSameValueCore(RpnConst other)
-            => other.GetString() == this.GetString();
+            => other.GetName() == this.GetName();
     }
 } 

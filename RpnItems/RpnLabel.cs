@@ -7,17 +7,17 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnLabel : RpnConst
     {
-        private readonly string name;
+        private readonly EntityName name;
 
         public RpnLabel(string name)
         {
-            this.name = name;
+            this.name = new EntityName(name);
         }
 
         public RpnLabel(Token token, string name)
             : base(token)
         {
-            this.name = name;
+            this.name = new EntityName(name);
         }
 
         /// <inheritdoc/>
@@ -32,11 +32,15 @@ namespace Lang.RpnItems
             throw new InterpretationException("Label cannot have an integer value");
 
         /// <inheritdoc/>
-        public override string GetString() => name;
+        public override string GetString() =>
+            throw new InterpretationException("Label cannot have string value");
 
         /// <inheritdoc/>
         public override bool GetBool() =>
             throw new InterpretationException("Label cannot have a bool value");
+
+        /// <inheritdoc/>
+        public override EntityName GetName() => name;
 
         /// <inheritdoc/>
         public override string ToString()
@@ -44,6 +48,6 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         protected override bool HasSameValueCore(RpnConst other)
-            => other.GetString() == this.GetString();
+            => other.GetName() == this.GetName();
     }
 }

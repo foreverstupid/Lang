@@ -8,9 +8,9 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnRightAssign : RpnBinaryOperation
     {
-        private readonly IDictionary<string, RpnConst> variables;
+        private readonly IDictionary<EntityName, RpnConst> variables;
 
-        public RpnRightAssign(Token token, IDictionary<string, RpnConst> variables)
+        public RpnRightAssign(Token token, IDictionary<EntityName, RpnConst> variables)
             : base(token)
         {
             this.variables = variables;
@@ -27,7 +27,7 @@ namespace Lang.RpnItems
                 throw new InterpretationException("Cannot assign to the non-variable value");
             }
 
-            variables[right.GetString()] = left;
+            variables[right.GetName()] = left;
             return right;
         }
     }

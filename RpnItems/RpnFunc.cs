@@ -5,11 +5,11 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnFunc : RpnConst
     {
-        private readonly string name;
+        private readonly EntityName name;
 
         public RpnFunc(string name)
         {
-            this.name = name;
+            this.name = new EntityName(name);
         }
 
         /// <inheritdoc/>
@@ -29,6 +29,10 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         public override string GetString()
+            => throw new InterpretationException("Cannot cast function to string");
+
+        /// <inheritdoc/>
+        public override EntityName GetName()
             => name;
 
         /// <inheritdoc/>
@@ -37,6 +41,6 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         protected override bool HasSameValueCore(RpnConst other)
-            => other.GetString() == this.GetString();
+            => other.GetName() == this.GetName();
     }
 }

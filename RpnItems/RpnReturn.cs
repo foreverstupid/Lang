@@ -14,7 +14,7 @@ namespace Lang.RpnItems
     /// </remark>
     public sealed class RpnReturn : RpnGoto
     {
-        public RpnReturn(IReadOnlyDictionary<string, LinkedListNode<Rpn>> labels)
+        public RpnReturn(IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> labels)
             : base(labels)
         {
         }

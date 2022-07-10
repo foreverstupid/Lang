@@ -7,9 +7,9 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnIndexator : RpnBinaryOperation
     {
-        private readonly IDictionary<string, RpnConst> variables;
+        private readonly IDictionary<EntityName, RpnConst> variables;
 
-        public RpnIndexator(Token token, IDictionary<string, RpnConst> variables)
+        public RpnIndexator(Token token, IDictionary<EntityName, RpnConst> variables)
             : base(token)
         {
             this.variables = variables;
@@ -39,13 +39,16 @@ namespace Lang.RpnItems
         /// <summary>
         /// Constructs the name of the array item by the collection name and its index.
         /// </summary>
-        public static string GetIndexedName(string arrayName, RpnConst index)
-            => GetIndexedPrefix(arrayName) + $"{index.ValueType.ToString()[0]}#{index.GetString()}";
+        public static EntityName GetIndexedName(EntityName arrayName, RpnConst index)
+        {
+            var value = GetIndexedPrefix(arrayName) + $"{index.ValueType.ToString()[0]}#{index.GetString()}";
+            return new EntityName(value);
+        }
 
         /// <summary>
         /// Constructs the prefix of the array item name.
         /// </summary>
-        public static string GetIndexedPrefix(string arrayName)
+        public static string GetIndexedPrefix(EntityName arrayName)
             => $"{arrayName}#";
 
         private RpnConst GetResultForString(string str, RpnConst index)
@@ -70,7 +73,7 @@ namespace Lang.RpnItems
                 index.ValueType == RpnConst.Type.Integer ||
                 index.ValueType == RpnConst.Type.Float)
             {
-                var indexedName = GetIndexedName(array.GetString(), index);
+                var indexedName = GetIndexedName(array.GetName(), index);
                 return new RpnVar(indexedName, variables);
             }
 

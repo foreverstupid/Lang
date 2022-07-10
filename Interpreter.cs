@@ -9,9 +9,10 @@ namespace Lang
     /// </summary>
     public class Interpreter
     {
+        private readonly Stack<RpnConst> stack = new Stack<RpnConst>();
+
         private LinkedListNode<Rpn> lastCommand;
         private LinkedListNode<Rpn> currentCommand;
-        private Stack<RpnConst> stack = new Stack<RpnConst>();
 
         /// <summary>
         /// Runs the given program.
@@ -52,7 +53,15 @@ namespace Lang
             }
             while (!(currentCommand is null) && (currentCommand != lastCommand));
 
-            return stack.Pop().GetString();
+            try
+            {
+                return stack.Pop().GetString();
+            }
+            catch (InterpretationException)
+            {
+                throw new InterpretationException(
+                    "The program result value should be a value that is allowed to cast to string");
+            }
         }
     }
 }

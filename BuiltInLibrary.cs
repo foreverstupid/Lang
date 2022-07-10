@@ -13,9 +13,9 @@ namespace Lang
     public class BuiltInLibrary
     {
         private const string DynamicVarPrefix = "#dyn#";
-        private const string LibraryObjectName = "sys";
+        private static readonly EntityName LibraryObjectName = new EntityName("sys");
 
-        public BuiltInLibrary(IDictionary<string, RpnConst> variables)
+        public BuiltInLibrary(IDictionary<EntityName, RpnConst> variables)
         {
             int dynamicVarCounter = 0;
             var funcs = new Dictionary<string[], Func>()
@@ -117,7 +117,7 @@ namespace Lang
                     {
                         var name = $"{DynamicVarPrefix}{dynamicVarCounter}";
                         dynamicVarCounter++;
-                        variables.Add(name, new RpnInteger(0));
+                        variables.Add(new EntityName(name), new RpnInteger(0));
                         return new RpnVar(name, variables);
                     }
                 ),
@@ -132,8 +132,8 @@ namespace Lang
                             );
                         }
 
-                        var name = ps[0].GetString();
-                        if (!name.StartsWith(DynamicVarPrefix))
+                        var name = ps[0].GetName();
+                        if (!name.Value.StartsWith(DynamicVarPrefix))
                         {
                             throw new InterpretationException(
                                 "Only dynamic variables can be deallocated"
@@ -188,7 +188,7 @@ namespace Lang
                                 "the execution output");
                         }
 
-                        if (!variables.ContainsKey(ps[2].GetString()))
+                        if (!variables.ContainsKey(ps[2].GetName()))
                         {
                             throw new InterpretationException("Given output variable doesn't exist");
                         }
@@ -200,7 +200,7 @@ namespace Lang
                                 "the execution output");
                         }
 
-                        if (!variables.ContainsKey(ps[3].GetString()))
+                        if (!variables.ContainsKey(ps[3].GetName()))
                         {
                             throw new InterpretationException("Given error output variable doesn't exist");
                         }
@@ -223,30 +223,36 @@ namespace Lang
                         }
                         catch (Exception e)
                         {
-                            variables[ps[3].GetString()] = new RpnString(e.Message);
+                            variables[ps[3].GetName()] = new RpnString(e.Message);
                             return new RpnInteger(e.HResult);
                         }
 
-                        variables[ps[2].GetString()] = new RpnString(process.StandardOutput.ReadToEnd());
-                        variables[ps[3].GetString()] = new RpnString(process.StandardError.ReadToEnd());
+                        variables[ps[2].GetName()] = new RpnString(process.StandardOutput.ReadToEnd());
+                        variables[ps[3].GetName()] = new RpnString(process.StandardError.ReadToEnd());
 
                         return new RpnInteger(process.ExitCode);
                     }
                 )
             };
 
-            Functions = new Dictionary<string, Func>();
+            Functions = new Dictionary<EntityName, Func>();
             foreach (var item in funcs)
             {
                 var builtInName = ToBuiltInName(item.Key);
-                Functions.Add(builtInName, item.Value);
-                variables.Add(ToVariableName(item.Key), new RpnBuiltIn(builtInName));
+
+                Functions.Add(
+                    builtInName,
+                    item.Value);
+
+                variables.Add(
+                    ToVariableName(item.Key),
+                    new RpnBuiltIn(builtInName));
             }
         }
 
-        public Dictionary<string, Func> Functions { get; }
+        public Dictionary<EntityName, Func> Functions { get; }
 
-        private static string ToVariableName(params string[] parts)
+        private static EntityName ToVariableName(params string[] parts)
         {
             var name = RpnIndexator.GetIndexedName(LibraryObjectName, new RpnString(parts[0]));
             for (int i = 1; i < parts.Length; i++)
@@ -257,8 +263,8 @@ namespace Lang
             return name;
         }
 
-        private static string ToBuiltInName(params string[] parts)
-            => string.Join(".", parts);
+        private static EntityName ToBuiltInName(params string[] parts)
+            => new EntityName(string.Join(".", parts));
 
         /// <summary>
         /// Built-in function description.

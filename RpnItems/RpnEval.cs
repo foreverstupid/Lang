@@ -9,17 +9,17 @@ namespace Lang.RpnItems
     {
         private readonly int paramCount;
         private readonly RpnLabel returnLabel;
-        private readonly IReadOnlyDictionary<string, BuiltInLibrary.Func> builtIns;
-        private readonly IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions;
-        private readonly IReadOnlyDictionary<string, RpnConst> variables;
+        private readonly IReadOnlyDictionary<EntityName, BuiltInLibrary.Func> builtIns;
+        private readonly IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> functions;
+        private readonly IReadOnlyDictionary<EntityName, RpnConst> variables;
 
         public RpnEval(
             Token token,
             int paramCount,
             RpnLabel returnLabel,
-            IReadOnlyDictionary<string, BuiltInLibrary.Func> builtIns,
-            IReadOnlyDictionary<string, LinkedListNode<Rpn>> functions,
-            IReadOnlyDictionary<string, RpnConst> variables
+            IReadOnlyDictionary<EntityName, BuiltInLibrary.Func> builtIns,
+            IReadOnlyDictionary<EntityName, LinkedListNode<Rpn>> functions,
+            IReadOnlyDictionary<EntityName, RpnConst> variables
         )
             : base(token)
         {
@@ -46,20 +46,20 @@ namespace Lang.RpnItems
             // extract variable value to make user's life simpler
             if (executingEntity.ValueType == RpnConst.Type.Variable)
             {
-                if (!variables.TryGetValue(executingEntity.GetString(), out executingEntity))
+                if (!variables.TryGetValue(executingEntity.GetName(), out executingEntity))
                 {
-                    throw new InterpretationException($"Unknown variable {executingEntity.GetString()}");
+                    throw new InterpretationException($"Unknown variable for evaluation");
                 }
             }
 
             if (executingEntity.ValueType == RpnConst.Type.BuiltIn)
             {
-                OnBuiltIn(stack, executingEntity.GetString(), parameters);
+                OnBuiltIn(stack, executingEntity.GetName(), parameters);
                 return currentCmd.Next;
             }
             else if (executingEntity.ValueType == RpnConst.Type.Func)
             {
-                if (!functions.TryGetValue(executingEntity.GetString(), out var funcStart))
+                if (!functions.TryGetValue(executingEntity.GetName(), out var funcStart))
                 {
                     throw new InterpretationException("Unknown function to evaluate");
                 }
@@ -81,7 +81,7 @@ namespace Lang.RpnItems
 
         private void OnBuiltIn(
             Stack<RpnConst> stack,
-            string builtInName,
+            EntityName builtInName,
             RpnConst[] parameters)
         {
             if (!builtIns.TryGetValue(builtInName, out var builtIn))

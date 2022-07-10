@@ -18,6 +18,8 @@ The main data types (integer, float, and string) can be automatically casted to 
 |Float|Round to integer|Cast is not needed|String representation of the number|
 |String|Parse string as integer or error|Parse string as float or error|Cast is not needed|
 
+Note, that the output value of teh whole program should be a value that can be casted to string. Otherwise the program will stop with an error.
+
 #### Bool
 
 There isn't such a type as bool in Lang. Nevertheless, integer, float, string could be used as bool in conditions. Thus, `0`, `0.0`, and `""` are used as **false**. All others values are used as **true**.

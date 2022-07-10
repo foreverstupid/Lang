@@ -7,19 +7,25 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnVar : RpnConst
     {
-        private readonly IDictionary<string, RpnConst> variables;
-        private readonly string name;
+        private readonly IDictionary<EntityName, RpnConst> variables;
+        private readonly EntityName name;
 
-        public RpnVar(string name, IDictionary<string, RpnConst> variables)
+        public RpnVar(EntityName name, IDictionary<EntityName, RpnConst> variables)
         {
             this.name = name;
             this.variables = variables;
         }
 
-        public RpnVar(Token token, string name, IDictionary<string, RpnConst> variables)
+        public RpnVar(string name, IDictionary<EntityName, RpnConst> variables)
+        {
+            this.name = new EntityName(name);
+            this.variables = variables;
+        }
+
+        public RpnVar(Token token, string name, IDictionary<EntityName, RpnConst> variables)
             : base(token)
         {
-            this.name = name;
+            this.name = new EntityName(name);
             this.variables = variables;
         }
 
@@ -37,7 +43,12 @@ namespace Lang.RpnItems
                 "Cannot direct get the variable value. Use dereference");
 
         /// <inheritdoc/>
-        public override string GetString()
+        public override string GetString() =>
+            throw new InterpretationException(
+                "Cannot direct get the variable value. Use dereference");
+
+        /// <inheritdoc/>
+        public override EntityName GetName()
             => name;
 
         /// <inheritdoc/>
@@ -50,6 +61,6 @@ namespace Lang.RpnItems
 
         /// <inheritdoc/>
         protected override bool HasSameValueCore(RpnConst other)
-            => other.GetString() == this.GetString();
+            => other.GetName() == this.GetName();
     }
 }

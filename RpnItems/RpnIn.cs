@@ -9,9 +9,9 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnIn : RpnBinaryOperation
     {
-        private readonly IDictionary<string, RpnConst> variables;
+        private readonly IDictionary<EntityName, RpnConst> variables;
 
-        public RpnIn(Token token, IDictionary<string, RpnConst> variables)
+        public RpnIn(Token token, IDictionary<EntityName, RpnConst> variables)
             : base(token)
         {
             this.variables = variables;
@@ -51,10 +51,10 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         private RpnConst GetResultForVariable(RpnConst variable, RpnConst array)
         {
-            var arrayPrefix = RpnIndexator.GetIndexedPrefix(array.GetString());
+            var arrayPrefix = RpnIndexator.GetIndexedPrefix(array.GetName());
             var foundItems = variables
                 .Where(item =>
-                    item.Key.StartsWith(arrayPrefix) &&
+                    item.Key.Value.StartsWith(arrayPrefix) &&
                     item.Value.HasSameValue(variable))
                 .ToArray();
 
