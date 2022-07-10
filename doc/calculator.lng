@@ -27,7 +27,7 @@
     parse = [str] =>
     {
         loc input = $str + " ";
-        loc len = _length($input);
+        loc len = sys.length($input);
         loc tokenCount = 0;
         loc token = "";
 
@@ -67,8 +67,8 @@
             }
         };
 
-        loc ref result = _alloc();  # allocating dynamic variable that will contain parsing info
-                                    # (we use reference variable holder to prevent additional dereferencing)
+        loc ref result = sys.alloc();   # allocating dynamic variable that will contain parsing info
+                                        # (we use reference variable holder to prevent additional dereferencing)
 
         if (!($tokenCount ~ 3))     # you can also write: $tokenCount !~ 3
         {
@@ -120,22 +120,22 @@
              "Hit Enter to exit. \n" +
              "=> ";
 
-    _write($prompt);
-    as (input = _read())
+    sys.write($prompt);
+    as (input = sys.read())
     {
         ref args = parse($input);   # using reference variable to avoid additional dereferencing
         if ($args.error)
         {
-            _write("  " + $args.error + "\n")
+            sys.write("  " + $args.error + "\n")
         }
         or
         {
             operation = $operations[$args.op];
-            _write("   = " + (operation($args.left, $args.right)) + "\n")
+            sys.write("   = " + (operation($args.left, $args.right)) + "\n")
         };
 
-        _free(args);        # deallocating dynamic variable (that is contained in "args")
-        _write($prompt)
+        sys.free(args);         # deallocating dynamic variable (that is contained in "args")
+        sys.write($prompt)
     };
 
     0    # this value will be returned as an exit value of the program

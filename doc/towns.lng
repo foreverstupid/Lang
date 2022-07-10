@@ -55,7 +55,7 @@
         loc isLastSpace = 0;
         loc result = toUpper(($town)[0]);
 
-        for (1, _length($town), [i] =>
+        for (1, sys.length($town), [i] =>
         {
             loc ch = ($town)[$i];
             loc newCh;
@@ -98,7 +98,7 @@
             parts.length = 0;
 
             loc part = "";
-            for (0, _length($str), [i] =>
+            for (0, sys.length($str), [i] =>
             {
                 if ((($str)[$i] ~ "\n") & $part !~ "")
                 {
@@ -115,9 +115,9 @@
             parts
         };
 
-        if (_existsFile($DATA_FILE_NAME))
+        if (sys.file.exists($DATA_FILE_NAME))
         {
-            loc content = _readFile($DATA_FILE_NAME);
+            loc content = sys.file.read($DATA_FILE_NAME);
             copyArray(split($content), db.towns);
             copyArray(db.towns, db.sessionTowns)
         }
@@ -135,7 +135,7 @@
     {
         knownTowns[$knownTowns.length] = $town;
         knownTowns.length = $knownTowns.length + 1;
-        _writeFile($DATA_FILE_NAME, $town + "\n")
+        sys.file.write($DATA_FILE_NAME, $town + "\n")
     };
 
     # --------------------------------------------------------------------
@@ -143,7 +143,7 @@
     # --------------------------------------------------------------------
     isTownValid = [town] =>
     {
-        loc length = _length($town);
+        loc length = sys.length($town);
         loc i = -1;
 
         loc isValid = $length > 0;
@@ -163,7 +163,7 @@
     # --------------------------------------------------------------------
     areChained = [town1, town2] =>
     {
-        loc lastCharacter = toLower(($town1)[_length($town1) - 1]);
+        loc lastCharacter = toLower(($town1)[sys.length($town1) - 1]);
         loc firstCharacter = toLower(($town2)[0]);
         $lastCharacter ~ $firstCharacter
     };
@@ -194,7 +194,7 @@
     #--------------------------- Main logic ------------------------------
     #=====================================================================
 
-    _write(
+    sys.write(
         "\"Towns\" game. Each player tries to name the town, which name\n" +
         "starts with the previous player's town last letter.\n");
 
@@ -205,8 +205,8 @@
     response = "";
     as ($town !~ $EXIT_WORD)
     {
-        _write("Your turn. Type \"{$EXIT_WORD}\" to stop the program\n-> ");
-        town = _read();
+        sys.write("Your turn. Type \"{$EXIT_WORD}\" to stop the program\n-> ");
+        town = sys.read();
 
         shouldAnswer = 1;
         if ($town !~ $EXIT_WORD)
@@ -218,7 +218,7 @@
                 if ($response)  # Lang has no lazy condition evaluation, so we use nested if
                 if (!areChained($response, $town))
                 {
-                    _write(
+                    sys.write(
                         "Town \"{$town}\" doesn't start from the " +
                         "last letter of \"{$response}\"\n");
                     shouldAnswer = 0
@@ -237,7 +237,7 @@
                         }
                         or
                         {
-                            _write("Town \"{$town}\" has been already used in this round\n");
+                            sys.write("Town \"{$town}\" has been already used in this round\n");
                             shouldAnswer = 0
                         }
                     }
@@ -252,18 +252,18 @@
                     response = findResponse(db.sessionTowns, $town);
                     if ($response)
                     {
-                        _write("My answer is: {$response}\n")
+                        sys.write("My answer is: {$response}\n")
                     }
                     or
                     {
-                        _write("Well... I don't know. You won! Let's play again\n\n");
+                        sys.write("Well... I don't know. You won! Let's play again\n\n");
                         copyArray(db.towns, db.sessionTowns)
                     }
                 }
             }
             or
             {
-                _write("\"{$town}\" is not a valid town name. Try again\n")
+                sys.write("\"{$town}\" is not a valid town name. Try again\n")
             }
         }
     };

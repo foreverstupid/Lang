@@ -13,27 +13,14 @@ namespace Lang
     public class BuiltInLibrary
     {
         private const string DynamicVarPrefix = "#dyn#";
-
-        public const string Write = "_write";
-        public const string Read = "_read";
-        public const string ReadKey = "_readKey";
-        public const string Rand = "_rnd";
-        public const string GetFileContent = "_readFile";
-        public const string WriteToFile = "_writeFile";
-        public const string DeleteFile = "_deleteFile";
-        public const string IsFileExist = "_existsFile";
-        public const string Length = "_length";
-        public const string New = "_alloc";
-        public const string Free = "_free";
-        public const string Sleep = "_sleep";
-        public const string Exec = "_exec";
+        private const string LibraryObjectName = "sys";
 
         public BuiltInLibrary(IDictionary<string, RpnConst> variables)
         {
-            int counter = 0;
+            int dynamicVarCounter = 0;
             Functions = new Dictionary<string, Func>()
             {
-                [Write] = new Func(
+                [ToIndexedName("write")] = new Func(
                     1,
                     ps =>
                     {
@@ -47,20 +34,15 @@ namespace Lang
                             throw new InterpretationException("Cannot write the None value");
                         }
 
-                        if (ps[0].ValueType == RpnConst.Type.BuiltIn)
-                        {
-                            throw new InterpretationException("Cannot write a built-in function");
-                        }
-
                         Console.Write(ps[0].GetString());
                         return ps[0];
                     }
                 ),
-                [Read] = new Func(
+                [ToIndexedName("read")] = new Func(
                     0,
                     _ => new RpnString(Console.ReadLine())
                 ),
-                [ReadKey] = new Func(
+                [ToIndexedName("readKey")] = new Func(
                     1,
                     ps =>
                     {
@@ -69,7 +51,7 @@ namespace Lang
                         return new RpnString(info.KeyChar.ToString());
                     }
                 ),
-                [Rand] = new Func(
+                [ToIndexedName("rnd")] = new Func(
                     0,
                     _ =>
                     {
@@ -77,7 +59,7 @@ namespace Lang
                         return new RpnFloat(rnd.NextDouble());
                     }
                 ),
-                [GetFileContent] = new Func(
+                [ToIndexedName("file", "read")] = new Func(
                     1,
                     ps =>
                     {
@@ -93,7 +75,7 @@ namespace Lang
                         return new RpnString(content);
                     }
                 ),
-                [WriteToFile] = new Func(
+                [ToIndexedName("file", "write")] = new Func(
                     2,
                     ps =>
                     {
@@ -103,7 +85,7 @@ namespace Lang
                         return new RpnString(content);
                     }
                 ),
-                [DeleteFile] = new Func(
+                [ToIndexedName("file", "delete")] = new Func(
                     1,
                     ps =>
                     {
@@ -117,7 +99,7 @@ namespace Lang
                         return RpnConst.False;
                     }
                 ),
-                [IsFileExist] = new Func(
+                [ToIndexedName("file", "exists")] = new Func(
                     1,
                     ps =>
                     {
@@ -125,21 +107,21 @@ namespace Lang
                         return RpnConst.Bool(File.Exists(path));
                     }
                 ),
-                [Length] = new Func(
+                [ToIndexedName("length")] = new Func(
                     1,
                     ps => new RpnInteger(ps[0].GetString().Length)
                 ),
-                [New] = new Func(
+                [ToIndexedName("alloc")] = new Func(
                     0,
                     _ =>
                     {
-                        var name = $"{DynamicVarPrefix}{counter}";
-                        counter++;
+                        var name = $"{DynamicVarPrefix}{dynamicVarCounter}";
+                        dynamicVarCounter++;
                         variables.Add(name, new RpnInteger(0));
                         return new RpnVar(name, variables);
                     }
                 ),
-                [Free] = new Func(
+                [ToIndexedName("free")] = new Func(
                     1,
                     ps =>
                     {
@@ -162,7 +144,7 @@ namespace Lang
                         return RpnConst.True;
                     }
                 ),
-                [Sleep] = new Func(
+                [ToIndexedName("sleep")] = new Func(
                     1,
                     ps =>
                     {
@@ -183,7 +165,7 @@ namespace Lang
                         return RpnConst.True;
                     }
                 ),
-                [Exec] = new Func(
+                [ToIndexedName("exec")] = new Func(
                     4,
                     ps =>
                     {
@@ -252,9 +234,25 @@ namespace Lang
                     }
                 )
             };
+
+            foreach (var key in Functions.Keys)
+            {
+                variables.Add(key, new RpnVar(key, variables));
+            }
         }
 
         public Dictionary<string, Func> Functions { get; }
+
+        private static string ToIndexedName(params string[] parts)
+        {
+            var name = RpnIndexator.GetIndexedName(LibraryObjectName, new RpnString(parts[0]));
+            for (int i = 1; i < parts.Length; i++)
+            {
+                name = RpnIndexator.GetIndexedName(name, new RpnString(parts[i]));
+            }
+
+            return name;
+        }
 
         /// <summary>
         /// Built-in function description.

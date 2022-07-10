@@ -27,7 +27,6 @@ namespace Lang.RpnItems
             String,
             Label,
             Variable,
-            BuiltIn,
             Func,
             None,
         }

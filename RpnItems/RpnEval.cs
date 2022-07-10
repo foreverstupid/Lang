@@ -42,20 +42,6 @@ namespace Lang.RpnItems
             }
 
             var func = stack.Pop();
-            if (func.ValueType == RpnConst.Type.BuiltIn)
-            {
-                if (builtIns.TryGetValue(func.GetString(), out var builtIn))
-                {
-                    OnBuiltIn(stack, builtIn);
-                    return currentCmd.Next;
-                }
-                else
-                {
-                    throw new InterpretationException(
-                        $"Unknown built-in function '{func.GetString()}'"
-                    );
-                }
-            }
 
             string funcName;
             if (func.ValueType == RpnConst.Type.Func)
@@ -78,7 +64,12 @@ namespace Lang.RpnItems
                 throw new InterpretationException("Cannot evaluate not function");
             }
 
-            if (functions.TryGetValue(funcName, out var funcStart))
+            if (builtIns.TryGetValue(funcName, out var builtIn))
+            {
+                OnBuiltIn(stack, builtIn);
+                return currentCmd.Next;
+            }
+            else if (functions.TryGetValue(funcName, out var funcStart))
             {
                 OnFunc(stack);
                 return funcStart;

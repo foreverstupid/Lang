@@ -25,8 +25,7 @@ namespace Lang.RpnItems
                 left.ValueType != RpnConst.Type.String &&
                 left.ValueType != RpnConst.Type.Float &&
                 left.ValueType != RpnConst.Type.Integer &&
-                left.ValueType != RpnConst.Type.Variable &&
-                left.ValueType != RpnConst.Type.BuiltIn)
+                left.ValueType != RpnConst.Type.Variable)
             {
                 return RpnConst.False;
             }

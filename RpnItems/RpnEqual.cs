@@ -20,10 +20,6 @@ namespace Lang.RpnItems
                 RpnConst.Type.Float => RpnConst.Bool(left.GetFloat() == right.GetFloat()),
                 RpnConst.Type.Integer => RpnConst.Bool(left.GetInt() == right.GetInt()),
                 RpnConst.Type.String => RpnConst.Bool(left.GetString() == right.GetString()),
-                RpnConst.Type.BuiltIn =>
-                    right.ValueType == RpnConst.Type.BuiltIn
-                    ? RpnConst.Bool(left.GetString() == right.GetString())
-                    : RpnConst.False,
                 RpnConst.Type.Func =>
                     right.ValueType == RpnConst.Type.Func
                     ? RpnConst.Bool(left.GetString() == right.GetString())

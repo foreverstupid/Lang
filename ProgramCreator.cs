@@ -100,42 +100,35 @@ namespace Lang
 
             if (token.TokenType == Token.Type.Identifier)
             {
-                if (funcLibrary.Functions.ContainsKey(token.Value))
+                foreach (var ctx in contextsStack.Reverse())
                 {
-                    rpn = new RpnBuiltIn(token, token.Value);
-                }
-                else
-                {
-                    foreach (var ctx in contextsStack.Reverse())
+                    if (ctx.HasLocalVariable(token.Value))
                     {
-                        if (ctx.HasLocalVariable(token.Value))
+                        var name = ctx.LambdaName + token.Value;
+                        if (ctx.IsVariableRef(token.Value))
                         {
-                            var name = ctx.LambdaName + token.Value;
-                            if (ctx.IsVariableRef(token.Value))
-                            {
-                                OpenBracket();
-                                AddRpn(new RpnVar(token, name, variables));
-                                AddRpn(new RpnGetValue(token, variables));
-                                CloseBracket();
-                                return;
-                            }
-
+                            OpenBracket();
                             AddRpn(new RpnVar(token, name, variables));
+                            AddRpn(new RpnGetValue(token, variables));
+                            CloseBracket();
                             return;
                         }
-                    }
 
-                    if (globalRefVars.Contains(token.Value))
-                    {
-                        OpenBracket();
-                        AddRpn(new RpnVar(token, token.Value, variables));
-                        AddRpn(new RpnGetValue(token, variables));
-                        CloseBracket();
+                        AddRpn(new RpnVar(token, name, variables));
                         return;
                     }
-
-                    rpn = new RpnVar(token, token.Value, variables);
                 }
+
+                if (globalRefVars.Contains(token.Value))
+                {
+                    OpenBracket();
+                    AddRpn(new RpnVar(token, token.Value, variables));
+                    AddRpn(new RpnGetValue(token, variables));
+                    CloseBracket();
+                    return;
+                }
+
+                rpn = new RpnVar(token, token.Value, variables);
             }
             else
             {
@@ -279,7 +272,7 @@ namespace Lang
         /// </summary>
         public void IfStart()
         {
-            AddRpn(new RpnNone());
+            AddRpn(RpnConst.None);
         }
 
         /// <summary>
@@ -343,7 +336,7 @@ namespace Lang
             ifIdxStack.Push(ifCount);
             var cycleStartLabelName = IfLabelPrefix + ifCount;
 
-            AddRpn(new RpnNone());
+            AddRpn(RpnConst.None);
             AddLabelForNextRpn(cycleStartLabelName);
         }
 
@@ -377,12 +370,22 @@ namespace Lang
         }
 
         /// <summary>
+        /// Starts creation of evaluation.
+        /// </summary>
+        public void EvalStart()
+        {
+            // hack to use prioritization for evaluate. TODO: make something reasonable
+            FlushOperationsWithHigherOrEqualPriority(new RpnGetValue(null, variables));
+        }
+
+        /// <summary>
         /// Adds evaluation token for the function of the certain amount of parameters.
         /// </summary>
         public void Eval(Token token, int paramCount)
         {
             string retLabelName = $"{ReturnLabelPrefix}{returnCount}";
             var returnLabel = new RpnLabel(retLabelName);
+
             AddRpn(new RpnEval(
                 token,
                 paramCount,
@@ -447,14 +450,18 @@ namespace Lang
 
         private void NewOperation(RpnOperation operation)
         {
+            FlushOperationsWithHigherOrEqualPriority(operation);
+            expressionStack.Push(operation);
+        }
+
+        private void FlushOperationsWithHigherOrEqualPriority(RpnOperation operation)
+        {
             while (expressionStack.TryPeek(out var stackOp) &&
                 !(stackOp is null) &&
                 !stackOp.HasLessPriorityThan(operation))
             {
                 AddRpn(expressionStack.Pop());
             }
-
-            expressionStack.Push(operation);
         }
 
         private void AddRpn(Rpn rpn)

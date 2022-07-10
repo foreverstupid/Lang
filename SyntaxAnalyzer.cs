@@ -267,6 +267,7 @@ namespace Lang
 
             var evalToken = tokens.CurrentOrLast;
             int paramCount = 0;
+            creator.EvalStart();
             creator.OpenBracket();
             MoveNext();
 

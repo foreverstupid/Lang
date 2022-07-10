@@ -45,13 +45,27 @@
     delete = ($allowedKeys)[7];
     swap = ($allowedKeys)[8];
 
+    # constructs reference info about colors
+    getColorsinfo = [] =>
+    {
+        loc i = -1;
+        loc info = "";
+
+        as ((i = $i + 1) < 8)
+        {
+            info = $info + $COLORS[$i] + ($i + 1)
+        };
+
+        $info + $RESET
+    };
+
     #====================================================================
     # Main algorithm
     #====================================================================
     prompt = "\n{$PURPLE}A{$GREEN}S{$BLUE}C{$CYAN}I{$YELLOW}I {$RESET}DRAWER\n" +
              "{$RED}wasd{$RESET} - move the brush, " +
              "{$RED}SPACE{$RESET} - put/take brush, " +
-             "{$RED}1..8{$RESET} - change color,\n" +
+             "{getColorsinfo()} - change color,\n" +
              "{$RED}e{$RESET} - remove back, " +
              "{$RED}r{$RESET} - remove current, " +
              "{$RED}t{$RESET} - remove forward,\n" +
@@ -66,28 +80,28 @@
 
     # action definitions
     actions {
-        [$left] = [] => if ($isPut) _write($LEFT + brush() + $LEFT) or _write($LEFT),
-        [$right] = [] => if ($isPut) _write($RIGHT + brush() + $LEFT) or _write($RIGHT),
-        [$up] = [] => if ($isPut) _write($UP + brush() + $LEFT) or _write($UP),
-        [$down] = [] => if ($isPut) _write($DOWN + brush() + $LEFT) or _write($DOWN),
-        [$mark] = [] => if (isPut = !$isPut) _write(brush() + $LEFT),
-        [$space] = [] => _write(" "),
-        [$remove] = [] => _write(" " + $LEFT),
-        [$delete] = [] => _write($LEFT + " " + $LEFT),
-        [$swap] = [] => markSymbol = _readKey(0)
+        [$left] = [] => if ($isPut) sys.write($LEFT + brush() + $LEFT) or sys.write($LEFT),
+        [$right] = [] => if ($isPut) sys.write($RIGHT + brush() + $LEFT) or sys.write($RIGHT),
+        [$up] = [] => if ($isPut) sys.write($UP + brush() + $LEFT) or sys.write($UP),
+        [$down] = [] => if ($isPut) sys.write($DOWN + brush() + $LEFT) or sys.write($DOWN),
+        [$mark] = [] => if (isPut = !$isPut) sys.write(brush() + $LEFT),
+        [$space] = [] => sys.write(" "),
+        [$remove] = [] => sys.write(" " + $LEFT),
+        [$delete] = [] => sys.write($LEFT + " " + $LEFT),
+        [$swap] = [] => markSymbol = sys.readKey(0)
     };
 
     height = 15;
-    _write($prompt);
-    _write("\n" * $height);
-    _write($UP * ($height - 1));
+    sys.write($prompt);
+    sys.write("\n" * $height);
+    sys.write($UP * ($height - 1));
 
-    as ((ch = _readKey(0)) !~ $ESC)
+    as ((ch = sys.readKey(0)) !~ $ESC)
         if ($ch in $allowedKeys)
         {
             if ($ch ? 0)
             {
-                color = $COLORS[$ch : 0]
+                color = $COLORS[($ch : 0) - 1]
             }
             or
             {
@@ -95,6 +109,6 @@
             }
         };
 
-    _write("\n" * $height);
-    _write($RESET)  # $RESET will be the exit value of the program
+    sys.write("\n" * $height);
+    sys.write($RESET)  # $RESET will be the exit value of the program
 }

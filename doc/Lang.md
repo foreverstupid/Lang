@@ -32,33 +32,7 @@ All functions in Lang are lambdas. You can give them names by assignment to some
 
 ### Buil-in functions
 
-Lang has several built-in functions that needn't be described to be used. Their behaviour is the same as the behaviour of ordinary lambdas, for example you can even assign them to a variables. Note that you cannot create a variable that has the same name as any built-in function.
-
-|Name|Arguments|Return value|
-|--|--|--|
-|_write|The single value to be write on the console of any type. If the value is variable then its name is used. If the variable is the *None* value, built-in, or a lambda then error occurs|Returns the printed value|
-|_read|No arguments|Returns the string that is an input line from the console|
-|_readKey|Bool-like value that determines should the pressed key character be displayed or not|Returns a key that was pressed by a user as a one-symboled string. Works only with keys that have a character representation|
-|_writeFile|The value to be appended into the given file and the file path. The value restriction is the same as for *_write*. If file doesn't exist then this function creates it|The written value|
-|_readFile|The file path|The full content of the file as a string value|
-|_deleteFile|The file path|Deletes the given file. If the file doesn't exist then this function does nothing. Returns bool-like **true** value if file existed and bool-like **false** value otherwise|
-|_existsFile|The file path|**true** bool-like value if the file exists and **false** bool-like value otherwise|
-|_rnd|No arguments|A random float between 0.0 and 1.0|
-|_length|A string|The length of the string|
-|_alloc|No arguments|A new allocated dynamic variable (see [dynamic variables](#dynamic-variables))|
-|_free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|Bool-like **true** value|
-|_sleep|A number (float or integer) representing delay in milliseconds|Stops the program evaluation by the given interval, always returning bool-like **true** value|
-|_exec|Program path as a string, execution command-line arguments as a string, a string variable that will be used as an output parameter for the command execution output, and a string variable that will be used as an output parameter for the command execution error output|Executes the given program with the given arguments, returning its exit-code. It also fills the last given parameters with the program's output and error output respectively|
-
-Example of `_exec` built-in function usage:
-```
-out = "";                                       # will contain the output of the execution
-err = "";                                       # will contain the error output of the execution
-args = "ls -l";
-exitCode = _exec("/bin/bash", $args, out, err); # we pass out variable as itself, not its value
-_write($out);                                   # here we use the value of the out variable
-_write($err);                                   # here we use the value of the err variable
-```
+Lang has built-in library of functions that needn't be described to be used. For example, there are console IO built-in functions `sys.read` and `sys.write`, string length getting function `sys.length` etc. All built-in functions are described [here](#built-ins-library).
 
 ### Expression
 
@@ -76,7 +50,7 @@ Lang supports string interpolation. That means that you can insert any expressio
 ```
 a = "interpolation";
 b = 2;
-_write("This is {$a}. This is {$a + $b}");
+sys.write("This is {$a}. This is {$a + $b}");
 ```
 The given code will write the following text:
 ```
@@ -139,7 +113,7 @@ If the variable doesn't exist then assignments create it.
 
 ### Indexator
 
-Indexator can be applied to any variable or a string value. Applying to the variable indexator returns a new variable that represents an indexed variable (that can not exist yet). Applying to a string value indexator returns a one-character string that contains the character in the string at the certain position. Note, that indexing has more priority than dereferencing, so the following code is invalid:
+Indexator can be applied to any variable or a string value. Applying to the variable indexator returns a new variable that represents an indexed variable (that can not exist yet). Applying to a string value indexator returns an one-character string that contains the character in the string at the certain position. Note, that indexing has more priority than dereferencing, so the following code is invalid:
 ```
 str = "abcd";
 $str[0];    # firstly we try to get "str[0]" variable (that doesn't exist) and then take its value
@@ -158,6 +132,8 @@ a["0"];
 ```
 Indexing by floats is not suggested (due to rounding error).
 
+#### Pseudo-fields
+
 The way, the Lang releases indexing, makes arrays be similar to dictionaries. Moreover, Lang supports some kind of a syntaxic sugar that is called **pseudo-fields**. A special operator **.** (dot) can be used instead of indexing by a string. For example, the following code lines are equivalent:
 ```
 array["length"];
@@ -174,13 +150,13 @@ There is a special binary operation `in` that performs a search of the given val
 If the right operand of `in` is a string, then it checks whether this operand contains the left operand as a substring. Note, that in this case the left operand nust be a string (implicit conversion is not performed). Here is an example:
 ```
 if ("ab" in "abracadabra")
-    _write("Yes!");         # this code will run
+    sys.write("Yes!");      # this code will run
 
 if ("englishman" in "New York")
-    _write("alien");        # this code will not run
+    sys.write("alien");     # this code will not run
 
-if (123 in "12345")         # this code will fail in runtime
-    _write("Impossible!");
+if (123 in "12345")         # this code will fail at runtime
+    sys.write("Impossible!");
 ```
 
 #### Array case
@@ -191,14 +167,14 @@ arr[0] = 12;
 arr.size = "small";
 
 if (43 in arr)  # will return false
-    _write("arr contains 43);   # this code will not run
+    sys.write("arr contains 43);   # this code will not run
 
 if (12 in arr)  # here we use the result of 'in' (a variable) as true
-    _write("arr contains 'small' string");  # this code will run
+    sys.write("arr contains 'small' string");  # this code will run
 
 ("small" in arr) = "big";   # we use returning variable to set new value
 if ("big" in arr)
-    _write("now it's big"); # this code will run
+    sys.write("now it's big");  # this code will run
 ```
 
 ### Bool-like operation reversing
@@ -279,6 +255,39 @@ obj.inner.inner.and.even.inner[10][0] = 1;
 obj.inner.inner.and.even.inner[1] = "world";       # second simple-array element
 ```
 
+## Built-ins library
+
+All built-in functions are pseudo-fields of predefined dictionary called `sys`. Thus, these functions behave as ordinary variables with functional value type. You can even reassign them, changing their behavior, or assign their values to another variables.
+
+|Name|Arguments|Return value|
+|--|--|--|
+|sys.write|The single value to be write on the console of any type. If the value is variable then its name is used. If the variable is the *None* value, built-in, or a lambda then error occurs|Returns the printed value|
+|sys.read|No arguments|Returns the string that is an input line from the console|
+|sys.readKey|Bool-like value that determines should the pressed key character be displayed or not|Returns a key that was pressed by a user as a one-symboled string. Works only with keys that have a character representation|
+|sys.file.write|The value to be appended into the given file and the file path. The value restriction is the same as for *sys.write*. If file doesn't exist then this function creates it|The written value|
+|sys.file.read|The file path|The full content of the file as a string value|
+|sys.file.delete|The file path|Deletes the given file. If the file doesn't exist then this function does nothing. Returns bool-like **true** value if file existed and bool-like **false** value otherwise|
+|sys.file.exists|The file path|**true** bool-like value if the file exists and **false** bool-like value otherwise|
+|sys.rnd|No arguments|A random float between 0.0 and 1.0|
+|sys.length|A string|The length of the string|
+|sys.alloc|No arguments|A new allocated dynamic variable (see [dynamic variables](#dynamic-variables))|
+|sys.free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|Bool-like **true** value|
+|sys.sleep|A number (float or integer) representing delay in milliseconds|Stops the program evaluation by the given interval, always returning bool-like **true** value|
+|sys.exec|Program path as a string, execution command-line arguments as a string, a string variable that will be used as an output parameter for the command execution output, and a string variable that will be used as an output parameter for the command execution error output|Executes the given program with the given arguments, returning its exit-code. It also fills the last given parameters with the program's output and error output respectively|
+
+Example of `sys.exec` built-in function usage:
+```
+out = "";         # will contain the output of the execution
+err = "";         # will contain the error output of the execution
+args = "ls -l";
+
+# we pass out and err variables as themselves, not their values
+exitCode = sys.exec("/bin/bash", $args, out, err);
+
+sys.write($out);     # here we use the value of the out variable
+sys.write($err);     # here we use the value of the err variable
+```
+
 ## Variable visibility
 
 By default all variables are defined in the global scope, i.e., they are visible and can be used in every lambda (doesn't matter from outer or from inner one) or expression. It can lead to collisions. So, the special keyword **loc** is introduced for preventing such problems. All variables that are defined with this keyword are visible only from the inner lambdas.
@@ -303,7 +312,7 @@ Here the variable `a` is a global one. It can be used in functions `func`, `f`, 
 ```
 {
     func = [] => loc a = "abracadabra";
-    _write($a)
+    sys.write($a)
 }
 ```
 It will raise an error because the value of the variable `a` cannot be gotten as far as it is a local variable of the function `func`, and the global variable `a` doesn't exist.
@@ -364,8 +373,8 @@ fun = [] =>
 };
 
 loc res = fun();
-_write($($res).num);        # first dereference to get a variable, then get a field, and
-_write($($res).str);        # then dereference to get a field value
+sys.write($($res).num);     # first dereference to get a variable, then get a field, and
+sys.write($($res).str);     # then dereference to get a field value
 ```
 ```
 # Second version
@@ -378,8 +387,8 @@ fun = [] =>
 };
 
 loc ref res = fun();        # declare reference variable
-_write($res.num);           # no additional dereferencing anymore
-_write($res.str);
+sys.write($res.num);        # no additional dereferencing anymore
+sys.write($res.str);
 
 ```
 
@@ -393,7 +402,7 @@ split = [str] =>
 
     loc wordCount = 0;
     loc word = "";
-    loc len = _length($str);
+    loc len = sys.length($str);
 
     loc handleWord = [] =>
         if ($word)
@@ -443,23 +452,23 @@ compareByWords = [line1, line2] =>
 ```
 So, the above function is supposed to return `1` if lines are word-wise equivalent and `0` otherwise. But in fact the function will always return `1`. The problem is that in Lang all usual variables are _static_. It means that once they are created they are binded to some lambda (or global) context and live forever. Thus, when `split` is firstly invoked it creates local `result` variable. Then this variable is filled with the parsing information and returned to the outer code. But when `split` is called the second time, it fills the same static variable `result` with a new information. So, inside `compareByWords` variables `res1` and `res2` label the same portion of information (namely the variable `result` of the function `split`). That's why by comparision these variables will always contain the information about the second line.
 
-To avoid such a collision there exist _dynamic_ variables. Such variables are created via the special built-in fucntion `_alloc`. It has no input parameters and returns a dynamic variable that by default has an integer value `0`. An example of usage:
+To avoid such a collision there exist _dynamic_ variables. Such variables are created via the special built-in fucntion `sys.alloc`. It has no input parameters and returns a dynamic variable that by default has an integer value `0`. An example of usage:
 ```
-ref var = _alloc();
+ref var = sys.alloc();
 var = 2;
-_write($var);
+sys.write($var);
 ```
 Reference variables allow you to omit an additional dereferencing when using dynamic variable that they are labeled. So, this is a suggested way of dynamic variables usage, but you can also use them like this:
 ```
-var = _alloc();
+var = sys.alloc();
 $var = 2;           # the value of "var" is a dynamic variable itself
-_write($$var);      # the 1-st $ gets the variable and the 2-nd $ gets its value
+sys.write($$var);   # the 1-st $ gets the variable and the 2-nd $ gets its value
 ```
 
-As dynamic variables are created in runtime their count is potentially infinite. To prevent memory loss you should deallocate dynamic variables once they are not using anymore. For this purpose there exists another built-in function `_free`. It takes a dynamic variable as an input parameter, returning `None`. Note, that usage of the deallocated dynamic variable leads to an error:
+As dynamic variables are created in runtime their count is potentially infinite. To prevent memory loss you should deallocate dynamic variables once they are not using anymore. For this purpose there exists another built-in function `sys.free`. It takes a dynamic variable as an input parameter, returning `None`. Note, that usage of the deallocated dynamic variable leads to an error:
 ```
-ref var = _alloc();
-_free(var);
+ref var = sys.alloc();
+sys.free(var);
 var = 2;        # RUNTIME ERROR
 ```
 Perfectly, all created dynamic variables should be deallocated by the end of the program. But it's at your discretion.
@@ -469,11 +478,10 @@ Perfectly, all created dynamic variables should be deallocated by the end of the
 1. Lang has one-line comments only. Every comment starts with the *#* character and ends when the line ends.
 2. The `None` value that is the result of non-performed actions (e.g. the cycle that hasn't done any iterations) cannot be used in any expressions. So, expressions that use if-only-expressions or cycles as operands are not suggested to be use.
 3. Semicolon can be thought as value ignoring unary postfix operation, that just flushes its operand from the stack.
-4. You can cast any named entity to a string. In that case you will get a string containig the name of the entity. E.g.
+4. You can cast a variable to a string. In that case you will get a string containig the name of the variable. E.g.
    ```
    a = 12;
-   aName = a : "";           # aName variable has a value "a"
-   funcName = _write : "";   # funcName variable has a value "_write"
+   aName = a : "";      # aName variable has a value "a"
    ```
 5. Be careful with recursion. Lang supports it, but as far as all usual variables are static, you should use tail recursion only. E.g. the following factorial realisation is incorrect:
    ```
