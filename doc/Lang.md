@@ -69,7 +69,13 @@ Expression is the main concept of Lang. It is a set of operations over data that
     <lambda or variable>(<expression1>, <expression2>, ...)
     ```
 
-#### String interpolation
+### String literals
+
+String literals are collection of characters between quotes. They can contain the following escape characters:
+- `\n` - new line
+- `\t` - tabulation
+- `\x` - interpretating the following two-digit hexadecimal number as the code of a character (e.g. `"\x1b"` is a string containing ESC symbol).
+Back slash also allows to insert any symbol into the string. E.g. to insert quotes without breaking the literal you can use `\"`. To insert backslash itself you have to double it.
 
 Lang supports string interpolation. That means that you can insert any expression into the string via a specail syntaxis, substituting a string representation of teh expression result into corresponding string literal part. Interpolating expression should be betwee curly brackets. For example,
 ```
@@ -82,6 +88,61 @@ The given code will write the following text:
 This is interpolation. This is interpolation2.
 ```
 So, everything inside a string literal that is between curly brackets is interpreted as an expression whose value string representation should be substituted.
+
+### Raw strings
+
+It is very useful to be able put into a string all characters as themselves without escaping special symbols like `"` etc. Moreover, sometimes characters `{}` that delimit interpolation inside a string are parts of the literal itself, so you have to escape them every time (e.g., when you construct JSON). And lastly often you want to format indenting of the multiline string literal in terms of your code, but that leads to a vast ammount of extra spaces in the literal itself. For example, in the following code
+```
+{
+    if ($condition)
+    {
+        str = "
+            [
+                1, 2, 3
+            ]";
+    }
+}
+```
+you want to see, that the value of `str` is
+```
+[
+    1, 2, 3
+]
+```
+but you also don't want to shift its definition to the beginning of the left side of the screen. For solving all these issues Lang uses *raw strings*.
+
+Such string literals start and end with a symbol \` (backtick). The first two characters of such a string are called *raw string preambula*. The first one defines the interpolation start delimiter, the second one defines the interpolation end delimiter. Note, that preambula cannot contain symbols \` and # (backtick and hash). All symbols inside a raw string are used as themselves, except the notation `\x00` for hexadecimal characters codes and combination \\\` for inserting backtick itself as a character. Moreover, Lang analyses the beginning position of the raw string and cuts all extra spaces on the following lines precending this position. Note that this behavior only works for spaces, if a line contains any other character, then space dropping is halted for this line (but not for any other ones). Here is an example of raw string usage:
+```
+{
+    age = 42;
+    name = "John";
+
+    json =
+    # use brackets as interpolation delimiters
+    `()
+    {
+        "age": ($age),
+        "name": "($name)",
+        "id": "($name + $age)"
+    }`;
+    _write($json)
+}
+```
+The code above will print exactly:
+```
+{
+    "age": 42,
+    "name": "John",
+    "id": "John42"
+}
+```
+Note that symbols in preambula can coinside, but cannot be omitted:
+```
+var = 42;
+str = `**var has value *$var*`;         # you can use same symbols
+notChanged = `{}var has value {$var}`;  # you can use curly brackets if you want
+invalid = `var has vlaue {$var}`;       # but cannot omit preambula or its part
+```
 
 ## Operations
 
@@ -521,8 +582,3 @@ Perfectly, all created dynamic variables should be deallocated by the end of the
            # "factorial" changes it, so everything is correct
            $n * factorial($n - 1);
    ```
-6. String literals can contain the following escape characters:
-   - `\n` - new line
-   - `\t` - tabulation
-   - `\x` - interpretating the following two-digit hexadecimal number as the code of a character (e.g. `"\x1b"` is a string containing ESC symbol)
-   Back slash also allows to insert any symbol into the string. E.g. to insert open curly bracket without starting interpolation you can use `\{`.

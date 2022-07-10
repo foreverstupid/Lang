@@ -11,6 +11,10 @@ namespace Lang
     /// </summary>
     public sealed class LexicalParser
     {
+        private const char StandardInterpolationStart = '{';
+        private const char StandardInterpolationEnd = '}';
+        private const char StandardStringEnd = '\"';
+
         private static readonly string Separators = ";,=$.+-*/%><!|&~()[]{}:?";
         private readonly Dictionary<State, Func<char, IEnumerable<Token>>> stateHandlers;
 
@@ -23,6 +27,15 @@ namespace Lang
         private string hexSymbol = "";
         private bool isInterpolation = false;
 
+        private char stringEnd = StandardStringEnd;
+        private char interpolationStart = StandardInterpolationStart;
+        private char interpolationEnd = StandardInterpolationEnd;
+
+        private bool isRawString = false;
+        private int rawStringShift = 0;
+        private int skippedSpaces = 0;
+        private bool interpolationStartSet = false;
+
         public LexicalParser()
         {
             // every handler returns the new token if it was constructed, or null otherwise
@@ -33,6 +46,8 @@ namespace Lang
                 [State.Float] = Float,
                 [State.Identifier] = Identifier,
                 [State.String] = String,
+                [State.RawStringPreambula] = RawStringPreambula,
+                [State.SkipRawShift] = SkipRawShift,
                 [State.Slash] = Slash,
                 [State.HexSymbol] = HexSymbol,
                 [State.Comment] = Comment,
@@ -51,6 +66,8 @@ namespace Lang
             Integer,
             Float,
             String,
+            RawStringPreambula,
+            SkipRawShift,
             Slash,
             HexSymbol,
             Comment,
@@ -66,6 +83,19 @@ namespace Lang
         /// <param name="src">The program source code.</param>
         /// <returns>The tokens that was generated from the given source code.</returns>
         public IEnumerable<Token> Parse(string src)
+        {
+            try
+            {
+                return ParseCore(src);
+            }
+            catch (Exception e)
+            {
+                throw new LexicalAnalysisException(
+                    $"({currentLine}:{currentPosition}) {e.Message}");
+            }
+        }
+
+        public IEnumerable<Token> ParseCore(string src)
         {
             // helps in cases when the source code ends with a separator
             src += " ";
@@ -123,6 +153,13 @@ namespace Lang
             {
                 state = State.String;
             }
+            else if (character == '`')
+            {
+                state = State.RawStringPreambula;
+                rawStringShift = currentPosition;
+                stringEnd = '`';
+                isRawString = true;
+            }
             else if (char.IsLetter(character) || character == '_')
             {
                 state = State.Identifier;
@@ -149,7 +186,7 @@ namespace Lang
                 state = State.Field;
                 return new[] { token };
             }
-            else if (character == '}' && isInterpolation)
+            else if (character == interpolationEnd && isInterpolation)
             {
                 isInterpolation = false;
                 state = State.String;
@@ -232,15 +269,31 @@ namespace Lang
 
         private IEnumerable<Token> String(char character)
         {
+            if (isRawString && character == '\n')
+            {
+                state = State.SkipRawShift;
+                skippedSpaces = 0;
+                tokenValue.Append(character);
+                return null;
+            }
+
             if (character == '\\')
             {
                 state = State.Slash;
             }
-            else if (character == '\"')
+            else if (character == stringEnd)
             {
+                if (isRawString)
+                {
+                    isRawString = false;
+                    interpolationStart = StandardInterpolationStart;
+                    interpolationEnd = StandardInterpolationEnd;
+                    stringEnd = StandardStringEnd;
+                }
+
                 return new[] { OnNewToken(Token.Type.String) };
             }
-            else if (character == '{')
+            else if (character == interpolationStart)
             {
                 isInterpolation = true;
                 state = State.None;
@@ -259,8 +312,65 @@ namespace Lang
             return null;
         }
 
+        private IEnumerable<Token> RawStringPreambula(char character)
+        {
+            if (character == '`' || character == '#')
+            {
+                throw new ArgumentException(
+                    "Characters ` and # cannot be used as interpolation delimiters");
+            }
+
+            if (interpolationStartSet)
+            {
+                interpolationStartSet = false;
+                interpolationEnd = character;
+                state = State.String;
+            }
+            else
+            {
+                interpolationStart = character;
+                interpolationStartSet = true;
+            }
+
+            return null;
+        }
+
+        private IEnumerable<Token> SkipRawShift(char character)
+        {
+            if (character != ' ' || skippedSpaces >= rawStringShift)
+            {
+                state = State.String;
+                return String(character);
+            }
+
+            skippedSpaces++;
+            return null;
+        }
+
         private IEnumerable<Token> Slash(char character)
         {
+            if (character == 'x')
+            {
+                state = State.HexSymbol;
+                return null;
+            }
+
+            state = State.String;
+
+            if (isRawString)
+            {
+                if (character == '`')
+                {
+                    tokenValue.Append(character);
+                    return null;
+                }
+                else
+                {
+                    tokenValue.Append('\\');    // push missed raw slash
+                    return String(character);
+                }
+            }
+
             if (character == 'n')
             {
                 tokenValue.Append('\n');
@@ -269,17 +379,11 @@ namespace Lang
             {
                 tokenValue.Append('\t');
             }
-            else if (character == 'x')
-            {
-                state = State.HexSymbol;
-                return null;
-            }
             else
             {
                 tokenValue.Append(character);
             }
 
-            state = State.String;
             return null;
         }
 

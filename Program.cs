@@ -46,6 +46,10 @@ namespace Lang
                     "Program finished with exit value: " + exitValue
                 );
             }
+            catch (LexicalAnalysisException le)
+            {
+                Console.WriteLine(le.Message);
+            }
             catch (SyntaxException se)
             {
                 Console.WriteLine(se.Message);
