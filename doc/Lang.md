@@ -28,7 +28,7 @@ Variables in Lang are created on their first assignment from some values. They c
 
 ### Lambdas
 
-All functions in Lang are lambdas. You can give them names by assignment to some variable. Lambda return value is the value of its body expression. Any lambda takes values (maybe none of them) as its input parameters. As far as variable itself can be a value, you can pass a variable without dereferencing, that is similar to passing arguments by the reference in C++. Lambda parameters and local variables hide any outer variables of the same name in the outer scope.
+All functions in Lang are lambdas. You can give them names by assignment to some variable. Lambda return value is the value of its body expression. Any lambda takes values (maybe none of them) as its input parameters. As far as variable itself can be a value, you can pass a variable without dereferencing, that is similar to passing arguments by the reference in C++. Lambda parameters hide any outer variables of the same name in the outer scope (see more in the [variable visibility](#variable-visibility) section).
 
 ### Buil-in functions
 
@@ -40,9 +40,32 @@ Expression is the main concept of Lang. It is a set of operations over data that
 
 1. **Usual expression**: operands linked by binary and unary operations (e.g. arithmetic operations, assignment, etc.)
 2. **Expression group**: several expressions grouped together. The value of such an expression is the value of the last expression of the group.
+    ```
+    {
+        <expression1>;
+        <expression2>;
+        ...
+    }
+    ```
 3. **Lambda**: expression that can be evaluated only after substitution certain values as parameters.
+    ```
+    [<p1>, <p2>, ... ] => <expression depending on <p1>,<p2>,...>
+    ```
 4. **If-expression**: expression that evaluates or not according to some condition. Can have else-part (*if-else-expression*) that is evaluated if the condition is false. If has only if-part (*if-only-expression*) and the condition is false, then returns the special `None` value that cannot be used in any operation.
+    ```
+    if (<condition>)
+        <if expression>
+    or
+        <else expression>
+    ```
 5. **Cycle-expression**: expression that evaluates several times while some condition is true. Its value is a value of its last iteration. If none iteration is performed, returns the special `None` value that cannot be used in any operation.
+    ```
+    as (<condition>) <expression>
+    ```
+6. **Evaluation**: the process of evaluating lambda or lambda-valued variable. It takes given expressions and substitutes them as the lambda parameters. Note, that you don't have to (but if you want, you can) use dereferencing to evaluate lambda that is a value of the variable.
+    ```
+    <lambda or variable>(<expression1>, <expression2>, ...)
+    ```
 
 #### String interpolation
 
@@ -478,12 +501,7 @@ Perfectly, all created dynamic variables should be deallocated by the end of the
 1. Lang has one-line comments only. Every comment starts with the *#* character and ends when the line ends.
 2. The `None` value that is the result of non-performed actions (e.g. the cycle that hasn't done any iterations) cannot be used in any expressions. So, expressions that use if-only-expressions or cycles as operands are not suggested to be use.
 3. Semicolon can be thought as value ignoring unary postfix operation, that just flushes its operand from the stack.
-4. You can cast a variable to a string. In that case you will get a string containig the name of the variable. E.g.
-   ```
-   a = 12;
-   aName = a : "";      # aName variable has a value "a"
-   ```
-5. Be careful with recursion. Lang supports it, but as far as all usual variables are static, you should use tail recursion only. E.g. the following factorial realisation is incorrect:
+4. Be careful with recursion. Lang supports it, but as far as all usual variables are static, you should use tail recursion only. E.g. the following factorial realisation is incorrect:
    ```
    factorial = [n] =>
        if ($n < 3)

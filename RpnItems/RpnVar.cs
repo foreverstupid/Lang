@@ -37,11 +37,12 @@ namespace Lang.RpnItems
                 "Cannot direct get the variable value. Use dereference");
 
         /// <inheritdoc/>
-        public override string GetString() => name;
+        public override string GetString()
+            => name;
 
         /// <inheritdoc/>
-        public override bool GetBool() =>
-            variables.ContainsKey(name);
+        public override bool GetBool()
+            => variables.ContainsKey(name);
 
         /// <inheritdoc/>
         public override string ToString()

@@ -41,68 +41,65 @@ namespace Lang.RpnItems
                 parameters[i] = stack.Pop();
             }
 
-            var func = stack.Pop();
+            var executingEntity = stack.Pop();
 
-            string funcName;
-            if (func.ValueType == RpnConst.Type.Func)
+            // extract variable value to make user's life simpler
+            if (executingEntity.ValueType == RpnConst.Type.Variable)
             {
-                funcName = func.GetString();
-            }
-            else if (func.ValueType == RpnConst.Type.Variable)
-            {
-                if (variables.TryGetValue(func.GetString(), out var value))
+                if (!variables.TryGetValue(executingEntity.GetString(), out executingEntity))
                 {
-                    funcName = value.GetString();
-                }
-                else
-                {
-                    throw new InterpretationException($"Unknown variable {func.GetString()}");
+                    throw new InterpretationException($"Unknown variable {executingEntity.GetString()}");
                 }
             }
-            else
-            {
-                throw new InterpretationException("Cannot evaluate not function");
-            }
 
-            if (builtIns.TryGetValue(funcName, out var builtIn))
+            if (executingEntity.ValueType == RpnConst.Type.BuiltIn)
             {
-                OnBuiltIn(stack, builtIn);
+                OnBuiltIn(stack, executingEntity.GetString(), parameters);
                 return currentCmd.Next;
             }
-            else if (functions.TryGetValue(funcName, out var funcStart))
+            else if (executingEntity.ValueType == RpnConst.Type.Func)
             {
-                OnFunc(stack);
-                return funcStart;
-            }
-            else
-            {
-                throw new InterpretationException(
-                    "Unknown function"
-                );
-            }
-
-            void OnBuiltIn(Stack<RpnConst> stack, BuiltInLibrary.Func builtIn)
-            {
-                if (paramCount != builtIn.ParamCount)
+                if (!functions.TryGetValue(executingEntity.GetString(), out var funcStart))
                 {
-                    throw new InterpretationException(
-                        $"Buil-in fucntion '{func.GetString()}' should have " +
-                        $"{builtIn.ParamCount} parameters"
-                    );
+                    throw new InterpretationException("Unknown function to evaluate");
                 }
 
-                var result = builtIn.Main(parameters);
-                stack.Push(result);
-            }
-
-            void OnFunc(Stack<RpnConst> stack)
-            {
                 stack.Push(returnLabel);
                 for (int i = parameters.Length - 1; i >= 0; i--)
                 {
                     stack.Push(parameters[i]);
                 }
+
+                return funcStart;
             }
+            else
+            {
+                throw new InterpretationException(
+                    "Only functions can be evaluated");
+            }
+        }
+
+        private void OnBuiltIn(
+            Stack<RpnConst> stack,
+            string builtInName,
+            RpnConst[] parameters)
+        {
+            if (!builtIns.TryGetValue(builtInName, out var builtIn))
+            {
+                // this shouldn't happen, but who knows...
+                throw new InterpretationException(
+                    $"Unknown built-in function {builtInName}");
+            }
+
+            if (paramCount != builtIn.ParamCount)
+            {
+                throw new InterpretationException(
+                    $"Buil-in fucntion '{builtInName}' should have " +
+                    $"{builtIn.ParamCount} parameters");
+            }
+
+            var result = builtIn.Main(parameters);
+            stack.Push(result);
         }
     }
 }

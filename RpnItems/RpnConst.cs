@@ -27,6 +27,7 @@ namespace Lang.RpnItems
             String,
             Label,
             Variable,
+            BuiltIn,
             Func,
             None,
         }
@@ -71,7 +72,7 @@ namespace Lang.RpnItems
         public abstract string GetString();
 
         /// <summary>
-        /// The value of the item a bool.
+        /// The value of the item as bool.
         /// </summary>
         /// <remarks>Throws if the cast is not possible.</remarks>
         public abstract bool GetBool();
