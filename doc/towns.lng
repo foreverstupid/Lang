@@ -16,6 +16,20 @@
     #------------------------- Helping functions -------------------------
     #=====================================================================
     # --------------------------------------------------------------------
+    # imitates for-cycle, takes a lambda with an integer parameter as
+    # "body" argument
+    # --------------------------------------------------------------------
+    for = [start, endExclusive, body] =>
+    {
+        loc i = $start;
+        as ($i < $endExclusive)
+        {
+            body($i);
+            i = $i + 1
+        }
+    };
+
+    # --------------------------------------------------------------------
     # transforms a char to the upper case
     # --------------------------------------------------------------------
     toUpper = [ch] =>
@@ -38,13 +52,10 @@
     # --------------------------------------------------------------------
     formatTown = [town] =>
     {
-        loc length = _length($town);
-        loc i = 0;
-
         loc isLastSpace = 0;
         loc result = toUpper(($town)[0]);
 
-        as ((i = $i + 1) < $length)
+        for (1, _length($town), [i] =>
         {
             loc ch = ($town)[$i];
             loc newCh;
@@ -61,7 +72,7 @@
             };
 
             result = $result + $newCh
-        };
+        });
 
         $result
     };
@@ -71,12 +82,7 @@
     # --------------------------------------------------------------------
     copyArray = [ref srcArr, ref dstArr] =>
     {
-        loc i = -1;
-        as ((i = $i + 1) < $srcArr.length)
-        {
-            dstArr[$i] = $srcArr[$i]
-        };
-
+        for(0, $srcArr.length, [i] => dstArr[$i] = $srcArr[$i]);
         dstArr.length = $srcArr.length
     };
 
@@ -91,13 +97,10 @@
             loc parts;
             parts.length = 0;
 
-            loc length = _length($str);
-            loc i = -1;
-
             loc part = "";
-            as ((i = $i + 1) < $length)
+            for (0, _length($str), [i] =>
             {
-                if ((($str)[$i] ~ "\n") & !($part ~ ""))
+                if ((($str)[$i] ~ "\n") & $part !~ "")
                 {
                     parts[$parts.length] = $part;
                     parts.length = $parts.length + 1;
@@ -107,7 +110,7 @@
                 {
                     part = $part + ($str)[$i]
                 }
-            };
+            });
 
             parts
         };
@@ -149,7 +152,7 @@
         as (((i = $i + 1) < $length) & $isValid)
         {
             isValid = !(($town)[$i] in $FORBIDDEN_CHARS);
-            hasLetters = $hasLetters | !(($town)[$i] ~ " ")
+            hasLetters = $hasLetters | ($town)[$i] !~ " "
         };
 
         $isValid & $hasLetters
@@ -200,13 +203,13 @@
 
     town = "";
     response = "";
-    as (!($town ~ $EXIT_WORD))
+    as ($town !~ $EXIT_WORD)
     {
         _write("Your turn. Type \"{$EXIT_WORD}\" to stop the program\n-> ");
         town = _read();
 
         shouldAnswer = 1;
-        if (!($town ~ $EXIT_WORD))
+        if ($town !~ $EXIT_WORD)
         {
             if (isTownValid($town))
             {

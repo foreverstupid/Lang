@@ -201,6 +201,20 @@ if ("big" in arr)
     _write("now it's big"); # this code will run
 ```
 
+### Bool-like operation reversing
+
+In many cases you want to reverse bool-like result of a binary operation. For example, if you want to check, that a string is not empty, you will write something like this: `if (!($str ~ "")) ...`. But as you can see it leads to usage of extra pair of brackets. That is not convenient. So, Lang has a syntax sugar for this case. You can put `!` operation right before bool-like returning binary operation to reverse its result. E.g.:
+```
+if ($str !~ "")         # string is not empty
+    ...
+if ($number !< 12)      # number is not less than 12
+    ...
+if ($token !? 0)        # token cannot be casted to integer
+    ...
+if (42 !in array)       # array doesn't contain 42
+    ...
+```
+
 ### Initializer
 
 Quite often you want to set multiple pseudo-fields of the same variable or initialize an array with the given collection of elements. Then you have to write something like this:

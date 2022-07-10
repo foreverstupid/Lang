@@ -18,6 +18,7 @@ namespace Lang
         // help variables
         private readonly List<string> labelsForNextRpn = new List<string>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
+        private readonly List<RpnOperation> reversedOperations = new List<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
         private readonly Stack<LambdaContext> contextsStack = new Stack<LambdaContext>();
 
@@ -47,10 +48,13 @@ namespace Lang
 
             labelsForNextRpn.Clear();
             expressionStack.Clear();
+            reversedOperations.Clear();
             ifIdxStack.Clear();
             contextsStack.Clear();
 
             ifCount = lambdaCount = returnCount = 0;
+
+            OpenBracket();
         }
 
         /// <summary>
@@ -59,13 +63,7 @@ namespace Lang
         /// <returns>The program RPN representation.</returns>
         public LinkedList<Rpn> FinishProgramCreation()
         {
-            if (expressionStack.Count > 0)
-            {
-                throw new RpnCreationException(
-                    "Invalid expression, expression stack is not empty. Stack:\n    " +
-                    string.Join("\n    ", expressionStack.Select(rpn => rpn?.ToString() ?? "OB"))
-                );
-            }
+            CloseBracket();
 
             if (contextsStack.Count > 0)
             {
@@ -174,7 +172,7 @@ namespace Lang
         /// <summary>
         /// Adds a new binary operation.
         /// </summary>
-        public void BinaryOperation(Token token)
+        public void BinaryOperation(Token token, bool isReversed = false)
         {
             RpnOperation rpn = token.Value switch
             {
@@ -186,17 +184,21 @@ namespace Lang
                 "%" => new RpnMod(token),
                 "|" => new RpnOr(token),
                 "&" => new RpnAnd(token),
-                "~" => new RpnEqual(token),
-                ">" => new RpnGreater(token),
-                "<" => new RpnLess(token),
+                "~" => new RpnEqual(token),//
+                ">" => new RpnGreater(token),//
+                "<" => new RpnLess(token),//
                 ":" => new RpnCast(token),
-                "?" => new RpnCheckCast(token),
+                "?" => new RpnCheckCast(token),//
                 "->" => new RpnRightAssign(token, variables),
-                "in" => new RpnIn(token, variables),
+                "in" => new RpnIn(token, variables),//
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 
             NewOperation(rpn);
+            if (isReversed)
+            {
+                reversedOperations.Add(rpn);
+            }
         }
 
         /// <summary>
@@ -447,7 +449,7 @@ namespace Lang
         {
             while (expressionStack.TryPeek(out var stackOp) &&
                 !(stackOp is null) &&
-                !(stackOp.HasLessPriorityThan(operation)))
+                !stackOp.HasLessPriorityThan(operation))
             {
                 AddRpn(expressionStack.Pop());
             }
@@ -458,6 +460,11 @@ namespace Lang
         private void AddRpn(Rpn rpn)
         {
             program.AddLast(new LinkedListNode<Rpn>(rpn));
+            if (rpn is RpnOperation rpnOp && reversedOperations.Remove(rpnOp))
+            {
+                program.AddLast(new LinkedListNode<Rpn>(new RpnNot()));
+            }
+
             if (labelsForNextRpn.Count > 0)
             {
                 LabelLastRpn();

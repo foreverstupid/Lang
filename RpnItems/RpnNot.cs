@@ -5,6 +5,11 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnNot : RpnUnaryOperation
     {
+        public RpnNot()
+            : base(null)
+        {
+        }
+
         public RpnNot(Token token)
             : base(token)
         {

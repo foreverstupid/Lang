@@ -46,23 +46,6 @@
     swap = ($allowedKeys)[8];
 
     #====================================================================
-    # Help functions
-    #====================================================================
-    # Checks whether the given string contains the given symbol
-    contains = [ref str, ch] =>
-    {
-        loc len = _length(str);
-        loc eq = 0;
-        loc i = -1;
-        as ((i = $i + 1) < $len & !$eq)
-        {
-            eq = $ch ~ str[$i]
-        };
-
-        $eq
-    };
-
-    #====================================================================
     # Main algorithm
     #====================================================================
     prompt = "\n{$PURPLE}A{$GREEN}S{$BLUE}C{$CYAN}I{$YELLOW}I {$RESET}DRAWER\n" +
@@ -99,8 +82,8 @@
     _write("\n" * $height);
     _write($UP * ($height - 1));
 
-    as (!((ch = _readKey(0)) ~ $ESC))
-        if (contains($allowedKeys, $ch))
+    as ((ch = _readKey(0)) !~ $ESC)
+        if ($ch in $allowedKeys)
         {
             if ($ch ? 0)
             {
@@ -113,5 +96,5 @@
         };
 
     _write("\n" * $height);
-    _write($RESET)
+    _write($RESET)  # $RESET will be the exit value of the program
 }

@@ -9,8 +9,12 @@
     };
 
     # checks that the given operation is allowed
-    isAllowedOperation = [ref op] =>   # we can declare parameter with 'ref' to avoid $ usage everywhere
-        op ~ "+" | op ~ "-" | op ~ "*" | op ~ "/";
+    isAllowedOperation =
+        # if operations contains key $op, then operations[$op] will return
+        # a variable which bool-like value is TRUE, as far it exists, otherwise
+        # operations[$op] will return non-existing variable, which will be
+        # interpreted as FALSE
+        [op] => operations[$op];
 
     # parsing function that takes an input line and returns
     # the following object:
@@ -66,7 +70,7 @@
         loc ref result = _alloc();  # allocating dynamic variable that will contain parsing info
                                     # (we use reference variable holder to prevent additional dereferencing)
 
-        if (!($tokenCount ~ 3))
+        if (!($tokenCount ~ 3))     # you can also write: $tokenCount !~ 3
         {
             result.error = "Invalid expression. It should contain two operands and operation"
         }
@@ -74,7 +78,7 @@
         {
             result.error = "Invalid operation \"{$tokens[1]}\". Allowed operations are +, -, *, and /"
         }
-        or if (!($tokens[0] ? 0.0))
+        or if (!($tokens[0] ? 0.0)) # you can also write: $tokens[0] !? 0.0
         {
             result.error = "The first operand \"{$tokens[0]}\" is not a number"
         }

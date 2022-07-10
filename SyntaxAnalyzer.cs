@@ -33,7 +33,14 @@ namespace Lang
             creator.StartProgramCreation();
             treeView = new TreeView(logger);
 
-            Expression();
+            try
+            {
+                Expression();
+            }
+            catch (RpnCreationException e)
+            {
+                SetError(e.Message);
+            }
 
             if (!this.tokens.IsFinished)
             {
@@ -129,9 +136,17 @@ namespace Lang
             }
 
             Tail(); // could or could not be
-            while (tokens.CurrentTokenIsBinaryOperation())
+            while (tokens.CurrentTokenIsBinaryOperation() ||
+                tokens.CurrentTokenIsSeparator("!"))
             {
-                creator.BinaryOperation(tokens.CurrentOrLast);
+                bool isReversed = false;
+                if (tokens.CurrentTokenIsSeparator("!"))
+                {
+                    isReversed = true;
+                    MoveNext();
+                }
+
+                creator.BinaryOperation(tokens.CurrentOrLast, isReversed);
                 var binaryOperationToken = tokens.CurrentOrLast;
                 MoveNext();
 
