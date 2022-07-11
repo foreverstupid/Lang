@@ -11,5 +11,7 @@ namespace Lang
         public const string Let = "loc";
         public const string Ref = "ref";
         public const string In = "in";
+        public const string Break = "end";
+        public const string Continue = "new";
     }
 }

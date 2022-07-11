@@ -109,7 +109,7 @@ namespace Lang
         {
             Enter(nameof(Expression));
 
-            if (Group())
+            if (Group() || CycleJump())
             {
                 return Leave(true);
             }
@@ -199,6 +199,27 @@ namespace Lang
 
             MoveNext();
             return Leave(true);
+        }
+
+        private bool CycleJump()
+        {
+            Enter(nameof(CycleJump));
+
+            if (tokens.CurrentTokenIsSeparator(KeyWords.Break))
+            {
+                creator.CycleBreak();
+                MoveNext();
+                return Leave(true);
+            }
+
+            if (tokens.CurrentTokenIsSeparator(KeyWords.Continue))
+            {
+                creator.CycleContinue();
+                MoveNext();
+                return Leave(true);
+            }
+
+            return Leave(false);
         }
 
         private bool Tail()

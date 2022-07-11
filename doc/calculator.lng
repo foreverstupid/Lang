@@ -82,7 +82,7 @@
         {
             result.error = "The first operand \"{$tokens[0]}\" is not a number"
         }
-        or if (!($tokens[2] ? 0.0))
+        or if ($tokens[2] !? 0.0)
         {
             result.error = "The second operand \"{$tokens[2]}\" is not a number"
         }

@@ -64,6 +64,7 @@ Expression is the main concept of Lang. It is a set of operations over data that
     ```
     as (<condition>) <expression>
     ```
+    5.1 **Cycle jumps**: two special operations that helps to stop early a cycle (`end`) or its iteration (`new`). These are only _nullary_ operations in Lang (they do not take parameters). They always returns **true**. Using thess operations outside of any cycle is forbidden and leads to runtime error.
 6. **Evaluation**: the process of evaluating lambda or lambda-valued variable. It takes given expressions and substitutes them as the lambda parameters. Note, that you don't have to (but if you want, you can) use dereferencing to evaluate lambda that is a value of the variable.
     ```
     <lambda or variable>(<expression1>, <expression2>, ...)

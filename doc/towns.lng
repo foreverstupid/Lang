@@ -176,12 +176,13 @@
         loc result = "";
         loc i = -1;
 
-        as (((i = $i + 1) < $towns.length) & !$result)
+        as ((i = $i + 1) < $towns.length)
         {
             if (areChained($town, $towns[$i]))
             {
                 result = $towns[$i];
-                towns[$i] = $NOT_TOWN
+                towns[$i] = $NOT_TOWN;
+                end
             }
         };
 
@@ -208,63 +209,53 @@
         sys.write("Your turn. Type \"{$EXIT_WORD}\" to stop the program\n-> ");
         town = sys.read();
 
-        shouldAnswer = 1;
-        if ($town !~ $EXIT_WORD)
+        if ($town ~ $EXIT_WORD) end;
+        if (!isTownValid($town))
         {
-            if (isTownValid($town))
+            sys.write("\"{$town}\" is not a valid town name. Try again\n");
+            new
+        };
+
+        town = formatTown($town);
+
+        if ($response)  # Lang has no lazy condition evaluation, so we use nested if
+        if (!areChained($response, $town))
+        {
+            sys.write(
+                "Town \"{$town}\" doesn't start from the " +
+                "last letter of \"{$response}\"\n");
+            new
+        };
+
+        if ($town in db.towns)
+        {
+            townElement = $town in db.sessionTowns;
+            if ($townElement)
             {
-                town = formatTown($town);
-
-                if ($response)  # Lang has no lazy condition evaluation, so we use nested if
-                if (!areChained($response, $town))
-                {
-                    sys.write(
-                        "Town \"{$town}\" doesn't start from the " +
-                        "last letter of \"{$response}\"\n");
-                    shouldAnswer = 0
-                };
-
-                if ($shouldAnswer)
-                {
-                    if ($town in db.towns)
-                    {
-                        townElement = $town in db.sessionTowns;
-                        if ($townElement)
-                        {
-                            # here we use a single $ to get a variable, that was
-                            # rturned by "in" operation to set its value to not a town
-                            $townElement = $NOT_TOWN
-                        }
-                        or
-                        {
-                            sys.write("Town \"{$town}\" has been already used in this round\n");
-                            shouldAnswer = 0
-                        }
-                    }
-                    or
-                    {
-                        addTown(db.towns, $town)
-                    }
-                };
-
-                if ($shouldAnswer)
-                {
-                    response = findResponse(db.sessionTowns, $town);
-                    if ($response)
-                    {
-                        sys.write("My answer is: {$response}\n")
-                    }
-                    or
-                    {
-                        sys.write("Well... I don't know. You won! Let's play again\n\n");
-                        copyArray(db.towns, db.sessionTowns)
-                    }
-                }
+                # here we use a single $ to get a variable, that was
+                # rturned by "in" operation to set its value to not a town
+                $townElement = $NOT_TOWN
             }
             or
             {
-                sys.write("\"{$town}\" is not a valid town name. Try again\n")
+                sys.write("Town \"{$town}\" has been already used in this round\n");
+                new
             }
+        }
+        or
+        {
+            addTown(db.towns, $town)
+        };
+
+        response = findResponse(db.sessionTowns, $town);
+        if ($response)
+        {
+            sys.write("My answer is: {$response}\n")
+        }
+        or
+        {
+            sys.write("Well... I don't know. You won! Let's play again\n\n");
+            copyArray(db.towns, db.sessionTowns)
         }
     };
 

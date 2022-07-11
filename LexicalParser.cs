@@ -448,14 +448,15 @@ namespace Lang
 
             Token.Type GetTokenType()
             {
-                if (tokenValue.Length == 2 && tokenValue.ToString() == KeyWords.In)
+                var value = tokenValue.ToString();
+                if (value == KeyWords.In ||
+                    value == KeyWords.Break ||
+                    value == KeyWords.Continue)
                 {
                     return Token.Type.Separator;
                 }
-                else
-                {
-                    return Token.Type.Identifier;
-                }
+
+                return Token.Type.Identifier;
             }
         }
 

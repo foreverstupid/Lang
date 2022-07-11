@@ -25,6 +25,8 @@ namespace Lang
         private int ifCount = 0;
         private int lambdaCount = 0;
         private int returnCount = 0;
+        private string cycleStartLabel = null;
+        private string cycleEndLabel = null;
 
         // creating program information
         private LinkedList<Rpn> program;
@@ -334,10 +336,12 @@ namespace Lang
         {
             ifCount++;
             ifIdxStack.Push(ifCount);
-            var cycleStartLabelName = IfLabelPrefix + ifCount;
+
+            cycleStartLabel = IfLabelPrefix + ifCount;
+            cycleEndLabel = ElseLabelPrefix + ifCount;
 
             AddRpn(RpnConst.None);
-            AddLabelForNextRpn(cycleStartLabelName);
+            AddLabelForNextRpn(cycleStartLabel);
         }
 
         /// <summary>
@@ -354,7 +358,7 @@ namespace Lang
         }
 
         /// <summary>
-        /// Finishes creating od the cycle.
+        /// Finishes creating of the cycle.
         /// </summary>
         public void CycleEnd()
         {
@@ -367,6 +371,41 @@ namespace Lang
 
             AddLabelForNextRpn(cycleEndLabelName);
             AddRpn(new RpnNop());
+
+            cycleStartLabel = null;
+            cycleEndLabel = null;
+        }
+
+        /// <summary>
+        /// Creates cycle break jump.
+        /// </summary>
+        public void CycleBreak()
+        {
+            if (cycleEndLabel is null)
+            {
+                throw new RpnCreationException(
+                    $"Cycle break can be used only in a cycle expression");
+            }
+
+            AddRpn(RpnConst.True);
+            Label(cycleEndLabel);
+            AddRpn(new RpnGoto(labels));
+        }
+
+        /// <summary>
+        /// Creates cycle continue jump.
+        /// </summary>
+        public void CycleContinue()
+        {
+            if (cycleStartLabel is null)
+            {
+                throw new RpnCreationException(
+                    $"Cycle continue can be used only in a cycle expression");
+            }
+
+            AddRpn(RpnConst.True);
+            Label(cycleStartLabel);
+            AddRpn(new RpnGoto(labels));
         }
 
         /// <summary>
