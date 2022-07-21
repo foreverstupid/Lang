@@ -13,5 +13,6 @@ namespace Lang
         public const string In = "in";
         public const string Break = "end";
         public const string Continue = "new";
+        public const string Return = "out";
     }
 }

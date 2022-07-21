@@ -182,7 +182,7 @@
             {
                 result = $towns[$i];
                 towns[$i] = $NOT_TOWN;
-                end
+                out $result     # early exit from the lambda
             }
         };
 

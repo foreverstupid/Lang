@@ -382,7 +382,7 @@ namespace Lang
             if (!loopIdxStack.TryPeek(out var idx) || idx is null)
             {
                 throw new RpnCreationException(
-                    $"Cycle break can be used only in a cycle expression");
+                    "Cycle break can be used only in a cycle expression");
             }
 
             AddRpn(RpnConst.True);
@@ -398,12 +398,24 @@ namespace Lang
             if (!loopIdxStack.TryPeek(out var idx) || idx is null)
             {
                 throw new RpnCreationException(
-                    $"Cycle continue can be used only in a cycle expression");
+                    "Cycle continue can be used only in a cycle expression");
             }
 
             AddRpn(RpnConst.True);
             Label(IfLabelPrefix + idx.Value);
             AddRpn(new RpnGoto(labels));
+        }
+
+        public void LambdaReturn()
+        {
+            if (!contextsStack.TryPeek(out _))
+            {
+                throw new RpnCreationException(
+                    "Lambda break jump can be used only inside a lambda");
+            }
+
+            FlushOperationsWithHigherOrEqualPriority(new RpnGetValue(null, variables));
+            AddRpn(new RpnReturn(labels));
         }
 
         /// <summary>

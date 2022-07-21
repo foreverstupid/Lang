@@ -109,7 +109,7 @@ namespace Lang
         {
             Enter(nameof(Expression));
 
-            if (Group() || CycleJump())
+            if (Group() || Jump())
             {
                 return Leave(true);
             }
@@ -201,9 +201,9 @@ namespace Lang
             return Leave(true);
         }
 
-        private bool CycleJump()
+        private bool Jump()
         {
-            Enter(nameof(CycleJump));
+            Enter(nameof(Jump));
 
             if (tokens.CurrentTokenIsSeparator(KeyWords.Break))
             {
@@ -216,6 +216,19 @@ namespace Lang
             {
                 creator.CycleContinue();
                 MoveNext();
+                return Leave(true);
+            }
+
+            if (tokens.CurrentTokenIsSeparator(KeyWords.Return))
+            {
+                MoveNext();
+                if (!Expression())
+                {
+                    throw new SyntaxException(
+                        "Expected expression in the lambda break operation");
+                }
+
+                creator.LambdaReturn();
                 return Leave(true);
             }
 

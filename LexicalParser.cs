@@ -451,7 +451,8 @@ namespace Lang
                 var value = tokenValue.ToString();
                 if (value == KeyWords.In ||
                     value == KeyWords.Break ||
-                    value == KeyWords.Continue)
+                    value == KeyWords.Continue ||
+                    value == KeyWords.Return)
                 {
                     return Token.Type.Separator;
                 }

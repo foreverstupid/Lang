@@ -2,11 +2,11 @@
 
 Here `this text style` is used for the grammar terms and literal symbols. Special symbols of the BNF are written in **this style**.
 
-`<expression>` **::=** `<group>` **|** `<cycle_jump>` **|** **{** `<unar>` **}** `<operand>` `<tail>` **{** **[** `!` **]** `<binar>` `<expression>` **}**
+`<expression>` **::=** `<group>` **|** `<jump>` **|** **{** `<unar>` **}** `<operand>` `<tail>` **{** **[** `!` **]** `<binar>` `<expression>` **}**
 
 `<group>` **::=** `{` `<expression>` **{** `;` `<expression>` **}** `}`
 
-`<cycle_jump>` **::=** `new` **|** `end`
+`<jump>` **::=** `new` **|** `end` **|** `out` `<expression>`
 
 `<tail>` **::=** `<indexator>` `<tail>` **|** `<args>` `<tail>` **|**
 

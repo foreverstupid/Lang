@@ -53,6 +53,7 @@ Expression is the main concept of Lang. It is a set of operations over data that
     ```
     [<p1>, <p2>, ... ] => <expression depending on <p1>,<p2>,...>
     ```
+    3.1. **Lambda break**: special operation (`out`) that early breaks a lambda evaluation. It is an unary operation that takes the out value of the lambda.
 4. **If-expression**: expression that evaluates or not according to some condition. Can have else-part (*if-else-expression*) that is evaluated if the condition is false. If has only if-part (*if-only-expression*) and the condition is false, then returns the special `None` value that cannot be used in any operation.
     ```
     if (<condition>)
