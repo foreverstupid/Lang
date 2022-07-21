@@ -20,13 +20,12 @@ namespace Lang
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
         private readonly List<RpnOperation> reversedOperations = new List<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
+        private readonly Stack<int?> loopIdxStack = new Stack<int?>();
         private readonly Stack<LambdaContext> contextsStack = new Stack<LambdaContext>();
 
         private int ifCount = 0;
         private int lambdaCount = 0;
         private int returnCount = 0;
-        private string cycleStartLabel = null;
-        private string cycleEndLabel = null;
 
         // creating program information
         private LinkedList<Rpn> program;
@@ -52,6 +51,7 @@ namespace Lang
             expressionStack.Clear();
             reversedOperations.Clear();
             ifIdxStack.Clear();
+            loopIdxStack.Clear();
             contextsStack.Clear();
 
             ifCount = lambdaCount = returnCount = 0;
@@ -204,6 +204,7 @@ namespace Lang
             var context = new LambdaContext(lambdaCount);
             lambdaCount++;
             contextsStack.Push(context);
+            loopIdxStack.Push(null);
             OpenBracket();
 
             // add jump to the end of the code block
@@ -220,6 +221,7 @@ namespace Lang
         public void LambdaFinish()
         {
             var context = contextsStack.Pop();
+            loopIdxStack.Pop();
             CloseBracket();
 
             AddRpn(new RpnReturn(labels));
@@ -335,10 +337,9 @@ namespace Lang
         public void CycleStart()
         {
             ifCount++;
-            ifIdxStack.Push(ifCount);
+            loopIdxStack.Push(ifCount);
 
-            cycleStartLabel = IfLabelPrefix + ifCount;
-            cycleEndLabel = ElseLabelPrefix + ifCount;
+            var cycleStartLabel = IfLabelPrefix + ifCount;
 
             AddRpn(RpnConst.None);
             AddLabelForNextRpn(cycleStartLabel);
@@ -349,7 +350,7 @@ namespace Lang
         /// </summary>
         public void While(Token token)
         {
-            var idx = ifIdxStack.Peek();
+            var idx = loopIdxStack.Peek();
             var cycleEndLabelName = ElseLabelPrefix + idx;
 
             Label(cycleEndLabelName);
@@ -362,7 +363,7 @@ namespace Lang
         /// </summary>
         public void CycleEnd()
         {
-            var idx = ifIdxStack.Pop();
+            var idx = loopIdxStack.Pop();
             var cycleStartLabelName = IfLabelPrefix + idx;
             var cycleEndLabelName = ElseLabelPrefix + idx;
 
@@ -371,9 +372,6 @@ namespace Lang
 
             AddLabelForNextRpn(cycleEndLabelName);
             AddRpn(new RpnNop());
-
-            cycleStartLabel = null;
-            cycleEndLabel = null;
         }
 
         /// <summary>
@@ -381,14 +379,14 @@ namespace Lang
         /// </summary>
         public void CycleBreak()
         {
-            if (cycleEndLabel is null)
+            if (!loopIdxStack.TryPeek(out var idx) || idx is null)
             {
                 throw new RpnCreationException(
                     $"Cycle break can be used only in a cycle expression");
             }
 
             AddRpn(RpnConst.True);
-            Label(cycleEndLabel);
+            Label(ElseLabelPrefix + idx.Value);
             AddRpn(new RpnGoto(labels));
         }
 
@@ -397,14 +395,14 @@ namespace Lang
         /// </summary>
         public void CycleContinue()
         {
-            if (cycleStartLabel is null)
+            if (!loopIdxStack.TryPeek(out var idx) || idx is null)
             {
                 throw new RpnCreationException(
                     $"Cycle continue can be used only in a cycle expression");
             }
 
             AddRpn(RpnConst.True);
-            Label(cycleStartLabel);
+            Label(IfLabelPrefix + idx.Value);
             AddRpn(new RpnGoto(labels));
         }
 
