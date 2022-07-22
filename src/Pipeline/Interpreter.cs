@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Lang.RpnItems;
+using Lang.Exceptions;
 
-namespace Lang
+namespace Lang.Pipeline
 {
     /// <summary>
     /// Performs the program.

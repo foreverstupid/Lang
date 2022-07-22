@@ -1,4 +1,4 @@
-namespace Lang
+namespace Lang.Pipeline
 {
     /// <summary>
     /// Unit of the meaningful information.

@@ -1,4 +1,4 @@
-namespace Lang
+namespace Lang.Content
 {
     /// <summary>
     /// String constants for the language key words.
@@ -14,5 +14,13 @@ namespace Lang
         public const string Break = "end";
         public const string Continue = "new";
         public const string Return = "out";
+
+        public static readonly string[] All = new string[]
+        {
+            If, Else, While,
+            Let, Ref,
+            In,
+            Break, Continue, Return,
+        };
     }
 }

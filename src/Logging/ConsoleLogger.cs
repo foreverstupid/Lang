@@ -1,4 +1,4 @@
-namespace Lang
+namespace Lang.Logging
 {
     public class ConsoleLogger : ILogger
     {

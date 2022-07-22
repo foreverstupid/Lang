@@ -2,7 +2,7 @@
 
 Here `this text style` is used for the grammar terms and literal symbols. Special symbols of the BNF are written in **this style**.
 
-`<expression>` **::=** `<group>` **|** `<jump>` **|** **{** `<unar>` **}** `<operand>` `<tail>` **{** **[** `!` **]** `<binar>` `<expression>` **}**
+`<expression>` **::=** `<group>` **|** `<jump>` **|** **{** `<unar>` **}** `<operand>` `<tail>` **{** `<tie>` `<expression>` **}**
 
 `<group>` **::=** `{` `<expression>` **{** `;` `<expression>` **}** `}`
 
@@ -26,6 +26,10 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<while_expression>` **::=** `as` `(` `<expression>` `)` `<expression>`
 
+`<tie>` **::=** **[** `<modifier>` **]** `<binar>`
+
+`<modifier>` **::=** `!` **|** `=` **|** `->`
+
 `<unar>` **::=** `-` **|** `!` **|** `$`
 
 `<binar>` **::=** `+` **|** `-` **|** `*` **|** `/` **|** `%` **|** `>` **|** `<` **|** `~` **|** `&` **|** `|` **|** `=` **|** `->` **|** `:` **|** `?` **|** `in`
@@ -42,7 +46,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<float>` **::=** `<digit>`**{**`<digit_or_underscore>`**}**`.`**{**`<digit_or_underscore>`**}**
 
-`<string>` **::=** see description [here](Lang.md#string-literals)
+`<string>` **::=** see description [here](../Lang.md#string-literals)
 
 `<digit>` **::=** `0`**..**`9`
 

@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Lang.RpnItems;
+using Lang.Exceptions;
 
-namespace Lang
+namespace Lang.Content
 {
     /// <summary>
     /// A library of built-in functions.

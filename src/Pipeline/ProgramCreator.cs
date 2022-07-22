@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Lang.RpnItems;
+using Lang.Exceptions;
+using Lang.Content;
 
-namespace Lang
+namespace Lang.Pipeline
 {
     /// <summary>
     /// Creates the needed program interpretation info.
@@ -155,9 +157,9 @@ namespace Lang
         {
             RpnOperation rpn = token.Value switch
             {
-                "!" => new RpnNot(token),
-                "-" => new RpnNegate(token),
-                "$" => new RpnGetValue(token, variables),
+                Operations.Not => new RpnNot(token),
+                Operations.Minus => new RpnNegate(token),
+                Operations.Dereference => new RpnGetValue(token, variables),
                 var op => throw new RpnCreationException("Unknown unary operation: " + op)
             };
 
@@ -171,21 +173,23 @@ namespace Lang
         {
             RpnOperation rpn = token.Value switch
             {
-                "=" => new RpnAssign(token, variables),
-                "+" => new RpnAdd(token),
-                "-" => new RpnSubtract(token),
-                "*" => new RpnMultiply(token),
-                "/" => new RpnDivide(token),
-                "%" => new RpnMod(token),
-                "|" => new RpnOr(token),
-                "&" => new RpnAnd(token),
-                "~" => new RpnEqual(token),
-                ">" => new RpnGreater(token),
-                "<" => new RpnLess(token),
-                ":" => new RpnCast(token),
-                "?" => new RpnCheckCast(token),
-                "->" => new RpnRightAssign(token, variables),
-                "in" => new RpnIn(token, variables),
+                Operations.Assign => new RpnAssign(token, variables),
+                Operations.Plus => new RpnAdd(token),
+                Operations.Minus => new RpnSubtract(token),
+                Operations.Multiply => new RpnMultiply(token),
+                Operations.Divide => new RpnDivide(token),
+                Operations.Mod => new RpnMod(token),
+                Operations.Or => new RpnOr(token),
+                Operations.And => new RpnAnd(token),
+                Operations.Equal => new RpnEqual(token),
+                Operations.Greater => new RpnGreater(token),
+                Operations.Less => new RpnLess(token),
+                Operations.Cast => new RpnCast(token),
+                Operations.CanCast => new RpnCheckCast(token),
+                Operations.Insert => new RpnRightAssign(token, variables),
+                Operations.In => new RpnIn(token, variables),
+                Operations.RightShift => new RpnRightShift(token),
+                Operations.LeftShift => new RpnLeftShift(token),
                 var op => throw new RpnCreationException("Unknown binary operation: " + op)
             };
 

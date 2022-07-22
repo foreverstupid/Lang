@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using CommandLine;
+using Lang.Exceptions;
+using Lang.Logging;
+using Lang.Pipeline;
 using Lang.RpnItems;
 
 namespace Lang
@@ -19,7 +22,17 @@ namespace Lang
 
         private static void MainCore(Arguments args)
         {
-            string src = GetSourceCode(args);
+            string src;
+
+            try
+            {
+                src = GetSourceCode(args);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return;
+            }
 
             try
             {

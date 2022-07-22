@@ -36,7 +36,7 @@
         if (($ch < "a") | ($ch > "z"))
             $ch
         or
-            $ch - 32;
+            $ch << 32;
 
     # --------------------------------------------------------------------
     # transforms a char to the lower case
@@ -45,7 +45,7 @@
         if (($ch < "A") | ($ch > "Z"))
             $ch
         or
-            $ch - (-32);    # a hack, because, e.g., "a" + 32 is "a32"
+            $ch >> 32;
 
     # --------------------------------------------------------------------
     # formats the town name properly
@@ -151,7 +151,7 @@
 
         as (((i = $i + 1) < $length) & $isValid)
         {
-            isValid = !(($town)[$i] in $FORBIDDEN_CHARS);
+            isValid = ($town)[$i] !in $FORBIDDEN_CHARS;
             hasLetters = $hasLetters | ($town)[$i] !~ " "
         };
 

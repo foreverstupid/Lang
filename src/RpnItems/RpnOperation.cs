@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Lang.Pipeline;
 
 namespace Lang.RpnItems
 {
@@ -13,6 +14,7 @@ namespace Lang.RpnItems
         protected const int UnarOperationPriority = 900;
         protected const int MulDivPriority = 600;
         protected const int AddSubPriority = 500;
+        protected const int ShiftPriority = 450;
         protected const int ComparisionPriority = 400;
         protected const int CastPriority = 300;
         protected const int LogicalOperationPriority = 250;

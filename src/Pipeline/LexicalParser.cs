@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Lang.Exceptions;
+using Lang.Content;
 
-namespace Lang
+namespace Lang.Pipeline
 {
     /// <summary>
     /// Performs lexical analysis of the source code.
@@ -16,6 +18,14 @@ namespace Lang
         private const char StandardStringEnd = '\"';
 
         private static readonly string Separators = ";,=$.+-*/%><!|&~()[]{}:?";
+        private static readonly string[] TwoCharsOperations = new[]
+        {
+            Operations.Insert,
+            Operations.RightShift,
+            Operations.LeftShift,
+            Syntax.ParamsApply,
+        };
+
         private readonly Dictionary<State, Func<char, IEnumerable<Token>>> stateHandlers;
 
         private readonly StringBuilder tokenValue = new StringBuilder();
@@ -51,9 +61,8 @@ namespace Lang
                 [State.Slash] = Slash,
                 [State.HexSymbol] = HexSymbol,
                 [State.Comment] = Comment,
-                [State.RightAssign] = RightAssign,
-                [State.Apply] = Apply,
                 [State.Field] = Field,
+                [State.TwoCharsOperation] = TwoCharsOperation,
             };
         }
 
@@ -72,9 +81,8 @@ namespace Lang
             HexSymbol,
             Comment,
             Identifier,
-            RightAssign,
-            Apply,
             Field,
+            TwoCharsOperation
         }
 
         /// <summary>
@@ -169,14 +177,9 @@ namespace Lang
             {
                 state = State.Comment;
             }
-            else if (character == '-')
+            else if (TwoCharsOperations.Any(op => op[0] == character))
             {
-                state = State.RightAssign;
-                tokenValue.Append(character);
-            }
-            else if (character == '=')
-            {
-                state = State.Apply;
+                state = State.TwoCharsOperation;
                 tokenValue.Append(character);
             }
             else if (character == '.')
@@ -449,41 +452,12 @@ namespace Lang
             Token.Type GetTokenType()
             {
                 var value = tokenValue.ToString();
-                if (value == KeyWords.In ||
-                    value == KeyWords.Break ||
-                    value == KeyWords.Continue ||
-                    value == KeyWords.Return)
+                if (KeyWords.All.Contains(value))
                 {
                     return Token.Type.Separator;
                 }
 
                 return Token.Type.Identifier;
-            }
-        }
-
-        private IEnumerable<Token> RightAssign(char character)
-        {
-            if (character == '>')
-            {
-                tokenValue.Append(character);
-                return new[] { OnNewToken(Token.Type.Separator) };
-            }
-            else
-            {
-                return OnExtraToken(Token.Type.Separator, character);
-            }
-        }
-
-        private IEnumerable<Token> Apply(char character)
-        {
-            if (character == '>')
-            {
-                tokenValue.Append(character);
-                return new[] { OnNewToken(Token.Type.Separator) };
-            }
-            else
-            {
-                return OnExtraToken(Token.Type.Separator, character);
             }
         }
 
@@ -505,6 +479,22 @@ namespace Lang
             else
             {
                 throw new ArgumentException($"Identifier contains unexpected character: '{character}'");
+            }
+        }
+
+        private IEnumerable<Token> TwoCharsOperation(char character)
+        {
+            var operation = TwoCharsOperations
+                .FirstOrDefault(op => op[0] == tokenValue[0] && op[1] == character);
+
+            if (operation != null)
+            {
+                tokenValue.Append(character);
+                return new[] { OnNewToken(Token.Type.Separator) };
+            }
+            else
+            {
+                return OnExtraToken(Token.Type.Separator, character);
             }
         }
 

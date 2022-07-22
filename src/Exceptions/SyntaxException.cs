@@ -1,6 +1,6 @@
 using System;
 
-namespace Lang
+namespace Lang.Exceptions
 {
     public class SyntaxException : Exception
     {

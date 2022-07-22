@@ -1,3 +1,5 @@
+using Lang.Exceptions;
+
 namespace Lang.RpnItems
 {
     /// <summary>

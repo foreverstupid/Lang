@@ -1,4 +1,4 @@
-namespace Lang
+namespace Lang.Logging
 {
     /// <summary>
     /// Logger that doesn't log.

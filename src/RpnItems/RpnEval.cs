@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using Lang.Content;
+using Lang.Exceptions;
+using Lang.Pipeline;
 
 namespace Lang.RpnItems
 {

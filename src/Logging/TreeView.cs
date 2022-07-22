@@ -1,8 +1,11 @@
-using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
-namespace Lang
+
+namespace Lang.Logging
 {
+    /// <summary>
+    /// Help class that constructs a tree-view representation of the program syntax.
+    /// </summary>
     public class TreeView
     {
         private static readonly string Shift = new string(' ', 2);

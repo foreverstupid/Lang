@@ -1,17 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
+using Lang.Content;
 
-namespace Lang
+namespace Lang.Pipeline
 {
     /// <summary>
     /// Help enumerator for the token collection.
     /// </summary>
     public class TokenEnumerator
     {
-        private static readonly string[] UnaryOperations = new[] { "-", "!", "$" };
-        private static readonly string[] BinaryOperations =
-            new[] { "=", "+", "-", "/", "*", "&", "|", ">", "<", "~", "%", "->", ":", "?", KeyWords.In };
-
         private readonly IEnumerator<Token> tokens;
 
         public TokenEnumerator(IEnumerable<Token> tokens)
@@ -96,7 +93,7 @@ namespace Lang
             return
                 !IsFinished &&
                 CurrentOrLast.TokenType == Token.Type.Separator &&
-                UnaryOperations.Contains(CurrentOrLast.Value);
+                Operations.Unary.Contains(CurrentOrLast.Value);
         }
 
         /// <summary>
@@ -105,9 +102,9 @@ namespace Lang
         public bool CurrentTokenIsBinaryOperation()
         {
             return
-                !IsFinished && 
+                !IsFinished &&
                 CurrentOrLast.TokenType == Token.Type.Separator &&
-                BinaryOperations.Contains(CurrentOrLast.Value);
+                Operations.Binary.Contains(CurrentOrLast.Value);
         }
     }
 }
