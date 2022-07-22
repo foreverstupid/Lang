@@ -46,7 +46,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<float>` **::=** `<digit>`**{**`<digit_or_underscore>`**}**`.`**{**`<digit_or_underscore>`**}**
 
-`<string>` **::=** see description [here](../Lang.md#string-literals)
+`<string>` **::=** see description [here](../README.md#string-literals)
 
 `<digit>` **::=** `0`**..**`9`
 
