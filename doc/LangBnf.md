@@ -28,7 +28,7 @@ Here `this text style` is used for the grammar terms and literal symbols. Specia
 
 `<tie>` **::=** **[** `<modifier>` **]** `<binar>`
 
-`<modifier>` **::=** `!` **|** `=` **|** `->`
+`<modifier>` **::=** `!`
 
 `<unar>` **::=** `-` **|** `!` **|** `$`
 
