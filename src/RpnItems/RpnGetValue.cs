@@ -34,7 +34,11 @@ namespace Lang.RpnItems
             }
             else
             {
-                throw new InterpretationException($"The variable '{operand.Token?.Value}' doesn't exist");
+                var varName =
+                    operand.Token?.Value
+                    ?? RpnIndexator.GetReadableName(operand.GetName().Value);
+
+                throw new InterpretationException($"The variable '{varName}' doesn't exist");
             }
         }
     }

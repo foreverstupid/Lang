@@ -51,9 +51,9 @@
         loc i = -1;
         loc info = "";
 
-        as ((i = $i + 1) < 8)
+        as ((i += 1) < 8)
         {
-            info = $info + $COLORS[$i] + ($i + 1)
+            info += $COLORS[$i] + ($i + 1)
         };
 
         $info + $RESET

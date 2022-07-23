@@ -94,7 +94,7 @@ So, everything inside a string literal that is between curly brackets is interpr
 
 ### Raw strings
 
-It is very useful to be able put into a string all characters as themselves without escaping special symbols like `"` etc. Moreover, sometimes characters `{}` that delimit interpolation inside a string are parts of the literal itself, so you have to escape them every time (e.g., when you construct JSON). And lastly often you want to format indenting of the multiline string literal in terms of your code, but that leads to a vast ammount of extra spaces in the literal itself. For example, in the following code
+It is very useful to be able put into a string all characters as themselves without escaping special symbols like `"` etc. Moreover, sometimes characters `{}`, that delimit interpolation inside a string, are parts of the literal itself, so you have to escape them every time (e.g., when you construct JSON). And lastly often you want to format indenting of the multiline string literal in terms of your code, but that leads to a vast ammount of extra spaces in the literal itself. For example, in the following code
 ```
 {
     if ($condition)
@@ -114,7 +114,7 @@ you want to see, that the value of `str` is
 ```
 but you also don't want to shift its definition to the beginning of the left side of the screen. For solving all these issues Lang uses *raw strings*.
 
-Such string literals start and end with a symbol \` (backtick). The first two characters of such a string literal are called *raw string preambula*. The first one defines the interpolation start delimiter, the second one defines the interpolation end delimiter. Note, that the preambula cannot contain symbols \` and # (backtick and hash). All symbols inside a raw string are used as themselves, except the notation `\x00` for hexadecimal characters codes and the combination \\\` for inserting backtick itself as a character. Moreover, Lang analyses the beginning position of the raw string and cuts all extra spaces on the following lines precending this position. Note that this behavior only works for spaces, if a line contains any other character, then space dropping is halted for this line (but not for any other ones). Here is an example of raw string usage:
+Such string literals start and end with a symbol `` ` ``(backtick). The first two characters of such a string literal are called *raw string preambula*. The first one defines the interpolation start delimiter, the second one defines the interpolation end delimiter. Note, that the preambula cannot contain symbols `` ` `` and `#` (backtick and hash). All symbols inside a raw string are used as themselves, except the notation `\x00` for hexadecimal characters codes and the combination `` \` `` for inserting backtick itself as a character. Moreover, Lang analyses the beginning position of the raw string and cuts all extra spaces on the following lines precending this position. Note that this behavior only works for spaces, if a line contains any other character, then space dropping is halted for this line (but not for any other ones). Here is an example of raw string usage:
 ```
 {
     age = 42;
@@ -209,6 +209,32 @@ a = (b = (c = 3));
 ```
 
 If the variable doesn't exist then assignments create it.
+
+Often, you want to update a value of a variable using the previous value of it. For example, if you write a kind of enumeration, your code will probably look like the following:
+```
+i = 0;
+length = 100;
+as ($i < $length)
+{
+    _write($i);
+    i = $i + 1;     # here we add 1 to the variable
+}
+```
+It is not very convinient to use the variable and its dereferencing in the same operation for such a simple action. That's why Lang provides a concept of _complex assignments_. You can put any binary operation right before the assignment operation to say, that you want to save the result of this operation over the value of the variable and the second operand into the variable. Thus, the code
+```
+i = $i + 1;
+```
+becomes
+```
+# this same as: i = $i + 1
+i += 1;     # this returns a new value of 'i'
+```
+or
+```
+# this same as: 1 + $i -> i
+1 +-> i;    # this returns 'i' itself
+```
+Note, that as far as complex assignments use the variable's value, you have to be sure that the variable exists before using these operations. Moreover, notice the order of operands for `=` and for `->`, that can matter for non-commutative operations.
 
 ## Indexator
 

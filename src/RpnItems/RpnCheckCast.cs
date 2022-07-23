@@ -11,7 +11,7 @@ namespace Lang.RpnItems
     /// RPN item that checks whether casting of the left operand to the type of the
     /// right one is possible.
     /// </summary>
-    public sealed class RpnCheckCast : RpnBinaryOperation
+    public sealed class RpnCheckCast : RpnLogicalOperation
     {
         private static readonly CastCheckMap CastMap = new CastCheckMap()
         {
@@ -36,8 +36,8 @@ namespace Lang.RpnItems
             [(RpnConst.Type.Float, RpnConst.Type.String)] = _ => true,
         };
 
-        public RpnCheckCast(Token token)
-            : base(token)
+        public RpnCheckCast(Token token, bool isReversed = false)
+            : base(token, isReversed)
         {
         }
 
@@ -45,13 +45,13 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.CastPriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
+        protected override bool GetBoolResult(RpnConst left, RpnConst right)
         {
             bool canCast =
                 CastMap.TryGetValue((left.ValueType, right.ValueType), out var checker) &&
                 checker(left);
 
-            return RpnConst.Bool(canCast);
+            return canCast;
         }
     }
 }

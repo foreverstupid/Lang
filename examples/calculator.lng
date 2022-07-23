@@ -43,7 +43,7 @@
 
         loc i = -1;
         loc ch;
-        as ((i = $i + 1) < $len)
+        as ((i = $i + 1) < $len)    # you can also use: i += 1
         {
             ch = ($input)[$i];
             if ($ch ~ " ")
@@ -74,7 +74,7 @@
         {
             result.error = "Invalid expression. It should contain two operands and operation"
         }
-        or if (!(isAllowedOperation($tokens[1])))
+        or if (!isAllowedOperation($tokens[1]))
         {
             result.error = "Invalid operation \"{$tokens[1]}\". Allowed operations are +, -, *, and /"
         }

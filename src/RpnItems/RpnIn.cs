@@ -12,11 +12,16 @@ namespace Lang.RpnItems
     public sealed class RpnIn : RpnBinaryOperation
     {
         private readonly IDictionary<EntityName, RpnConst> variables;
+        private readonly bool isReversed;
 
-        public RpnIn(Token token, IDictionary<EntityName, RpnConst> variables)
+        public RpnIn(
+            Token token,
+            IDictionary<EntityName, RpnConst> variables,
+            bool isReversed = false)
             : base(token)
         {
             this.variables = variables;
+            this.isReversed = isReversed;
         }
 
         protected override int Priority => RpnOperation.ComparisionPriority;
@@ -47,6 +52,11 @@ namespace Lang.RpnItems
             }
 
             bool contains = str.Contains(item.GetString());
+            if (isReversed)
+            {
+                contains = !contains;
+            }
+
             return RpnConst.Bool(contains);
         }
 
@@ -62,10 +72,10 @@ namespace Lang.RpnItems
 
             if (foundItems.Length == 0)
             {
-                return RpnConst.False;
+                return isReversed ? RpnConst.True : RpnConst.False;
             }
 
-            return new RpnVar(foundItems[0].Key, variables);
+            return isReversed ? RpnConst.False : new RpnVar(foundItems[0].Key, variables);
         }
     }
 }

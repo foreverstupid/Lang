@@ -35,14 +35,8 @@ namespace Lang.RpnItems
         /// Checks whether the current operation has the less priority than the
         /// given one or not.
         /// </summary>
-        public bool HasLessPriorityThan(RpnOperation anotherOperation)
+        public virtual bool HasLessPriorityThan(RpnOperation anotherOperation)
         {
-            // TODO: something reasonable instead
-            if (this is RpnAssign && anotherOperation is RpnAssign)
-            {
-                return true;
-            }
-
             return this.Priority < anotherOperation.Priority;
         }
 

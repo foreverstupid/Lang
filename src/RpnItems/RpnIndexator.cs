@@ -1,6 +1,8 @@
+using System.Text;
 using System.Collections.Generic;
 using Lang.Exceptions;
 using Lang.Pipeline;
+using Lang.Content;
 
 namespace Lang.RpnItems
 {
@@ -9,6 +11,7 @@ namespace Lang.RpnItems
     /// </summary>
     public sealed class RpnIndexator : RpnBinaryOperation
     {
+        private const char IndexDelimiter = '#';
         private readonly IDictionary<EntityName, RpnConst> variables;
 
         public RpnIndexator(Token token, IDictionary<EntityName, RpnConst> variables)
@@ -43,7 +46,11 @@ namespace Lang.RpnItems
         /// </summary>
         public static EntityName GetIndexedName(EntityName arrayName, RpnConst index)
         {
-            var value = GetIndexedPrefix(arrayName) + $"{index.ValueType.ToString()[0]}#{index.GetString()}";
+            var indexType = index.ValueType.ToString()[0];
+            var value =
+                GetIndexedPrefix(arrayName) +
+                $"{indexType}{IndexDelimiter}{index.GetString()}";
+
             return new EntityName(value);
         }
 
@@ -51,7 +58,35 @@ namespace Lang.RpnItems
         /// Constructs the prefix of the array item name.
         /// </summary>
         public static string GetIndexedPrefix(EntityName arrayName)
-            => $"{arrayName}#";
+            => $"{arrayName}{IndexDelimiter}";
+
+        /// <summary>
+        /// Returns the readable name of the indexed variable.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetReadableName(string indexedName)
+        {
+            var parts = indexedName.Split(IndexDelimiter);
+            var builder = new StringBuilder(parts[0]);
+            for (int i = 1; i < parts.Length; i += 2)
+            {
+                builder.Append(Syntax.IndexatorStart);
+                if (parts[i][0] == RpnConst.Type.String.ToString()[0])
+                {
+                    builder.Append('"');
+                    builder.Append(parts[i + 1]);
+                    builder.Append('"');
+                }
+                else
+                {
+                    builder.Append(parts[i + 1]);
+                }
+
+                builder.Append(Syntax.IndexatorEnd);
+            }
+
+            return builder.ToString();
+        }
 
         private RpnConst GetResultForString(string str, RpnConst index)
         {

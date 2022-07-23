@@ -131,38 +131,70 @@ namespace Lang.Pipeline
                 {
                     SetError(
                         "Operand of the unary operation " +
-                        $"'{unaryOperationToken.Value}' is expected"
-                    );
+                        $"'{unaryOperationToken.Value}' is expected");
                 }
 
                 return Leave(false);
             }
 
-            Tail(); // could or could not be
-            while (tokens.CurrentTokenIsBinaryOperation() ||
-                tokens.CurrentTokenIsSeparator(Operations.Not))
+            Tail();         // could or could not be
+            while (Tie())
             {
-                bool isReversed = false;
-                if (tokens.CurrentTokenIsSeparator(Operations.Not))
-                {
-                    isReversed = true;
-                    MoveNext();
-                }
+            }
 
-                creator.BinaryOperation(tokens.CurrentOrLast, isReversed);
-                var binaryOperationToken = tokens.CurrentOrLast;
+            return Leave(true);
+        }
+
+        private bool Tie()
+        {
+            Enter(nameof(Tie));
+
+            bool isReversed = false;
+            if (tokens.CurrentTokenIsSeparator(Operations.Not))
+            {
+                isReversed = true;
+                MoveNext();
+            }
+
+            if (tokens.CurrentTokenIsBinaryOperation())
+            {
+                var operation = tokens.CurrentOrLast;
                 MoveNext();
 
+                if (tokens.CurrentTokenIsSeparator(Operations.Assign) ||
+                    tokens.CurrentTokenIsSeparator(Operations.Insert))
+                {
+                    creator.Assignment(tokens.CurrentOrLast, operation, isReversed);
+                    MoveNext();
+                }
+                else
+                {
+                    creator.BinaryOperation(operation, isReversed);
+                }
+
+                CreateRightExpression(tokens.CurrentOrLast);
+            }
+            else
+            {
+                if (!isReversed)
+                {
+                    return Leave(false);
+                }
+
+                SetError("Binary operation is expected");
+            }
+
+            return Leave(true);
+
+            void CreateRightExpression(Token token)
+            {
                 if (!Expression())
                 {
                     SetError(
                         "Expression as a binary operation " +
-                        $"'{binaryOperationToken.Value}' right operand is expected"
-                    );
+                        $"'{token.Value}' right operand is expected");
                 }
             }
-
-            return Leave(true);
         }
 
         private bool Group()

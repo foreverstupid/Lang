@@ -8,14 +8,19 @@ namespace Lang.RpnItems
     /// RPN item that represents assignment when assignable value is right and
     /// assigning is left one. Returns assignable value to the stack.
     /// </summary>
-    public sealed class RpnRightAssign : RpnBinaryOperation
+    public sealed class RpnInsert : RpnBinaryOperation
     {
         private readonly IDictionary<EntityName, RpnConst> variables;
+        private readonly RpnBinaryOperation additionalOperation;
 
-        public RpnRightAssign(Token token, IDictionary<EntityName, RpnConst> variables)
+        public RpnInsert(
+            Token token,
+            IDictionary<EntityName, RpnConst> variables,
+            RpnBinaryOperation additionalOperation = null)
             : base(token)
         {
             this.variables = variables;
+            this.additionalOperation = additionalOperation;
         }
 
         /// <inheritdoc/>
@@ -27,6 +32,17 @@ namespace Lang.RpnItems
             if (right.ValueType != RpnConst.Type.Variable)
             {
                 throw new InterpretationException("Cannot assign to the non-variable value");
+            }
+
+            if (!(additionalOperation is null))
+            {
+                if (!variables.TryGetValue(right.GetName(), out var value))
+                {
+                    throw new InterpretationException(
+                        "Cannot use non-existing variable for complex assignment");
+                }
+
+                left = additionalOperation.Perform(left, value);
             }
 
             variables[right.GetName()] = left;

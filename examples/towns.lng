@@ -21,11 +21,10 @@
     # --------------------------------------------------------------------
     for = [start, endExclusive, body] =>
     {
-        loc i = $start;
-        as ($i < $endExclusive)
+        loc i = $start - 1;
+        as ((i += 1) < $endExclusive)
         {
-            body($i);
-            i = $i + 1
+            body($i)
         }
     };
 
@@ -103,12 +102,12 @@
                 if ((($str)[$i] ~ "\n") & $part !~ "")
                 {
                     parts[$parts.length] = $part;
-                    parts.length = $parts.length + 1;
+                    parts.length += 1;
                     part = ""
                 }
                 or
                 {
-                    part = $part + ($str)[$i]
+                    part += ($str)[$i]
                 }
             });
 
@@ -134,7 +133,7 @@
     addTown = [ref knownTowns, town] =>
     {
         knownTowns[$knownTowns.length] = $town;
-        knownTowns.length = $knownTowns.length + 1;
+        knownTowns.length += 1;
         sys.file.write($DATA_FILE_NAME, $town + "\n")
     };
 
@@ -149,10 +148,10 @@
         loc isValid = $length > 0;
         loc hasLetters = 0;
 
-        as (((i = $i + 1) < $length) & $isValid)
+        as (((i += 1) < $length) & $isValid)
         {
             isValid = ($town)[$i] !in $FORBIDDEN_CHARS;
-            hasLetters = $hasLetters | ($town)[$i] !~ " "
+            hasLetters |= ($town)[$i] !~ " "    # complex assignment for OR operation
         };
 
         $isValid & $hasLetters
@@ -176,7 +175,7 @@
         loc result = "";
         loc i = -1;
 
-        as ((i = $i + 1) < $towns.length)
+        as ((i += 1) < $towns.length)
         {
             if (areChained($town, $towns[$i]))
             {

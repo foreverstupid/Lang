@@ -5,10 +5,10 @@ namespace Lang.RpnItems
     /// <summary>
     /// RPN item that represents logical OR operation.
     /// </summary>
-    public sealed class RpnOr : RpnBinaryOperation
+    public sealed class RpnOr : RpnLogicalOperation
     {
-        public RpnOr(Token token)
-            : base(token)
+        public RpnOr(Token token, bool isReversed = false)
+            : base(token, isReversed)
         {
         }
 
@@ -16,7 +16,7 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.LogicalOperationPriority;
 
         /// <inheritdoc/>
-        protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
-            => RpnConst.Bool(left.GetBool() || right.GetBool());
+        protected override bool GetBoolResult(RpnConst left, RpnConst right)
+            => left.GetBool() || right.GetBool();
     }
 }

@@ -14,6 +14,12 @@ namespace Lang.RpnItems
         {
         }
 
+        /// <summary>
+        /// Performs the operation action aver the given operands.
+        /// </summary>
+        public RpnConst Perform(RpnConst left, RpnConst right)
+            => GetResultCore(left, right);
+
         /// <inheritdoc/>
         protected override sealed RpnConst GetResult(Stack<RpnConst> stack)
         {

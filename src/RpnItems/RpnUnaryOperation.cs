@@ -15,6 +15,17 @@ namespace Lang.RpnItems
         }
 
         /// <inheritdoc/>
+        public override bool HasLessPriorityThan(RpnOperation anotherOperation)
+        {
+            if (anotherOperation.GetType() == this.GetType())
+            {
+                return true;
+            }
+
+            return base.HasLessPriorityThan(anotherOperation);
+        }
+
+        /// <inheritdoc/>
         protected override int Priority => RpnOperation.UnarOperationPriority;
 
         /// <inheritdoc/>

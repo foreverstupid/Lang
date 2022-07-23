@@ -20,7 +20,6 @@ namespace Lang.Pipeline
         // help variables
         private readonly List<EntityName> labelsForNextRpn = new List<EntityName>();
         private readonly Stack<RpnOperation> expressionStack = new Stack<RpnOperation>();
-        private readonly List<RpnOperation> reversedOperations = new List<RpnOperation>();
         private readonly Stack<int> ifIdxStack = new Stack<int>();
         private readonly Stack<int?> loopIdxStack = new Stack<int?>();
         private readonly Stack<LambdaContext> contextsStack = new Stack<LambdaContext>();
@@ -51,7 +50,6 @@ namespace Lang.Pipeline
 
             labelsForNextRpn.Clear();
             expressionStack.Clear();
-            reversedOperations.Clear();
             ifIdxStack.Clear();
             loopIdxStack.Clear();
             contextsStack.Clear();
@@ -171,33 +169,28 @@ namespace Lang.Pipeline
         /// </summary>
         public void BinaryOperation(Token token, bool isReversed = false)
         {
+            var rpn = GetBinaryOperation(token, isReversed);
+            NewOperation(rpn);
+        }
+
+        /// <summary>
+        /// Adds an assignment.
+        /// </summary>
+        public void Assignment(Token token, Token additional = null, bool isReversed = false)
+        {
+            var additionalOperation =
+                additional is null
+                ? null
+                : GetBinaryOperation(additional, isReversed);
+
             RpnOperation rpn = token.Value switch
             {
-                Operations.Assign => new RpnAssign(token, variables),
-                Operations.Plus => new RpnAdd(token),
-                Operations.Minus => new RpnSubtract(token),
-                Operations.Multiply => new RpnMultiply(token),
-                Operations.Divide => new RpnDivide(token),
-                Operations.Mod => new RpnMod(token),
-                Operations.Or => new RpnOr(token),
-                Operations.And => new RpnAnd(token),
-                Operations.Equal => new RpnEqual(token),
-                Operations.Greater => new RpnGreater(token),
-                Operations.Less => new RpnLess(token),
-                Operations.Cast => new RpnCast(token),
-                Operations.CanCast => new RpnCheckCast(token),
-                Operations.Insert => new RpnRightAssign(token, variables),
-                Operations.In => new RpnIn(token, variables),
-                Operations.RightShift => new RpnRightShift(token),
-                Operations.LeftShift => new RpnLeftShift(token),
-                var op => throw new RpnCreationException("Unknown binary operation: " + op)
+                Operations.Assign => new RpnAssign(token, variables, additionalOperation),
+                Operations.Insert => new RpnInsert(token, variables, additionalOperation),
+                var op => throw new RpnCreationException("Unknown assignment operation: " + op)
             };
 
             NewOperation(rpn);
-            if (isReversed)
-            {
-                reversedOperations.Add(rpn);
-            }
         }
 
         /// <summary>
@@ -239,7 +232,7 @@ namespace Lang.Pipeline
         public void Parameter(Token token, bool isRef = false)
         {
             LocalVariable(token, isRef);
-            AddRpn(new RpnRightAssign(token, variables));
+            AddRpn(new RpnInsert(token, variables));
             AddRpn(new RpnIgnore());
         }
 
@@ -418,7 +411,8 @@ namespace Lang.Pipeline
                     "Lambda break jump can be used only inside a lambda");
             }
 
-            FlushOperationsWithHigherOrEqualPriority(new RpnGetValue(null, variables));
+            // hack to use prioritization for evaluate. TODO: make something reasonable
+            FlushOperationsWithHigherOrEqualPriority(new RpnInsert(null, variables));
             AddRpn(new RpnReturn(labels));
         }
 
@@ -500,6 +494,29 @@ namespace Lang.Pipeline
             AddRpn(new RpnLabel(context + labelName));
         }
 
+        private RpnBinaryOperation GetBinaryOperation(Token token, bool isReversed)
+            => token.Value switch
+            {
+                Operations.Plus => new RpnAdd(token),
+                Operations.Minus => new RpnSubtract(token),
+                Operations.Multiply => new RpnMultiply(token),
+                Operations.Divide => new RpnDivide(token),
+                Operations.Mod => new RpnMod(token),
+                Operations.Or => new RpnOr(token, isReversed),
+                Operations.And => new RpnAnd(token, isReversed),
+                Operations.Equal => new RpnEqual(token, isReversed),
+                Operations.Greater => new RpnGreater(token, isReversed),
+                Operations.Less => new RpnLess(token, isReversed),
+                Operations.Cast => new RpnCast(token),
+                Operations.CanCast => new RpnCheckCast(token, isReversed),
+                Operations.In => new RpnIn(token, variables, isReversed),
+                Operations.RightShift => new RpnRightShift(token),
+                Operations.LeftShift => new RpnLeftShift(token),
+                Operations.Assign => new RpnAssign(token, variables),
+                Operations.Insert => new RpnInsert(token, variables),
+                var op => throw new RpnCreationException("Unknown binary operation: " + op)
+            };
+
         private void NewOperation(RpnOperation operation)
         {
             FlushOperationsWithHigherOrEqualPriority(operation);
@@ -508,22 +525,35 @@ namespace Lang.Pipeline
 
         private void FlushOperationsWithHigherOrEqualPriority(RpnOperation operation)
         {
-            while (expressionStack.TryPeek(out var stackOp) &&
-                !(stackOp is null) &&
-                !stackOp.HasLessPriorityThan(operation))
+            while (ShouldPopOperation())
             {
                 AddRpn(expressionStack.Pop());
+            }
+
+            bool ShouldPopOperation()
+            {
+                if (!expressionStack.TryPeek(out var peekedOperation))
+                {
+                    return false;
+                }
+
+                if (peekedOperation is null)
+                {
+                    return false;
+                }
+
+                if (peekedOperation.HasLessPriorityThan(operation))
+                {
+                    return false;
+                }
+
+                return true;
             }
         }
 
         private void AddRpn(Rpn rpn)
         {
             program.AddLast(new LinkedListNode<Rpn>(rpn));
-            if (rpn is RpnOperation rpnOp && reversedOperations.Remove(rpnOp))
-            {
-                program.AddLast(new LinkedListNode<Rpn>(new RpnNot()));
-            }
-
             if (labelsForNextRpn.Count > 0)
             {
                 LabelLastRpn();
