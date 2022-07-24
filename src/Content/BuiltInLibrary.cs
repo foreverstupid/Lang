@@ -22,140 +22,52 @@ namespace Lang.Content
             var funcs = new Dictionary<string[], Func>()
             {
                 [new[]{ "write" }] = new Func(
-                    1,
                     ps =>
                     {
-                        if (ps[0].ValueType == RpnConst.Type.Func)
-                        {
-                            throw new InterpretationException("Cannot write a lambda");
-                        }
-
-                        if (ps[0].ValueType == RpnConst.Type.None)
-                        {
-                            throw new InterpretationException("Cannot write the None value");
-                        }
-
                         Console.Write(ps[0].GetString());
                         return ps[0];
-                    }
-                ),
-                [new[]{ "read" }] = new Func(
-                    0,
-                    _ => new RpnString(Console.ReadLine())
-                ),
+                    },
+                    RpnConst.MainTypes),
+                [new[]{ "read" }] = new Func(_ => new RpnString(Console.ReadLine())),
                 [new[]{ "readKey" }] = new Func(
-                    1,
                     ps =>
                     {
                         var intercept = !ps[0].GetBool();
                         var info = Console.ReadKey(intercept);
                         return new RpnString(info.KeyChar.ToString());
-                    }
-                ),
+                    },
+                    RpnConst.BoolLikeTypes),
                 [new[]{ "rnd" }] = new Func(
-                    0,
                     _ =>
                     {
                         var rnd = new Random();
                         return new RpnFloat(rnd.NextDouble());
-                    }
-                ),
-                [new[]{ "file", "read" }] = new Func(
-                    1,
-                    ps =>
-                    {
-                        var path = ps[0].GetString();
-                        if (!File.Exists(path))
-                        {
-                            throw new InterpretationException(
-                                $"File {path} doesn't exist"
-                            );
-                        }
-
-                        var content = File.ReadAllText(path);
-                        return new RpnString(content);
-                    }
-                ),
-                [new[]{ "file", "write" }] = new Func(
-                    2,
-                    ps =>
-                    {
-                        var path = ps[0].GetString();
-                        var content = ps[1].GetString();
-                        File.AppendAllText(path, content);
-                        return new RpnString(content);
-                    }
-                ),
-                [new[]{ "file", "delete" }] = new Func(
-                    1,
-                    ps =>
-                    {
-                        var path = ps[0].GetString();
-                        if (File.Exists(path))
-                        {
-                            File.Delete(path);
-                            return RpnConst.True;
-                        }
-
-                        return RpnConst.False;
-                    }
-                ),
-                [new[]{ "file", "exists" }] = new Func(
-                    1,
-                    ps =>
-                    {
-                        var path = ps[0].GetString();
-                        return RpnConst.Bool(File.Exists(path));
-                    }
-                ),
-                [new[]{ "length" }] = new Func(
-                    1,
-                    ps => new RpnInteger(ps[0].GetString().Length)
-                ),
+                    }),
                 [new[]{ "alloc" }] = new Func(
-                    0,
                     _ =>
                     {
                         var name = $"{DynamicVarPrefix}{dynamicVarCounter}";
                         dynamicVarCounter++;
                         variables.Add(new EntityName(name), new RpnInteger(0));
                         return new RpnVar(name, variables);
-                    }
-                ),
+                    }),
                 [new[]{ "free" }] = new Func(
-                    1,
                     ps =>
                     {
-                        if (ps[0].ValueType != RpnConst.Type.Variable)
-                        {
-                            throw new InterpretationException(
-                                "Expected variable as a parameter"
-                            );
-                        }
-
                         var name = ps[0].GetName();
                         if (!name.Value.StartsWith(DynamicVarPrefix))
                         {
                             throw new InterpretationException(
-                                "Only dynamic variables can be deallocated"
-                            );
+                                "Only dynamic variables can be deallocated");
                         }
 
                         variables.Remove(name);
                         return RpnConst.True;
-                    }
-                ),
+                    },
+                    RpnConst.Type.Variable),
                 [new[]{ "sleep" }] = new Func(
-                    1,
                     ps =>
                     {
-                        if (ps[0].ValueType != RpnConst.Type.Float &&
-                            ps[0].ValueType != RpnConst.Type.Integer)
-                        {
-                            throw new InterpretationException(
-                                "Expected a number as a delay in milliseconds");
-                        }
-
                         double ms = ps[0].GetFloat();
                         if (ms < 0)
                         {
@@ -164,48 +76,11 @@ namespace Lang.Content
 
                         Task.Delay(TimeSpan.FromMilliseconds(ms)).Wait();
                         return RpnConst.True;
-                    }
-                ),
+                    },
+                    RpnConst.NumberTypes),
                 [new[]{ "exec" }] = new Func(
-                    4,
                     ps =>
                     {
-                        if (ps[0].ValueType != RpnConst.Type.String)
-                        {
-                            throw new InterpretationException(
-                                "Expected a string as a program path");
-                        }
-
-                        if (ps[1].ValueType != RpnConst.Type.String)
-                        {
-                            throw new InterpretationException(
-                                "Expected a string as a program arguments");
-                        }
-
-                        if (ps[2].ValueType != RpnConst.Type.Variable)
-                        {
-                            throw new InterpretationException(
-                                "Expected a variable as an output parameter for" +
-                                "the execution output");
-                        }
-
-                        if (!variables.ContainsKey(ps[2].GetName()))
-                        {
-                            throw new InterpretationException("Given output variable doesn't exist");
-                        }
-
-                        if (ps[3].ValueType != RpnConst.Type.Variable)
-                        {
-                            throw new InterpretationException(
-                                "Expected a variable as an error output parameter for" +
-                                "the execution output");
-                        }
-
-                        if (!variables.ContainsKey(ps[3].GetName()))
-                        {
-                            throw new InterpretationException("Given error output variable doesn't exist");
-                        }
-
                         var processStartInfo = new ProcessStartInfo()
                         {
                             FileName = ps[0].GetString(),
@@ -232,8 +107,76 @@ namespace Lang.Content
                         variables[ps[3].GetName()] = new RpnString(process.StandardError.ReadToEnd());
 
                         return new RpnInteger(process.ExitCode);
-                    }
-                )
+                    },
+                    RpnConst.Type.String,
+                    RpnConst.Type.String,
+                    RpnConst.Type.Variable,
+                    RpnConst.Type.Variable
+                ),
+
+                [new[]{ "file", "read" }] = new Func(
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        if (!File.Exists(path))
+                        {
+                            throw new InterpretationException(
+                                $"File {path} doesn't exist");
+                        }
+
+                        var content = File.ReadAllText(path);
+                        return new RpnString(content);
+                    },
+                    RpnConst.Type.String),
+                [new[]{ "file", "write" }] = new Func(
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        var content = ps[1].GetString();
+                        File.AppendAllText(path, content);
+                        return new RpnString(content);
+                    },
+                    RpnConst.Type.String,
+                    RpnConst.MainTypes),
+                [new[]{ "file", "exists" }] = new Func(
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        return RpnConst.Bool(File.Exists(path));
+                    },
+                    RpnConst.Type.String),
+                [new[]{ "file", "delete" }] = new Func(
+                    ps =>
+                    {
+                        var path = ps[0].GetString();
+                        if (File.Exists(path))
+                        {
+                            File.Delete(path);
+                            return RpnConst.True;
+                        }
+
+                        return RpnConst.False;
+                    },
+                    RpnConst.Type.String),
+
+                [new[]{ "math", "sqrt" }] = new Func(
+                    ps => new RpnFloat(Math.Sqrt(ps[0].GetFloat())),
+                    RpnConst.NumberTypes),
+                [new[]{ "math", "ln" }] = new Func(
+                    ps => new RpnFloat(Math.Log(ps[0].GetFloat())),
+                    RpnConst.NumberTypes),
+                [new[]{ "math", "exp" }] = new Func(
+                    ps => new RpnFloat(Math.Exp(ps[0].GetFloat())),
+                    RpnConst.NumberTypes),
+                [new[]{ "math", "sin" }] = new Func(
+                    ps => new RpnFloat(Math.Sin(ps[0].GetFloat())),
+                    RpnConst.NumberTypes),
+                [new[]{ "math", "cos" }] = new Func(
+                    ps => new RpnFloat(Math.Cos(ps[0].GetFloat())),
+                    RpnConst.NumberTypes),
+                [new[]{ "math", "tan" }] = new Func(
+                    ps => new RpnFloat(Math.Tan(ps[0].GetFloat())),
+                    RpnConst.NumberTypes),
             };
 
             Functions = new Dictionary<EntityName, Func>();
@@ -272,10 +215,10 @@ namespace Lang.Content
         /// </summary>
         public class Func
         {
-            public Func(int paramCount, Algorithm function)
+            public Func(Algorithm function, params RpnConst.Type[] paramTypes)
             {
                 Main = function;
-                ParamCount = paramCount;
+                ParamTypes = paramTypes;
             }
 
             public delegate RpnConst Algorithm(params RpnConst[] parameters);
@@ -286,9 +229,14 @@ namespace Lang.Content
             public Algorithm Main { get; }
 
             /// <summary>
-            /// Gets the function parameter count.
+            /// Gets the function parameters count.
             /// </summary>
-            public int ParamCount { get; }
+            public int ParamCount => ParamTypes.Length;
+
+            /// <summary>
+            /// Gets allowed types of the function parameters.
+            /// </summary>
+            public RpnConst.Type[] ParamTypes { get; }
         }
     }
 }

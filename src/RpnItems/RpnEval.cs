@@ -101,7 +101,17 @@ namespace Lang.RpnItems
                     $"{builtIn.ParamCount} parameters");
             }
 
-            var result = builtIn.Main(parameters);
+            for (int i = 0; i < paramCount; i++)
+            {
+                if (!builtIn.ParamTypes[i].HasFlag(parameters[i].ValueType))
+                {
+                    throw new InterpretationException(
+                        $"Wrong type of the {i + 1}-th parameter of built-in function " +
+                        $"'{builtInName}'. It should be: {builtIn.ParamTypes[i]}");
+                }
+            }
+
+            var result = builtIn.Main.Invoke(parameters);
             stack.Push(result);
         }
     }

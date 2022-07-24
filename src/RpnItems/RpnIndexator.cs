@@ -90,6 +90,12 @@ namespace Lang.RpnItems
 
         private RpnConst GetResultForString(string str, RpnConst index)
         {
+            if (index.ValueType == RpnConst.Type.String &&
+                index.GetString() == Syntax.StringLengthPropertyName)
+            {
+                return new RpnInteger(str.Length);
+            }
+
             if (index.ValueType != RpnConst.Type.Integer)
             {
                 throw new InterpretationException("Index of a string should be an integer number");
@@ -106,9 +112,7 @@ namespace Lang.RpnItems
 
         private RpnConst GetResultForVariable(RpnConst array, RpnConst index)
         {
-            if (index.ValueType == RpnConst.Type.String ||
-                index.ValueType == RpnConst.Type.Integer ||
-                index.ValueType == RpnConst.Type.Float)
+            if (RpnConst.MainTypes.HasFlag(index.ValueType))
             {
                 var indexedName = GetIndexedName(array.GetName(), index);
                 return new RpnVar(indexedName, variables);

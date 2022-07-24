@@ -35,8 +35,7 @@ namespace Lang.RpnItems
             if (operand.ValueType == RpnConst.Type.None)
             {
                 throw new InterpretationException(
-                    "Cannot perform operations over the None value"
-                );
+                    "Cannot perform operations over the None value");
             }
 
             return GetResultCore(operand);

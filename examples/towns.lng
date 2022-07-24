@@ -4,7 +4,7 @@
     DATA_FILE_NAME = "towns.lng.db.txt";
 
     # characters that a town name cannot contain
-    FORBIDDEN_CHARS = "0123456789_+=)(*&^%$#@!~\\|/?,:;'\"><";
+    FORBIDDEN_CHARS = "0123456789_+-=)(*&^%$#@!~\\|/?,:;'\"><";
 
     # exit word of the program
     EXIT_WORD = "stop";
@@ -54,7 +54,7 @@
         loc isLastSpace = 0;
         loc result = toUpper(($town)[0]);
 
-        for (1, sys.length($town), [i] =>
+        for (1, ($town).length, [i] =>
         {
             loc ch = ($town)[$i];
             loc newCh;
@@ -97,7 +97,7 @@
             parts.length = 0;
 
             loc part = "";
-            for (0, sys.length($str), [i] =>
+            for (0, ($str).length, [i] =>
             {
                 if ((($str)[$i] ~ "\n") & $part !~ "")
                 {
@@ -142,7 +142,7 @@
     # --------------------------------------------------------------------
     isTownValid = [town] =>
     {
-        loc length = sys.length($town);
+        loc length = ($town).length;
         loc i = -1;
 
         loc isValid = $length > 0;
@@ -162,7 +162,7 @@
     # --------------------------------------------------------------------
     areChained = [town1, town2] =>
     {
-        loc lastCharacter = toLower(($town1)[sys.length($town1) - 1]);
+        loc lastCharacter = toLower(($town1)[($town1).length - 1]);
         loc firstCharacter = toLower(($town2)[0]);
         $lastCharacter ~ $firstCharacter
     };

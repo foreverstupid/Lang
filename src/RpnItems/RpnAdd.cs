@@ -25,8 +25,7 @@ namespace Lang.RpnItems
                 RpnConst.Type.String => new RpnString(left.GetString() + right.GetString()),
                 var type =>
                     throw new InterpretationException(
-                        $"Unexpected type of the left operand: {type}"
-                    )
+                        $"Unexpected type of the left operand: {type}")
             };
     }
 }

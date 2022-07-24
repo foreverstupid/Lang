@@ -22,16 +22,17 @@ namespace Lang.RpnItems
         /// <summary>
         /// The value type.
         /// </summary>
+        [Flags]
         public enum Type
         {
-            Integer,
-            Float,
-            String,
-            Label,
-            Variable,
-            BuiltIn,
-            Func,
-            None,
+            None = 0,
+            Integer = 1,
+            Float = 2,
+            String = 4,
+            Label = 8,
+            Variable = 16,
+            BuiltIn = 32,
+            Func = 64,
         }
 
         /// <summary>
@@ -49,6 +50,27 @@ namespace Lang.RpnItems
         /// Value representing None.
         /// </summary>
         public static RpnConst None { get; } = new RpnNone();
+
+        /// <summary>
+        /// Data types for numbers.
+        /// </summary>
+        public static Type NumberTypes { get; } = Type.Integer | Type.Float;
+
+        /// <summary>
+        /// Main data types.
+        /// </summary>
+        public static Type MainTypes { get; } = NumberTypes | Type.String;
+
+        /// <summary>
+        /// Bool-like data types.
+        /// </summary>
+        public static Type BoolLikeTypes { get; } = MainTypes | Type.Variable;
+
+        /// <summary>
+        /// Types of constatns that have names.
+        /// </summary>
+        public static Type NamedTypes { get; } =
+            Type.Label | Type.Variable | Type.BuiltIn | Type.Func;
 
         /// <summary>
         /// The type of the item value.
@@ -86,7 +108,7 @@ namespace Lang.RpnItems
         /// <remarks>Throws for unnamed constants.</remarks>
         public virtual EntityName GetName()
         {
-            throw new Exception($"Constant of type '{ValueType}' has no name");
+            throw new Exception($"Constants of type '{ValueType}' have no names");
         }
 
         /// <summary>

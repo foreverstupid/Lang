@@ -31,5 +31,7 @@ namespace Lang.Content
         public const string InitializerStart = "{";
         public const string InitializerSeparator = ",";
         public const string InitializerEnd = "}";
+
+        public const string StringLengthPropertyName = "length";
     }
 }

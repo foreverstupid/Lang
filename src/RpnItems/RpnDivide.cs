@@ -26,8 +26,7 @@ namespace Lang.RpnItems
                     throw new InterpretationException("String cannot be divided"),
                 var type =>
                     throw new InterpretationException(
-                        $"Unexpected type of the left operand: {type}"
-                    )
+                        $"Unexpected type of the left operand: {type}")
             };
     }
 }

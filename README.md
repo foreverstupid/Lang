@@ -34,7 +34,7 @@ All functions in Lang are lambdas. You can give them names by assignment to some
 
 ## Built-in functions
 
-Lang has built-in library of functions that needn't be described to be used. For example, there are console IO built-in functions `sys.read` and `sys.write`, string length getting function `sys.length` etc. All built-in functions are described [here](#built-ins-library).
+Lang has built-in library of functions that needn't be described to be used. For example, there are console IO built-in functions `sys.read` and `sys.write`. All built-in functions are described [here](#built-ins-library).
 
 ## Expression
 
@@ -266,6 +266,24 @@ array.length;
 ```
 Note, that pseudo-field names should contain only alphanumeric characters (letters, digits, and underscores), while string indexing allows key to include arbitrary characters.
 
+### String length
+
+Lang also uses indexing-like behavior to provide string values' length determining. Namely, each string value has a "pseudo-field" called `length`, that contains the count of the string characters. You can use it like the following:
+```
+# getting length of a string
+str1Len = "This is a string".length;
+
+# as any pseudo-field 'length' is just a string index
+str2Len = "Another string"["length"];
+
+# do not forget, that 'length' is a pseudo-field of a string value,
+# so, if you want to get the length of a string-valued variable,
+# you should dereference it firstly, but as far as dereferencing
+# has less priority than indexing, you have to use brackets
+str = "Text";
+str3Len = ($str).length;
+```
+
 ## Operation `in`
 
 There is a special binary operation `in` that performs a search of the given value in the given array or a given substring in a given string.
@@ -384,34 +402,50 @@ obj.inner.inner.and.even.inner[1] = "world";       # second simple-array element
 
 All built-in functions are pseudo-fields of predefined dictionary called `sys`. Thus, these functions behave as ordinary variables with functional value type. You can even reassign them, changing their behavior, or assign their values to another variables.
 
-|Name|Arguments|Return value|
-|--|--|--|
-|sys.write|The single value to be write on the console of any type. If the value is variable then its name is used. If the variable is the *None* value, built-in, or a lambda then error occurs|Returns the printed value|
-|sys.read|No arguments|Returns the string that is an input line from the console|
-|sys.readKey|Bool-like value that determines should the pressed key character be displayed or not|Returns a key that was pressed by a user as a one-symboled string. Works only with keys that have a character representation|
-|sys.file.write|The value to be appended into the given file and the file path. The value restriction is the same as for *sys.write*. If file doesn't exist then this function creates it|The written value|
-|sys.file.read|The file path|The full content of the file as a string value|
-|sys.file.delete|The file path|Deletes the given file. If the file doesn't exist then this function does nothing. Returns bool-like **true** value if file existed and bool-like **false** value otherwise|
-|sys.file.exists|The file path|**true** bool-like value if the file exists and **false** bool-like value otherwise|
-|sys.rnd|No arguments|A random float between 0.0 and 1.0|
-|sys.length|A string|The length of the string|
-|sys.alloc|No arguments|A new allocated dynamic variable (see [dynamic variables](#dynamic-variables))|
-|sys.free|Dynamic variable that should be freed (see [dynamic variables](#dynamic-variables))|Bool-like **true** value|
-|sys.sleep|A number (float or integer) representing delay in milliseconds|Stops the program evaluation by the given interval, always returning bool-like **true** value|
-|sys.exec|Program path as a string, execution command-line arguments as a string, a string variable that will be used as an output parameter for the command execution output, and a string variable that will be used as an output parameter for the command execution error output|Executes the given program with the given arguments, returning its exit-code. It also fills the last given parameters with the program's output and error output respectively|
+## `sys.`
+|Name|Description|Arguments|Returns|
+|--|--|--|--|
+|sys.write|Writes the given value to the console|String or number|Written value|
+|sys.read|Reads a line from the console|No arguments|The string that is an input line from the console|
+|sys.readKey|Reads a key from the console|Bool-like value that determines whether the pressed key character should be displayed or not|A key that was pressed by a user as a one-character string|
+|sys.rnd|Generates a random float number|No arguments|A random float between 0.0 and 1.0|
+|sys.alloc|Creates a new [dynamic variable](#dynamic-variables)|No arguments|Created dynamic variable|
+|sys.free|Disposes an existing [dynamic variable](#dynamic-variables)|A dynamic variable that should be disposed|Bool-like **true** value|
+|sys.sleep|Stops the program evaluating for a given amount of time|A number (float or integer) representing the delay in milliseconds|Bool-like **true** value|
+|sys.exec|Executes the given program|The program path as a string, execution command-line arguments as a string, a variable that will be used as an output parameter for the program execution's output, and a variable that will be used as an output parameter for the program execution's error output|The program's exit-code|
 
 Example of `sys.exec` built-in function usage:
 ```
-out = "";         # will contain the output of the execution
-err = "";         # will contain the error output of the execution
 args = "ls -l";
 
-# we pass out and err variables as themselves, not their values
+# we pass out and err variables as themselves, not their values,
+# moreover, if these variables do not exist, then they will be created
 exitCode = sys.exec("/bin/bash", $args, out, err);
 
 sys.write($out);     # here we use the value of the out variable
 sys.write($err);     # here we use the value of the err variable
 ```
+
+## `sys.file.`
+|Name|Description|Arguments|Returns|
+|--|--|--|--|
+|sys.file.write|Appends the given value into the file|String or number for appending and the file path as a string|The written value. If the file doesn't exist then this function creates it|
+|sys.file.read|Reads the content of the file|The file path as a string|The full content of the file as a string value|
+|sys.file.exists|Checks whether the given file exists|The file path as a string|Bool-like **true** value if the file exists and bool-like **false** value otherwise|
+|sys.file.delete|Deletes the given file|The file path as a string|Bool-like **true** value if file existed and bool-like **false** value otherwise|
+
+## `sys.math.`
+
+All these functions take a number (integer or float) as an input and return a float number as an output.
+
+|Name|Description|
+|--|--|
+|sys.math.sqrt|Square root function|
+|sys.math.ln|Natural logarithm|
+|sys.math.exp|Exponent function (`e` to the power of the input)|
+|sys.math.sin|Sine function|
+|sys.math.cos|Cosine function|
+|sys.math.tan|Tangent function|
 
 # Variable visibility
 

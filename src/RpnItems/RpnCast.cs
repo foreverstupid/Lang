@@ -20,9 +20,7 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
         {
-            if (left.ValueType != RpnConst.Type.Integer &&
-                left.ValueType != RpnConst.Type.Float &&
-                left.ValueType != RpnConst.Type.String)
+            if (!RpnConst.MainTypes.HasFlag(left.ValueType))
             {
                 throw new InterpretationException("Can cast only strings or numbers");
             }

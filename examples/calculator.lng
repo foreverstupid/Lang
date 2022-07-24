@@ -27,7 +27,7 @@
     parse = [str] =>
     {
         loc input = $str + " ";
-        loc len = sys.length($input);
+        loc len = ($input).length;
         loc tokenCount = 0;
         loc token = "";
 

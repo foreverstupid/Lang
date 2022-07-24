@@ -18,10 +18,7 @@ namespace Lang.RpnItems
         /// <inheritdoc/>
         protected override bool GetBoolResult(RpnConst left, RpnConst right)
         {
-            if (left.ValueType == RpnConst.Type.Variable ||
-                left.ValueType == RpnConst.Type.Func ||
-                left.ValueType == RpnConst.Type.BuiltIn ||
-                left.ValueType == RpnConst.Type.Label)
+            if (RpnConst.NamedTypes.HasFlag(left.ValueType))
             {
                 bool equal = right.ValueType == left.ValueType && right.GetName() == left.GetName();
                 return equal;
