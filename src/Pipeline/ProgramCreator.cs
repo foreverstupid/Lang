@@ -11,11 +11,11 @@ namespace Lang.Pipeline
     /// </summary>
     public class ProgramCreator
     {
-        private const string IfLabelPrefix = "#if#";
-        private const string ElseLabelPrefix = "#else#";
-        private const string LambdaPrefix = "#f#";
-        private const string LambdaEndPrefix = "#f#end#";
-        private const string ReturnLabelPrefix = "#return#";
+        private const string IfLabelPrefix = "<if>";
+        private const string ElseLabelPrefix = "<or>";
+        private const string LambdaPrefix = "<f";
+        private const string LambdaEndPrefix = "</f";
+        private const string ReturnLabelPrefix = "<ret";
 
         // help variables
         private readonly List<EntityName> labelsForNextRpn = new List<EntityName>();
@@ -430,7 +430,7 @@ namespace Lang.Pipeline
         /// </summary>
         public void Eval(Token token, int paramCount)
         {
-            string retLabelName = $"{ReturnLabelPrefix}{returnCount}";
+            string retLabelName = $"{ReturnLabelPrefix}{returnCount}>";
             var returnLabel = new RpnLabel(retLabelName);
 
             AddRpn(new RpnEval(
@@ -570,8 +570,8 @@ namespace Lang.Pipeline
 
             public LambdaContext(int lambdaIdx)
             {
-                LambdaName = LambdaPrefix + lambdaIdx;
-                EndLabel = LambdaEndPrefix + lambdaIdx;
+                LambdaName = $"{LambdaPrefix}{lambdaIdx}>_";
+                EndLabel = $"{LambdaEndPrefix}{lambdaIdx}>_";
             }
 
             public string LambdaName { get; }
