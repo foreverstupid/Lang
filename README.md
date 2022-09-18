@@ -611,7 +611,7 @@ compareByWords = [line1, line2] =>
     }
 }
 ```
-So, the above function is supposed to return `1` if lines are word-wise equivalent and `0` otherwise. But in fact the function will always return `1`. The problem is that in Lang all usual variables are _static_. It means that once they are created they are binded to some lambda (or global) context and live forever. Thus, when `split` is firstly invoked it creates local `result` variable. Then this variable is filled with the parsing information and returned to the outer code. But when `split` is called the second time, it fills the same static variable `result` with a new information. So, inside `compareByWords` variables `res1` and `res2` label the same portion of information (namely the variable `result` of the function `split`). That's why by comparision these variables will always contain the information about the second line.
+So, the above function is supposed to return `1` if lines are word-wise equivalent and `0` otherwise. But in fact the function will always return `1`. The problem is that in Lang all usual variables are _static_. It means that once they are created they are binded to some lambda (or global) context and live forever. Thus, when `split` is firstly invoked it creates the local `result` variable. Then this variable is filled with the parsing information and returned to the outer code. But when `split` is called the second time, it fills the same static variable `result` with a new information. So, inside `compareByWords` variables `res1` and `res2` label the same portion of information (namely the variable `result` of the function `split`). That's why by comparision these variables will always contain the information about the second line.
 
 To avoid such a collision there exist _dynamic_ variables. Such variables are created via the special built-in fucntion `sys.alloc`. It has no input parameters and returns a dynamic variable that by default has an integer value `0`. An example of usage:
 ```
@@ -626,7 +626,7 @@ $var = 2;           # the value of "var" is a dynamic variable itself
 sys.write($$var);   # the 1-st $ gets the variable and the 2-nd $ gets its value
 ```
 
-As dynamic variables are created in runtime their count is potentially infinite. To prevent memory loss you should deallocate dynamic variables once they are not using anymore. For this purpose there exists another built-in function `sys.free`. It takes a dynamic variable as an input parameter, returning `None`. Note, that usage of the deallocated dynamic variable leads to an error:
+As dynamic variables are created in runtime their count is potentially infinite. To prevent memory loss you should deallocate dynamic variables once they are not using anymore. For this purpose there exists another built-in function `sys.free`. It takes a dynamic variable as an input parameter, returning bool-like **true** value. Note, that usage of the deallocated dynamic variable leads to an error:
 ```
 ref var = sys.alloc();
 sys.free(var);
