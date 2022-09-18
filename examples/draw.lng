@@ -88,7 +88,7 @@
         [$space] = [] => sys.write(" "),
         [$remove] = [] => sys.write(" " + $LEFT),
         [$delete] = [] => sys.write($LEFT + " " + $LEFT),
-        [$swap] = [] => markSymbol = sys.readKey(0)
+        [$swap] = [] => markSymbol = sys.read.key()
     };
 
     height = 15;
@@ -96,7 +96,7 @@
     sys.write("\n" * $height);
     sys.write($UP * ($height - 1));
 
-    as ((ch = sys.readKey(0)) !~ $ESC)
+    as ((ch = sys.read.key()) !~ $ESC)
         if ($ch in $allowedKeys)
         {
             if ($ch ? 0)

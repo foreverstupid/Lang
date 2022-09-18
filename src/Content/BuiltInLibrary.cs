@@ -13,7 +13,7 @@ namespace Lang.Content
     /// </summary>
     public class BuiltInLibrary
     {
-        private const string DynamicVarPrefix = "#dyn#";
+        private const string DynamicVarPrefix = "<dyn";
         private static readonly EntityName LibraryObjectName = new EntityName("sys");
 
         public BuiltInLibrary(IDictionary<EntityName, RpnConst> variables)
@@ -29,14 +29,18 @@ namespace Lang.Content
                     },
                     RpnConst.MainTypes),
                 [new[]{ "read" }] = new Func(_ => new RpnString(Console.ReadLine())),
-                [new[]{ "readKey" }] = new Func(
-                    ps =>
+                [new[]{ "read", "key" }] = new Func(
+                    _ =>
                     {
-                        var intercept = !ps[0].GetBool();
-                        var info = Console.ReadKey(intercept);
+                        var info = Console.ReadKey(intercept: true);
                         return new RpnString(info.KeyChar.ToString());
-                    },
-                    RpnConst.BoolLikeTypes),
+                    }),
+                [new[]{ "read", "key", "visible" }] = new Func(
+                    _ =>
+                    {
+                        var info = Console.ReadKey(intercept: false);
+                        return new RpnString(info.KeyChar.ToString());
+                    }),
                 [new[]{ "rnd" }] = new Func(
                     _ =>
                     {
@@ -46,7 +50,7 @@ namespace Lang.Content
                 [new[]{ "alloc" }] = new Func(
                     _ =>
                     {
-                        var name = $"{DynamicVarPrefix}{dynamicVarCounter}";
+                        var name = $"{DynamicVarPrefix}{dynamicVarCounter}>";
                         dynamicVarCounter++;
                         variables.Add(new EntityName(name), new RpnInteger(0));
                         return new RpnVar(name, variables);
