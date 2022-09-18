@@ -196,16 +196,17 @@ All the following operations can be applied only to the main data types: integer
 
 ### Assignments
 
-There are two types of assignment operations in Lang: `=` (left assignment) and `->` (right assignment). The first one assigns the right value to the left operand returning the assigned value. The second one assigns the left value to the right opeand, returning the assignee. Assignable operands of assignments should be variables, otherwise an error ossurs. Left assignment is right associative, the right assignment is left associative, i.e., the following expressions are equivalent:
+There are two types of assignment operations in Lang: `=` (left assignment) and `->` (right assignment). The first one assigns the right value to the left operand returning the assigned value. The second one assigns the left value to the right opeand, returning the assignee. Assignable operands of assignments should be variables, otherwise an error ossurs. Both left or right assignments are right associative, i.e., the following expressions are equivalent:
 ```
-a = b = c = 3;  # is equivalent to
-a = (b = (c = 3));
+a = b = c = 3;      # is equivalent to
+a = (b = (c = 3));  # as a result a, b, and c contain 3
 
-5 -> a -> b;    # is equivalent to
-(5 -> a) -> b;
-# note that here the last assignment
-# assigns a variable 'a' to the variable 'b',
-# so $b is 'a' itself
+5 -> 2 -> b;        # is equivalent to
+5 -> (2 -> b);      # as a result b contains 5
+# so for the right assignments such a chain
+# makes no sense, as far as the variable
+# will contain the first value
+# regardless of the other values in a chain
 ```
 
 If the variable doesn't exist then assignments create it.

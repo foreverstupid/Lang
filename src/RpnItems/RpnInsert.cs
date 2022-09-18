@@ -27,6 +27,17 @@ namespace Lang.RpnItems
         protected override int Priority => RpnOperation.AssignmentPriority;
 
         /// <inheritdoc/>
+        public override bool HasLessPriorityThan(RpnOperation anotherOperation)
+        {
+            if (anotherOperation is RpnInsert)
+            {
+                return true;
+            }
+
+            return base.HasLessPriorityThan(anotherOperation);
+        }
+
+        /// <inheritdoc/>
         protected override RpnConst GetResultCore(RpnConst left, RpnConst right)
         {
             if (right.ValueType != RpnConst.Type.Variable)
