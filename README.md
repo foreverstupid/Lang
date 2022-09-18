@@ -409,6 +409,7 @@ All built-in functions are pseudo-fields of predefined dictionary called `sys`. 
 |sys.read|Reads a line from the console|No arguments|The string that is an input line from the console|
 |sys.read.key|Reads a key from the console|No arguments|A key that was pressed by a user as a one-character string|
 |sys.read.key.visible|Reads a key from the console, printing into the console|No arguments|A key that was pressed by a user as a one-character string|
+|sys.now|Returns milliseconds, that have passed since 1st January 1970|No arguments|A float number|
 |sys.rnd|Generates a random float number|No arguments|A random float between 0.0 and 1.0|
 |sys.alloc|Creates a new [dynamic variable](#dynamic-variables)|No arguments|Created dynamic variable|
 |sys.free|Disposes an existing [dynamic variable](#dynamic-variables)|A dynamic variable that should be disposed|Bool-like **true** value|

@@ -41,6 +41,8 @@ namespace Lang.Content
                         var info = Console.ReadKey(intercept: false);
                         return new RpnString(info.KeyChar.ToString());
                     }),
+                [new[]{ "now" }] = new Func(
+                    _ => new RpnFloat((DateTime.UtcNow - DateTime.UnixEpoch).TotalMilliseconds)),
                 [new[]{ "rnd" }] = new Func(
                     _ =>
                     {
